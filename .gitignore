@@ -1,5 +1,6 @@
 # Runtime state
 .last_run_times
+.last_run_times (*)
 
 # Logs
 *.log

@@ -1,0 +1,14 @@
+# Runtime state
+.last_run_times
+
+# Logs
+*.log
+log/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store

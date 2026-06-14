@@ -1,0 +1,8 @@
+# Run every 5 minutes
+interval|5|/Users/joe/scripts/heartbeat.sh
+
+# Run once daily at 3:15am
+daily|03:15|/Users/joe/scripts/daily_backup.sh
+
+# Run once daily at 6:00pm
+daily|18:00|/Users/joe/scripts/report_generator.sh

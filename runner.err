@@ -1,0 +1,14 @@
+/Users/joemoser/Dropbox/Source/schedrunner/runner.sh: line 9: declare: -A: invalid option
+declare: usage: declare [-afFirtx] [-p] [name[=value] ...]
+/Users/joemoser/Dropbox/Source/schedrunner/runner.sh: line 23: /Users/joemoser/Dropbox/Source/schedrunner/test.sh: syntax error: operand expected (error token is "/Users/joemoser/Dropbox/Source/schedrunner/test.sh")
+/Users/joemoser/Dropbox/Source/schedrunner/runner.sh: line 9: declare: -A: invalid option
+declare: usage: declare [-afFirtx] [-p] [name[=value] ...]
+/Users/joemoser/Dropbox/Source/schedrunner/runner.sh: line 23: /Users/joemoser/Dropbox/Source/schedrunner/test.sh: syntax error: operand expected (error token is "/Users/joemoser/Dropbox/Source/schedrunner/test.sh")
+/Users/joemoser/Dropbox/Source/schedrunner/runner.sh: line 9: declare: -A: invalid option
+declare: usage: declare [-afFirtx] [-p] [name[=value] ...]
+/Users/joemoser/Dropbox/Source/schedrunner/runner.sh: line 23: /Users/joemoser/Dropbox/Source/schedrunner/test.sh: syntax error: operand expected (error token is "/Users/joemoser/Dropbox/Source/schedrunner/test.sh")
+/Users/joemoser/Dropbox/Source/schedrunner/runner.sh: line 9: declare: -A: invalid option
+declare: usage: declare [-afFirtx] [-p] [name[=value] ...]
+/Users/joemoser/Dropbox/Source/schedrunner/runner.sh: line 23: /Users/joemoser/Dropbox/Source/schedrunner/test.sh: syntax error: operand expected (error token is "/Users/joemoser/Dropbox/Source/schedrunner/test.sh")
+/Users/joemoser/Dropbox/Source/schedrunner/runner.sh: line 85: LOG_BASE+test.sh.log: Read-only file system
+mv: /var/folders/lm/87j6ff491274zff0v60zjph00000gn/T/tmp.yQURKtkfms: No such file or directory

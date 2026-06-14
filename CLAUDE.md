@@ -7,6 +7,15 @@ This file is the canonical reference for the registration contract. When you
 are working in *another* repo and want it to run on a schedule and/or
 auto-deploy on every push, follow the recipes below.
 
+## Pull request workflow (read first)
+
+Make changes on a feature branch and open a PR — never commit straight to the
+default branch. **If your previous PR has already been merged, do not keep
+pushing to that merged branch.** Once a PR is merged its branch is closed
+history; start a brand-new branch off the latest default branch and open a
+**new** PR for the next set of changes. One merged PR = one done unit of work;
+every new change after that needs its own fresh branch and PR.
+
 ## What schedrunner is
 
 `runner.sh` is launched once a minute by a macOS LaunchAgent

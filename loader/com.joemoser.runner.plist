@@ -18,8 +18,16 @@
     <key>RunAtLoad</key>
     <true/>
 
-	<key>KeepAlive</key>
-	<true/>
+    <!-- Periodic, exit-quickly job: launchd runs runner.sh every StartInterval
+         seconds and lets it exit. KeepAlive must be false so launchd does not
+         immediately respawn it (the runner now returns in well under a second). -->
+    <key>KeepAlive</key>
+    <false/>
+
+    <!-- Do not kill the scripts runner.sh launches when runner.sh exits. This is
+         what lets scripts run detached so a slow/hung one never blocks a tick. -->
+    <key>AbandonProcessGroup</key>
+    <true/>
 
     <key>StandardOutPath</key>
     <string>/Users/joemoser/Dropbox/Source/schedrunner/runner.log</string>

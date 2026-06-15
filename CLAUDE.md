@@ -161,11 +161,14 @@ by the provisioner.
 Format (`|`-delimited), one repo per line:
 
 ```
-name|visibility|type|description
+name|visibility|type|description|autodeploy
 ```
 
 - `visibility`: `private` (default) or `public`.
 - `type`: `generic` (default), `python`, or `node` — controls `.gitignore`.
+- `autodeploy`: `on` (default) or `off`. When on, the provisioner commits an
+  empty `.auto-deploy` flag to the new repo so schedrunner keeps it in sync on
+  the Mac (see section 2). Use `off` for a repo you intend to hand-edit locally.
 - `name` must match `^[A-Za-z0-9._-]+$`; `description` must not contain `|`.
 
 This exists because cloud/mobile Claude Code sessions generally can't create

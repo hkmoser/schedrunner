@@ -13,9 +13,11 @@
 # Requires: gh (authenticated) and git on the Mac. Output is captured by
 # schedrunner to log/provision-repos.sh.log.
 #
-# Register format (| delimited):  name|visibility|type|description
+# Register format (| delimited):  name|visibility|type|description|autodeploy
 #   visibility: private (default) | public
 #   type:       generic (default) | python | node   (controls .gitignore)
+#   autodeploy: on (default) | off  — when on, an empty .auto-deploy flag is
+#               committed so schedrunner keeps the repo in sync on the Mac
 
 set -uo pipefail
 export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
@@ -71,7 +73,7 @@ write_gitignore() {  # write_gitignore <type>  (cwd = repo)
 }
 
 created=0
-while IFS='|' read -r name visibility type description || [[ -n "${name:-}" ]]; do
+while IFS='|' read -r name visibility type description autodeploy || [[ -n "${name:-}" ]]; do
   name="$(echo "${name:-}" | xargs)"
   [[ -z "$name" || "$name" == \#* ]] && continue
   if ! [[ "$name" =~ ^[A-Za-z0-9._-]+$ ]]; then
@@ -82,13 +84,14 @@ while IFS='|' read -r name visibility type description || [[ -n "${name:-}" ]]; 
   visibility="$(echo "${visibility:-}" | xargs)"; visibility="${visibility:-private}"
   type="$(echo "${type:-}" | xargs)"; type="${type:-generic}"
   description="$(echo "${description:-}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+  autodeploy="$(echo "${autodeploy:-}" | xargs)"; autodeploy="${autodeploy:-on}"
 
   if gh repo view "$OWNER/$name" >/dev/null 2>&1; then
     echo "[$(ts)] $name: already exists on GitHub — skipping"
     continue
   fi
 
-  echo "[$(ts)] $name: provisioning ($visibility, $type)"
+  echo "[$(ts)] $name: provisioning ($visibility, $type, auto-deploy=$autodeploy)"
   repo_dir="$SOURCE_DIR/$name"
   mkdir -p "$repo_dir"
   cd "$repo_dir" || { echo "[$(ts)] $name: cannot cd to $repo_dir"; continue; }
@@ -98,6 +101,12 @@ while IFS='|' read -r name visibility type description || [[ -n "${name:-}" ]]; 
   render "$TEMPLATES/CLAUDE.md.tmpl" "$name" "$description" > CLAUDE.md
   render "$TEMPLATES/README.md.tmpl" "$name" "$description" > README.md
   write_gitignore "$type"
+
+  # Turn on schedrunner auto-deploy for the new repo (empty flag = pull-only),
+  # so the Mac keeps it in sync with origin from the start.
+  if [[ "$autodeploy" != "off" ]]; then
+    : > .auto-deploy
+  fi
 
   git add -A
   git diff --cached --quiet || git commit -qm "Scaffold $name (schedrunner-aware)"

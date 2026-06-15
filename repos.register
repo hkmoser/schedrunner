@@ -1,0 +1,19 @@
+# repos.register — declarative list of repositories that should exist.
+#
+# provision-repos.sh (run by schedrunner on the Mac) reads this file and, for
+# each entry whose repo does NOT yet exist on GitHub, creates it: scaffolds
+# starter files (CLAUDE.md, README.md, .gitignore) under ~/Dropbox/Source/<name>,
+# then creates + pushes the repo. Repos that already exist are left untouched,
+# so this is a manifest of desired repos, not a queue you have to clean up.
+#
+# Format (| delimited):
+#   name|visibility|type|description
+#     name        repo + local dir name (under ~/Dropbox/Source/)
+#     visibility  private | public         (default: private)
+#     type        generic | python | node  (default: generic; controls .gitignore)
+#     description one line; no '|' characters
+#
+# Lines beginning with # and blank/malformed lines are ignored. The /new-repo
+# skill prompts for these fields and appends a line here for you.
+
+ha-events|private|generic|Home Assistant events.

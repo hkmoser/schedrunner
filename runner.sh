@@ -36,12 +36,16 @@ acquire_lock() {
   if mkdir "$dir" 2>/dev/null; then
     return 0
   fi
+  # Lock dir exists: skip only if its recorded pid is a live process.
   pid=$(cat "$dir/pid" 2>/dev/null)
   if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
     return 1
   fi
-  rm -rf "$dir"
+  # Stale or unreadable lock — reclaim it. If anything here fails (e.g. the lock
+  # dir is unavailable), fail open and run rather than skip the script forever.
+  rm -rf "$dir" 2>/dev/null
   mkdir "$dir" 2>/dev/null
+  return 0
 }
 
 while IFS="|" read -r raw_cadence_type raw_cadence_value raw_script_path; do

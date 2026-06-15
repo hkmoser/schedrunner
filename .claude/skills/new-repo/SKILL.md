@@ -1,70 +1,73 @@
 ---
 name: new-repo
-description: Scaffold and create a new GitHub repository that is "schedrunner-aware" — generate starter files (CLAUDE.md, .gitignore, README), create the repo on GitHub, and push so it can be opened immediately in Claude Code (including on mobile/web). Use when the user asks to create, spin up, scaffold, or bootstrap a new repo or project.
+description: Register a new GitHub repository for creation. Prompts a short series of setup questions, then appends the repo spec to schedrunner's repos.register and pushes it — the Mac mini's provisioner (provision-repos.sh) then creates the repo with starter files and pushes it to GitHub. Use when the user asks to create, spin up, scaffold, or bootstrap a new repo or project.
 ---
 
 # new-repo
 
-Create a new GitHub repository pre-wired with starter files so it can be opened
-in a fresh Claude Code session right away, and so the agent in that session
-already knows this machine runs **schedrunner** (the scheduler in this repo).
+Queue a new repository for creation. The session you're in (often cloud/mobile)
+usually can't create GitHub repos directly, so this skill instead **records the
+desired repo in schedrunner's `repos.register`**. The Mac mini runs
+`provision-repos.sh` on a schedule; for every register entry whose repo does not
+yet exist on GitHub it creates it, scaffolds starter files (CLAUDE.md, README,
+.gitignore), and pushes it. Existing repos are skipped, so the register is a
+declarative manifest, not a queue you clean up.
 
 ## When to use
 
-The user says something like "create a new repo for X", "spin up a project
-called Y", "scaffold a new repo", etc.
+"create a new repo for X", "spin up a project called Y", "scaffold a repo", etc.
 
-## Inputs to gather
+## Step 1 — Ask the setup questions
 
-Ask only for what's missing; infer sensible defaults otherwise.
+Collect the fields below. Use `AskUserQuestion` for the multiple-choice ones
+(visibility, type, and whether to register it with schedrunner now); ask for the
+name and description as free text if the user hasn't already given them. Don't
+decide anything the user should — but do fall back to the noted defaults if they
+say "whatever" or skip a choice.
 
-- **name** (required): the repo name, e.g. `weather-bot`.
-- **description** (optional): one line describing the repo.
-- **visibility** (optional, default `private`): `private` or `public`.
-- **type** (optional, default `generic`): `generic`, `python`, or `node` —
-  controls which `.gitignore` lines and starter files are emitted.
-- **schedrunner** (optional): whether this repo should be registered for
-  scheduled execution and/or auto-deploy now. Default: no — just emit the
-  CLAUDE.md hint so it can be registered later. Only set it up if the user asks.
+- **name** (required) — repo + local dir name, e.g. `weather-bot`.
+  Must match `^[A-Za-z0-9._-]+$` (no spaces) or the provisioner will skip it.
+- **visibility** — `private` (default) or `public`.
+- **type** — `generic` (default), `python`, or `node`. Controls `.gitignore`.
+- **description** (optional) — one line; **must not contain a `|`**.
 
-## Steps
+## Step 2 — Append to `repos.register`
 
-1. **Generate the starter files** from `templates/` in this skill directory.
-   Substitute `{{REPO_NAME}}`, `{{DESCRIPTION}}`, and `{{YEAR}}`:
-   - `CLAUDE.md`   ← `templates/CLAUDE.md.tmpl` (makes the repo schedrunner-aware)
-   - `.gitignore`  ← `templates/gitignore.tmpl` (append the `python`/`node`
-     section if that `type` was chosen)
-   - `README.md`   ← `templates/README.md.tmpl`
-   - If `type` is `python`, you may also add a minimal entry point; if `node`,
-     a minimal `package.json`. Keep it small — the user can flesh it out.
+Add exactly one `|`-delimited line to `repos.register` at the schedrunner repo
+root, in this field order:
 
-2. **Create the repo on GitHub and push.** Prefer whichever is available:
-   - **Cloud / mobile / web sessions (no Mac):** use the GitHub MCP tools —
-     `mcp__github__create_repository` to create it, then `mcp__github__push_files`
-     to push the starter files to the default branch in one commit. This needs
-     no local clone and no LaunchAgent, so it works from iPhone.
-   - **Local Mac session:** `gh repo create <name> --<private|public>`, then
-     `git init`, add the starter files, commit, and `git push -u origin main`.
-     If the user wants it under schedrunner's conventions, clone/create it under
-     `~/Dropbox/Source/`.
+```
+name|visibility|type|description
+```
 
-3. **(Only if the user asked) Register with schedrunner.** schedrunner registers
-   repos two independent ways — see `../../../CLAUDE.md` for the full contract:
-   - **Scheduled execution:** add a line to schedrunner's `scripts.conf`. Use
-     the helper at the schedrunner repo root:
-     `./register.sh interval 5 /Users/joemoser/Dropbox/Source/<name>/<script>.sh`
-     (also `daily HH:MM ...` and `startup - ...`). Then commit `scripts.conf`.
-   - **Auto-deploy:** add a `.auto-deploy` file to the new repo's root — empty
-     for pull-only, or a bash post-pull hook if it needs a build/restart step.
-     The repo must live under `~/Dropbox/Source/` for the poller to find it.
+Example: `weather-bot|private|python|Fetches and posts the daily forecast.`
 
-4. **Report back** the repo URL and, if registered, what was registered. Tell
-   the user they can now open the repo in a new Claude Code session (e.g. on
-   iPhone).
+- Don't duplicate a name that's already listed.
+- Leave existing entries untouched.
+
+## Step 3 — Commit & push (follow the PR workflow)
+
+Per this repo's CLAUDE.md, commit on a feature branch and open a PR — never
+straight to the default branch, and start a fresh branch/PR if the previous one
+already merged. **The Mac auto-deploys schedrunner's _default_ branch**, so the
+repo is provisioned only once the new entry reaches the default branch (i.e.
+after the PR merges).
+
+## Step 4 — Tell the user what happens next
+
+Explain: once the PR merges, the Mac's next provisioning tick (every ~2 min)
+creates `<owner>/<name>` with starter files and pushes it; then they can open it
+in a fresh Claude Code session (phone included). If they want it to also run on a
+schedule or auto-deploy, point them at schedrunner's `register.sh` / `.auto-deploy`
+(see the repo CLAUDE.md) — those are separate, independent steps.
 
 ## Notes
 
-- The starter `CLAUDE.md` deliberately points at
-  `~/Dropbox/Source/schedrunner/CLAUDE.md`, so every repo created this way is
-  born knowing how to register — no extra discovery step needed.
-- Keep starter files minimal and idiomatic; this is a scaffold, not a framework.
+- Provisioning is idempotent: existence on GitHub is the gate, so the register
+  never needs editing once a repo is created.
+- The starter `CLAUDE.md` (`templates/CLAUDE.md.tmpl`) points at schedrunner, so
+  every provisioned repo is born schedrunner-aware.
+- If you happen to be in a session that *can* create repos directly (a Mac
+  session with authenticated `gh`, or a cloud session whose GitHub scope allows
+  it), you may instead run `provision-repos.sh` yourself, or create + push the
+  scaffold directly — the end state is the same.

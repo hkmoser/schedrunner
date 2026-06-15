@@ -148,6 +148,35 @@ git add .auto-deploy && git commit -m "Enable schedrunner auto-deploy"
 
 ---
 
+## 3. Provision brand-new repos (`repos.register`)
+
+The two mechanisms above register an *existing* repo. To create a **new** repo,
+add a line to `repos.register` instead. `provision-repos.sh` runs on the Mac via
+schedrunner (registered in `scripts.conf`); for each entry whose repo does not
+yet exist on GitHub it scaffolds starter files (CLAUDE.md, README, .gitignore)
+under `~/Dropbox/Source/<name>` and creates + pushes the repo. Repos that already
+exist are skipped, so the file is a declarative manifest and is never rewritten
+by the provisioner.
+
+Format (`|`-delimited), one repo per line:
+
+```
+name|visibility|type|description
+```
+
+- `visibility`: `private` (default) or `public`.
+- `type`: `generic` (default), `python`, or `node` — controls `.gitignore`.
+- `name` must match `^[A-Za-z0-9._-]+$`; `description` must not contain `|`.
+
+This exists because cloud/mobile Claude Code sessions generally can't create
+GitHub repos directly, but the Mac (with authenticated `gh`) can. The easiest
+way to add an entry is the **`/new-repo` skill**, which prompts for the fields
+and appends the line. Because the Mac auto-deploys schedrunner's **default
+branch**, a new entry is provisioned only once it reaches the default branch
+(after its PR merges). Requires `gh` authenticated on the Mac.
+
+---
+
 ## Quick reference
 
 | I want to…                                   | Do this                                                            |
@@ -155,5 +184,6 @@ git add .auto-deploy && git commit -m "Enable schedrunner auto-deploy"
 | Run a script every N minutes / daily / boot  | Add an `interval`/`daily`/`startup` line to `scripts.conf`        |
 | Auto-pull + redeploy on every push           | Add a `.auto-deploy` file to the repo root                         |
 | Both                                          | Do both — they are independent                                    |
+| Create a brand-new repo                       | Add a line to `repos.register` (or use the `/new-repo` skill)      |
 | Inspect what happened                         | Read `log/<script-basename>.log` in the schedrunner repo           |
 | Install / uninstall the scheduler            | `cd loader && bash install.sh` (or `uninstall.sh`)                 |

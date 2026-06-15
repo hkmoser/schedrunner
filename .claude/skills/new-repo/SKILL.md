@@ -20,16 +20,20 @@ declarative manifest, not a queue you clean up.
 ## Step 1 — Ask the setup questions
 
 Collect the fields below. Use `AskUserQuestion` for the multiple-choice ones
-(visibility, type, and whether to register it with schedrunner now); ask for the
-name and description as free text if the user hasn't already given them. Don't
-decide anything the user should — but do fall back to the noted defaults if they
-say "whatever" or skip a choice.
+(visibility, type, auto-deploy); ask for the name and description as free text if
+the user hasn't already given them. Don't decide anything the user should — but
+do fall back to the noted defaults if they say "whatever" or skip a choice.
 
 - **name** (required) — repo + local dir name, e.g. `weather-bot`.
   Must match `^[A-Za-z0-9._-]+$` (no spaces) or the provisioner will skip it.
 - **visibility** — `private` (default) or `public`.
 - **type** — `generic` (default), `python`, or `node`. Controls `.gitignore`.
 - **description** (optional) — one line; **must not contain a `|`**.
+- **autodeploy** — `on` (default) or `off`. When on, the provisioner commits an
+  empty `.auto-deploy` flag to the new repo so schedrunner keeps it in sync on
+  the Mac (remote-authoritative: pushes to its default branch are pulled, and
+  local edits in the Mac's clone are overwritten). Choose `off` for a repo you
+  intend to hand-edit on the Mac.
 
 ## Step 2 — Append to `repos.register`
 
@@ -37,13 +41,15 @@ Add exactly one `|`-delimited line to `repos.register` at the schedrunner repo
 root, in this field order:
 
 ```
-name|visibility|type|description
+name|visibility|type|description|autodeploy
 ```
 
-Example: `weather-bot|private|python|Fetches and posts the daily forecast.`
+Example: `weather-bot|private|python|Fetches and posts the daily forecast.|on`
 
 - Don't duplicate a name that's already listed.
 - Leave existing entries untouched.
+- `autodeploy` may be omitted (defaults to `on`); include it to be explicit or
+  to set `off`.
 
 ## Step 3 — Commit & push (follow the PR workflow)
 
@@ -57,9 +63,11 @@ after the PR merges).
 
 Explain: once the PR merges, the Mac's next provisioning tick (every ~2 min)
 creates `<owner>/<name>` with starter files and pushes it; then they can open it
-in a fresh Claude Code session (phone included). If they want it to also run on a
-schedule or auto-deploy, point them at schedrunner's `register.sh` / `.auto-deploy`
-(see the repo CLAUDE.md) — those are separate, independent steps.
+in a fresh Claude Code session (phone included). With `autodeploy=on` (the
+default) the repo ships with a `.auto-deploy` flag, so schedrunner already keeps
+the Mac's clone in sync — no extra step. If they also want it to run on a
+*schedule*, point them at schedrunner's `register.sh` (see the repo CLAUDE.md);
+that's separate from auto-deploy.
 
 ## Notes
 

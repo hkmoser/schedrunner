@@ -30,7 +30,10 @@
 
 set -uo pipefail
 
-export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+# Include /opt/homebrew/bin so `gh` (Apple Silicon Homebrew prefix) is on PATH
+# under launchd, which starts with a minimal environment. Without this the
+# commit-status reporting below silently no-ops because `gh` isn't found.
+export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
 SOURCE_DIR="$HOME/Dropbox/Source"
 LOCK="/tmp/auto-deploy-poll.lock"
@@ -46,7 +49,10 @@ DEPLOY_CONTEXT="deploy/$(hostname -s 2>/dev/null || hostname)"
 # if gh is missing/unauthenticated or the repo has no GitHub remote. gh resolves
 # {owner}/{repo} from the current directory (we are cd'd into the repo).
 report_status() {
-    command -v gh >/dev/null 2>&1 || return 0
+    if ! command -v gh >/dev/null 2>&1; then
+        echo "[$(ts)] $name: github status skipped (gh not found on PATH)"
+        return 0
+    fi
     if gh api -X POST "repos/{owner}/{repo}/statuses/$1" \
             -f "state=$2" \
             -f "context=$DEPLOY_CONTEXT" \

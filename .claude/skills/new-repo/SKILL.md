@@ -34,6 +34,10 @@ do fall back to the noted defaults if they say "whatever" or skip a choice.
   the Mac (remote-authoritative: pushes to its default branch are pulled, and
   local edits in the Mac's clone are overwritten). Choose `off` for a repo you
   intend to hand-edit on the Mac.
+- **source** (optional) — a repo (`name` or `owner/repo`) to **copy** instead of
+  scaffolding. When set, the new repo is a clean copy of that repo's current
+  snapshot (no fork link, no history); `type` is ignored. Use this when the user
+  says "copy X as a new repo named Y" / "duplicate X".
 
 ## Step 2 — Append to `repos.register`
 
@@ -41,15 +45,17 @@ Add exactly one `|`-delimited line to `repos.register` at the schedrunner repo
 root, in this field order:
 
 ```
-name|visibility|type|description|autodeploy
+name|visibility|type|description|autodeploy|source
 ```
 
-Example: `weather-bot|private|python|Fetches and posts the daily forecast.|on`
+Examples:
+- scaffold: `weather-bot|private|python|Fetches and posts the daily forecast.|on`
+- copy:     `md-halo|private|generic|Clean copy of iOS-shell.|on|iOS-shell`
 
 - Don't duplicate a name that's already listed.
 - Leave existing entries untouched.
-- `autodeploy` may be omitted (defaults to `on`); include it to be explicit or
-  to set `off`.
+- Trailing fields may be omitted: `autodeploy` defaults to `on`, `source` to
+  empty (scaffold). Include `source` only to copy an existing repo.
 
 ## Step 3 — Commit & push (follow the PR workflow)
 

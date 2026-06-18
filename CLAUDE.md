@@ -161,7 +161,7 @@ by the provisioner.
 Format (`|`-delimited), one repo per line:
 
 ```
-name|visibility|type|description|autodeploy
+name|visibility|type|description|autodeploy|source
 ```
 
 - `visibility`: `private` (default) or `public`.
@@ -169,6 +169,9 @@ name|visibility|type|description|autodeploy
 - `autodeploy`: `on` (default) or `off`. When on, the provisioner commits an
   empty `.auto-deploy` flag to the new repo so schedrunner keeps it in sync on
   the Mac (see section 2). Use `off` for a repo you intend to hand-edit locally.
+- `source` (optional): a repo (`name` or `owner/repo`) to **copy** rather than
+  scaffold. When set, the new repo is a clean copy of that repo's current
+  snapshot (no fork link, no history) and `type` is ignored.
 - `name` must match `^[A-Za-z0-9._-]+$`; `description` must not contain `|`.
 
 This exists because cloud/mobile Claude Code sessions generally can't create

@@ -13,11 +13,14 @@
 # Requires: gh (authenticated) and git on the Mac. Output is captured by
 # schedrunner to log/provision-repos.sh.log.
 #
-# Register format (| delimited):  name|visibility|type|description|autodeploy
+# Register format (| delimited):  name|visibility|type|description|autodeploy|source
 #   visibility: private (default) | public
 #   type:       generic (default) | python | node   (controls .gitignore)
 #   autodeploy: on (default) | off  — when on, an empty .auto-deploy flag is
 #               committed so schedrunner keeps the repo in sync on the Mac
+#   source:     optional. When set (a repo name or owner/repo), the new repo is
+#               a CLEAN COPY of that repo's current snapshot (no fork link, no
+#               history) instead of a fresh scaffold. type is ignored for copies.
 
 set -uo pipefail
 export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
@@ -72,8 +75,52 @@ write_gitignore() {  # write_gitignore <type>  (cwd = repo)
   } > .gitignore
 }
 
+create_and_push() {  # create_and_push <name> <visibility> <description>  (cwd = repo with a commit)
+  local args=("$OWNER/$1" --source=. --remote=origin --push)
+  [[ "$2" == "public" ]] && args+=(--public) || args+=(--private)
+  [[ -n "$3" ]] && args+=(--description "$3")
+  gh repo create "${args[@]}"
+}
+
+copy_repo() {  # copy_repo <name> <source> <visibility> <autodeploy> <description>
+  local rname="$1" src="$2" rvis="$3" autod="$4" rdesc="$5" src_full work repo_dir
+  case "$src" in */*) src_full="$src" ;; *) src_full="$OWNER/$src" ;; esac
+
+  if ! gh repo view "$src_full" >/dev/null 2>&1; then
+    echo "[$(ts)] $rname: source repo '$src_full' not found — skipping"
+    return 1
+  fi
+
+  work="$(mktemp -d)"
+  echo "[$(ts)] $rname: cloning snapshot of $src_full"
+  if ! gh repo clone "$src_full" "$work" -- --depth 1 --quiet 2>&1; then
+    echo "[$(ts)] $rname: clone of $src_full FAILED — skipping"
+    rm -rf "$work"; return 1
+  fi
+
+  # Clean copy: drop history, start a fresh repo from the current snapshot.
+  rm -rf "$work/.git"
+  repo_dir="$SOURCE_DIR/$rname"
+  rm -rf "$repo_dir"; mkdir -p "$repo_dir"
+  cp -R "$work/." "$repo_dir/"
+  rm -rf "$work"
+
+  cd "$repo_dir" || { echo "[$(ts)] $rname: cannot cd to $repo_dir"; return 1; }
+  git init -q
+  if [[ "$autod" == "off" ]]; then rm -f .auto-deploy; else : > .auto-deploy; fi
+  git add -A
+  git diff --cached --quiet || git commit -qm "Initial copy of $src_full"
+
+  if create_and_push "$rname" "$rvis" "$rdesc"; then
+    echo "[$(ts)] $rname: copied $src_full -> $OWNER/$rname"
+    return 0
+  fi
+  echo "[$(ts)] $rname: gh repo create FAILED"
+  return 1
+}
+
 created=0
-while IFS='|' read -r name visibility type description autodeploy || [[ -n "${name:-}" ]]; do
+while IFS='|' read -r name visibility type description autodeploy source || [[ -n "${name:-}" ]]; do
   name="$(echo "${name:-}" | xargs)"
   [[ -z "$name" || "$name" == \#* ]] && continue
   if ! [[ "$name" =~ ^[A-Za-z0-9._-]+$ ]]; then
@@ -85,9 +132,17 @@ while IFS='|' read -r name visibility type description autodeploy || [[ -n "${na
   type="$(echo "${type:-}" | xargs)"; type="${type:-generic}"
   description="$(echo "${description:-}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
   autodeploy="$(echo "${autodeploy:-}" | xargs)"; autodeploy="${autodeploy:-on}"
+  source="$(echo "${source:-}" | xargs)"
 
   if gh repo view "$OWNER/$name" >/dev/null 2>&1; then
     echo "[$(ts)] $name: already exists on GitHub — skipping"
+    continue
+  fi
+
+  # Copy mode: duplicate an existing repo's snapshot instead of scaffolding.
+  if [[ -n "$source" ]]; then
+    echo "[$(ts)] $name: provisioning as copy of '$source' ($visibility, auto-deploy=$autodeploy)"
+    copy_repo "$name" "$source" "$visibility" "$autodeploy" "$description" && created=$((created + 1))
     continue
   fi
 
@@ -111,11 +166,7 @@ while IFS='|' read -r name visibility type description autodeploy || [[ -n "${na
   git add -A
   git diff --cached --quiet || git commit -qm "Scaffold $name (schedrunner-aware)"
 
-  create_args=("$OWNER/$name" --source=. --remote=origin --push)
-  [[ "$visibility" == "public" ]] && create_args+=(--public) || create_args+=(--private)
-  [[ -n "$description" ]] && create_args+=(--description "$description")
-
-  if gh repo create "${create_args[@]}"; then
+  if create_and_push "$name" "$visibility" "$description"; then
     echo "[$(ts)] $name: created and pushed to $OWNER/$name"
     created=$((created + 1))
   else

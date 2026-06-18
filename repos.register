@@ -7,15 +7,19 @@
 # so this is a manifest of desired repos, not a queue you have to clean up.
 #
 # Format (| delimited):
-#   name|visibility|type|description|autodeploy
+#   name|visibility|type|description|autodeploy|source
 #     name        repo + local dir name (under ~/Dropbox/Source/)
 #     visibility  private | public         (default: private)
 #     type        generic | python | node  (default: generic; controls .gitignore)
 #     description one line; no '|' characters
 #     autodeploy  on | off                 (default: on; commits a .auto-deploy
 #                 flag so schedrunner keeps the new repo in sync on the Mac)
+#     source      optional repo (name or owner/repo). When set, the new repo is
+#                 a clean copy of that repo's current snapshot (no fork, no
+#                 history) instead of a fresh scaffold; type is ignored.
 #
 # Lines beginning with # and blank/malformed lines are ignored. The /new-repo
 # skill prompts for these fields and appends a line here for you.
 
 ha-events|private|generic|Home Assistant events.|on
+md-halo|private|generic|Clean copy of iOS-shell.|on|iOS-shell

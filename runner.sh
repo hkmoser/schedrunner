@@ -76,7 +76,14 @@ while IFS="|" read -r raw_cadence_type raw_cadence_value raw_script_path; do
     log_path="$LOG_BASE$(basename "$script_path").log"
     (
       echo "[$(date)] Running $script_path"
-      eval "$script_path"
+      # Invoke .sh scripts with explicit bash so execute bits aren't required
+      # (Dropbox does not sync execute bits across devices).
+      _first="${script_path%% *}"
+      if [[ "$_first" == *.sh ]]; then
+        bash $script_path
+      else
+        eval "$script_path"
+      fi
       echo "[$(date)] Finished $script_path"
       echo "----------------------------------------"
     ) >> "$log_path" 2>&1 &

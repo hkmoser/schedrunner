@@ -1,41 +1,60 @@
-# Launchd gap test
+# Testing
 
-`test/launchd-gap-test.sh` verifies the one thing that can only be checked under
-real launchd (not by running `runner.sh` directly): that the reworked LaunchAgent
-keys behave as intended.
-
-- **AbandonProcessGroup=true** — a script the runner backgrounds keeps running
-  and logging *after* the short-lived runner process exits, instead of being
-  killed by launchd. This is what makes the non-blocking, detached design safe.
-- **KeepAlive=false** — launchd does not respawn the job the instant it exits
-  (no respawn storm); `StartInterval` alone drives the cadence.
-
-## How it stays isolated
-
-- Uses a **temporary** LaunchAgent with its own label,
-  `com.joemoser.runner-selftest` — never `com.joemoser.runner`.
-- Runs a tiny self-contained launcher in a sandbox at
-  `~/schedrunner-launchd-test`; it does not read or run the real `runner.sh`,
-  `scripts.conf`, or any live file, and nothing is placed in
-  `~/Library/LaunchAgents`.
-- A cleanup trap reverses everything (unload the temp agent, remove the sandbox)
-  on normal exit **and** on Ctrl-C / error.
-
-## Run it
+Run the whole suite:
 
 ```bash
-bash test/launchd-gap-test.sh
+bash test/run.sh
 ```
 
-No sudo needed. It takes ~40s (it waits for a 20s background run to outlive its
-launcher). The script prints three sections:
+It runs every `test/test_*.sh` and exits non-zero if any assertion fails. CI runs
+it on every push and PR (`.github/workflows/test.yml`). See the **Testing
+discipline** section in `../CLAUDE.md` for the rules every change must follow.
 
-- **(a) setup** — writes the sandbox + temp plist and `launchctl bootstrap`s it.
-- **(b) results** — `PASS`/`FAIL` for AbandonProcessGroup and KeepAlive, plus the
-  raw `ticks.log` / `child.log`.
-- **(c) teardown** — unloads the temp agent and deletes the sandbox.
+## How the suite is built
 
-Expected: both `PASS`, summary `2 passed, 0 failed`.
+- **`lib.sh`** — tiny assertion helpers (`assert_eq`, `assert_contains`,
+  `assert_file`, `assert_status`, `poll_until`, …) plus a hermetic environment:
+  git config is isolated to a temp file (no host config, no commit signing), and
+  temp dirs are cleaned up automatically.
+- **Real collaborators, not mocks.** Tests drive the *real* scripts with real
+  `git` against throwaway local repos in temp dirs. The only thing stubbed is
+  `gh` (an exported shell function in `lib.sh`), because it is the external
+  service that talks to GitHub. Configure it per-test with `GH_STUB_*` env vars.
+- Each `test_*.sh` is self-contained: source `lib.sh`, run cases, call `finish`.
 
-If your macOS rejects `launchctl bootstrap`, the script prints the legacy
-`launchctl load -w` / `unload` equivalents to use instead.
+## What's covered
+
+| File                    | Script under test    | Cases (happy path + edge/error)                                   |
+|-------------------------|----------------------|-------------------------------------------------------------------|
+| `test_register.sh`      | `register.sh`        | valid interval/daily/startup, multi-token, duplicate, bad value/time, unknown cadence, relative path, too few args |
+| `test_runner.sh`        | `runner.sh`          | interval due/not-due, comment/blank/malformed, bad interval, unknown cadence, bad daily time, daily non-match, live lock skip, stale lock reclaim |
+| `test_auto_deploy.sh`   | `auto-deploy.sh`     | reset on advance (empty flag), post-pull hook runs, up-to-date no-op, failing hook reported, single-instance lock |
+| `test_provision.sh`     | `provision-repos.sh` | scaffold new repo, autodeploy=off, python gitignore, already-exists skip, malformed name, comments, unauthenticated gh, create failure |
+| `test_syntax.sh`        | all `*.sh`           | every shell script parses (`bash -n`)                              |
+
+## Known coverage gaps (need real launchd / a real clock)
+
+These can't be asserted deterministically by running the scripts directly:
+
+- **`runner.sh` `startup` happy path** and **`daily` happy path** depend on the
+  machine clock / `/proc/uptime`; the suite covers their validation and
+  non-matching branches instead.
+- **LaunchAgent behavior** (`AbandonProcessGroup`, `KeepAlive`) — covered by the
+  manual macOS-only check below.
+
+## Manual macOS check: `launchd-gap-test.sh`
+
+`test/launchd-gap-test.sh` verifies the one thing only real launchd can show:
+that a script the runner backgrounds keeps running after the runner exits
+(`AbandonProcessGroup=true`) and that launchd does not respawn the job
+immediately (`KeepAlive=false`). It is **not** part of `run.sh` (it needs a macOS
+launchd session) and is fully self-isolated with a temporary LaunchAgent.
+
+```bash
+bash test/launchd-gap-test.sh   # ~40s, no sudo; expect "2 passed, 0 failed"
+```
+
+It uses a temporary LaunchAgent label (`com.joemoser.runner-selftest`) in a
+sandbox under `$HOME`; it never touches `com.joemoser.runner`, the live repo,
+`scripts.conf`, or `~/Library/LaunchAgents`, and a trap reverses everything on
+exit or Ctrl-C.

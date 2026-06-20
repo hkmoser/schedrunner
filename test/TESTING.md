@@ -29,12 +29,17 @@ discipline** section in `../CLAUDE.md` for the rules every change must follow.
 | `test_register.sh`      | `register.sh`        | valid interval/daily/startup, multi-token, duplicate, bad value/time, unknown cadence, relative path, too few args |
 | `test_runner.sh`        | `runner.sh`          | interval due/not-due, comment/blank/malformed, bad interval, unknown cadence, bad daily time, daily non-match, live lock skip, stale lock reclaim |
 | `test_auto_deploy.sh`   | `auto-deploy.sh`     | reset on advance (empty flag), post-pull hook runs, up-to-date no-op, failing hook reported, single-instance lock |
+| `test_deploy_hook.sh`   | `.auto-deploy`       | reload LaunchAgent only when the plist changed: unchanged → no-op, changed → reload, not-installed → reload, failing reload propagates |
 | `test_provision.sh`     | `provision-repos.sh` | scaffold new repo, autodeploy=off, python gitignore, already-exists skip, malformed name, comments, unauthenticated gh, create failure |
 | `test_syntax.sh`        | all `*.sh`           | every shell script parses (`bash -n`)                              |
 
 ## Known coverage gaps (need real launchd / a real clock)
 
 These can't be asserted deterministically by running the scripts directly:
+
+- **The `.auto-deploy` reload action itself** (`loader/install.sh` →
+  `launchctl`) is macOS-only; the test covers the *decision* (when to reload)
+  but mocks the reload command.
 
 - **`runner.sh` `startup` happy path** and **`daily` happy path** depend on the
   machine clock / `/proc/uptime`; the suite covers their validation and

@@ -1,0 +1,32 @@
+#!/bin/bash
+# .auto-deploy — schedrunner's own post-pull hook.
+#
+# auto-deploy.sh runs this from the repo root after it resets schedrunner to the
+# latest origin/main. A plain `git reset` updates the plist FILE on disk but does
+# NOT tell launchd about it, so a changed LaunchAgent (e.g. AbandonProcessGroup)
+# would silently not take effect until the next manual `loader/install.sh`.
+#
+# This hook closes that gap: if the plist the agent is currently running differs
+# from the repo's (or isn't installed at all), reload it via loader/install.sh.
+# It is idempotent — when the plist is unchanged it does nothing, so it is safe
+# to run on every remote advance.
+#
+# Test seam: SCHEDRUNNER_RELOAD_CMD overrides the reload action (so tests can
+# assert the decision without invoking launchctl); SCHEDRUNNER_INSTALLED_PLIST
+# overrides where the live plist is read from.
+set -euo pipefail
+
+repo_plist="loader/com.joemoser.runner.plist"
+installed_plist="${SCHEDRUNNER_INSTALLED_PLIST:-$HOME/Library/LaunchAgents/com.joemoser.runner.plist}"
+
+if [[ -f "$installed_plist" ]] && cmp -s "$repo_plist" "$installed_plist"; then
+  echo "auto-deploy: LaunchAgent plist unchanged — no reload needed"
+  exit 0
+fi
+
+echo "auto-deploy: LaunchAgent plist changed (or not installed) — reloading"
+if [[ -n "${SCHEDRUNNER_RELOAD_CMD:-}" ]]; then
+  eval "$SCHEDRUNNER_RELOAD_CMD"
+else
+  ( cd loader && bash install.sh )
+fi

@@ -72,7 +72,7 @@ cadence_type|cadence_value|script_path [args...]
 |------------|-----------------|-------------------------------------------|
 | `interval` | minutes (int)   | Run every N minutes                       |
 | `daily`    | `HH:MM` (24h)   | Run once per day at that wall-clock time  |
-| `startup`  | (ignored)       | Run once when machine uptime < 90 s       |
+| `startup`  | (ignored)       | Run on every tick while uptime < 90 s (boot window) |
 
 ### Rules & gotchas
 
@@ -88,7 +88,50 @@ cadence_type|cadence_value|script_path [args...]
   per day — so the time you pick must align with a minute boundary.
 - Lines beginning with `#` and malformed lines are skipped.
 - Each script's stdout/stderr is appended to `log/<script-basename>.log`
-  (git-ignored). Scripts run in the background; runner waits for them to finish.
+  (git-ignored). Scripts are launched **detached**; the runner does not `wait`
+  for them — it returns each tick no matter how long a script runs.
+
+### Long-running services & background launchers
+
+Two facts about how the runner supervises scripts matter when you register a
+**daemon / long-lived listener** (verified against `runner.sh`):
+
+- **The per-script lock covers only the _foreground_ run of the invoked script —
+  not any process it backgrounds.** The runner runs each due script inside a
+  subshell that holds the lock and releases it (via an `EXIT` trap) the instant
+  that script returns. A launcher that does `nohup … & ; exit` releases the lock
+  immediately, and the recorded pid is the subshell's, not the daemon's — so the
+  lock can't keep the daemon single-instance.
+- **`startup` fires on _every_ tick while uptime < 90 s**, not once. Unlike
+  `daily` it has no per-boot dedupe, so a launcher can run ~2× in the boot window
+  (`StartInterval` is 60 s).
+
+So **a launcher that backgrounds its work and exits must enforce single-instance
+itself, atomically.** A check-then-act PID-file guard is racy: two boot-window
+ticks (or a tick racing a `.auto-deploy`/manual run) can both pass the check and
+double-start, leaving an untracked orphan. Wrap the check-and-launch in an atomic
+`mkdir` lock (stock macOS has no `flock`), with stale-lock recovery:
+
+```bash
+LOCK_DIR="$REPO_DIR/.myservice.startlock"
+if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+  # steal a lock older than 2 min (a previous start died mid-launch)
+  if [ -n "$(find "$LOCK_DIR" -prune -mmin +2 2>/dev/null)" ]; then
+    rmdir "$LOCK_DIR" 2>/dev/null || true
+    mkdir "$LOCK_DIR" 2>/dev/null || { echo "start lock busy; skipping"; exit 0; }
+  else
+    echo "another start in progress; skipping"; exit 0
+  fi
+fi
+trap 'rmdir "$LOCK_DIR" 2>/dev/null || true' EXIT
+# ... PID-file check + launch + PID write now run as one critical section ...
+```
+
+Once the launcher is atomically singleton-safe, you can register it as
+`interval|N` (instead of, or alongside, `startup`) for **mid-session crash
+recovery**: each tick relaunches the daemon if its pid is dead and no-ops if it's
+alive. Trade-off: `interval` silently relaunches a hard crash-loop, where
+`startup`-only leaves it visibly down.
 
 ### Examples
 

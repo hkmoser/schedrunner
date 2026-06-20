@@ -183,6 +183,25 @@ branch**, a new entry is provisioned only once it reaches the default branch
 
 ---
 
+## 4. Shared secrets (`secrets.sh` → Google Cloud Secret Manager)
+
+Repos that need credentials read them from one shared place — Google Cloud
+Secret Manager — via `secrets.sh`, so secrets never live in a repo or Dropbox
+and every repo uses the same creds.
+
+```bash
+source /Users/joemoser/Dropbox/Source/schedrunner/secrets.sh
+export OPENAI_API_KEY="$(get_secret openai-api-key)"   # fetched on demand
+secret_to_var db-password DB_PASSWORD                   # or export directly
+```
+
+A dedicated **read-only** service account (keyed at
+`~/.config/schedrunner/gcp-sa.json`, outside Dropbox) backs every repo. The
+one-time Mac setup, secret management (`gcloud secrets create|versions add`), and
+security notes are in **`SECRETS.md`**.
+
+---
+
 ## Quick reference
 
 | I want to…                                   | Do this                                                            |
@@ -191,5 +210,6 @@ branch**, a new entry is provisioned only once it reaches the default branch
 | Auto-pull + redeploy on every push           | Add a `.auto-deploy` file to the repo root                         |
 | Both                                          | Do both — they are independent                                    |
 | Create a brand-new repo                       | Add a line to `repos.register` (or use the `/new-repo` skill)      |
+| Read a shared credential in a repo            | `source secrets.sh; get_secret <name>` (setup in `SECRETS.md`)     |
 | Inspect what happened                         | Read `log/<script-basename>.log` in the schedrunner repo           |
 | Install / uninstall the scheduler            | `cd loader && bash install.sh` (or `uninstall.sh`)                 |

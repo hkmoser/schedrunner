@@ -23,6 +23,31 @@ update_run_time() {
   echo "$1|$2" >> "$temp_file"
 }
 
+# Per-script locks prevent a script from overlapping itself when a run takes
+# longer than its cadence. They live outside the repo (and Dropbox) so they are
+# not synced or wiped by auto-deploy, and clear on reboot.
+LOCK_BASE="/tmp/schedrunner-locks"
+mkdir -p "$LOCK_BASE"
+
+# acquire_lock <dir>: returns 0 if acquired, 1 if a previous run is still alive.
+# A stale lock (recorded pid gone) is reclaimed.
+acquire_lock() {
+  local dir="$1" pid
+  if mkdir "$dir" 2>/dev/null; then
+    return 0
+  fi
+  # Lock dir exists: skip only if its recorded pid is a live process.
+  pid=$(cat "$dir/pid" 2>/dev/null)
+  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+    return 1
+  fi
+  # Stale or unreadable lock — reclaim it. If anything here fails (e.g. the lock
+  # dir is unavailable), fail open and run rather than skip the script forever.
+  rm -rf "$dir" 2>/dev/null
+  mkdir "$dir" 2>/dev/null
+  return 0
+}
+
 while IFS="|" read -r raw_cadence_type raw_cadence_value raw_script_path; do
   # Trim whitespace from each field
   cadence_type=$(echo "$raw_cadence_type" | xargs)
@@ -74,21 +99,35 @@ while IFS="|" read -r raw_cadence_type raw_cadence_value raw_script_path; do
 
   if [[ "$run_script" == true ]]; then
     log_path="$LOG_BASE$(basename "$script_path").log"
-    (
-      echo "[$(date)] Running $script_path"
-      # Invoke .sh scripts with explicit bash so execute bits aren't required
-      # (Dropbox does not sync execute bits across devices).
-      _first="${script_path%% *}"
-      if [[ "$_first" == *.sh ]]; then
-        bash $script_path
-      else
-        eval "$script_path"
-      fi
-      echo "[$(date)] Finished $script_path"
-      echo "----------------------------------------"
-    ) >> "$log_path" 2>&1 &
+    lock_dir="$LOCK_BASE/$(echo "$script_path" | tr -c 'A-Za-z0-9._-' '_')"
 
-    update_run_time "$script_path" "$now"
+    if acquire_lock "$lock_dir"; then
+      # Launch detached so a slow or hung script can never block the runner or
+      # the next tick. The subshell releases its own lock when it finishes.
+      (
+        trap 'rm -rf "$lock_dir"' EXIT
+        echo "[$(date)] Running $script_path"
+        # Invoke .sh scripts with explicit bash so execute bits aren't required
+        # (Dropbox does not sync execute bits across devices).
+        _first="${script_path%% *}"
+        if [[ "$_first" == *.sh ]]; then
+          bash $script_path
+        else
+          eval "$script_path"
+        fi
+        echo "[$(date)] Finished $script_path"
+        echo "----------------------------------------"
+      ) >> "$log_path" 2>&1 &
+      echo "$!" > "$lock_dir/pid"
+      disown
+      update_run_time "$script_path" "$now"
+    else
+      # A previous run is still going — don't overlap. Keep the old timing so we
+      # retry next tick once it frees up.
+      echo "[$(date)] Skipped (still running): $script_path" >> "$log_path" 2>&1
+      existing_run=$(get_last_run "$script_path")
+      [[ -n "$existing_run" ]] && update_run_time "$script_path" "$existing_run"
+    fi
   else
     existing_run=$(get_last_run "$script_path")
     [[ -n "$existing_run" ]] && update_run_time "$script_path" "$existing_run"
@@ -96,5 +135,6 @@ while IFS="|" read -r raw_cadence_type raw_cadence_value raw_script_path; do
 
 done < "$CONFIG_FILE"
 
-wait  # Waits for all backgrounded tasks to complete
+# No `wait`: scripts run detached (the LaunchAgent sets AbandonProcessGroup), so
+# the runner returns immediately every tick no matter how long a script takes.
 mv "$temp_file" "$RUNTIME_TRACKER"

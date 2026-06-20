@@ -16,6 +16,25 @@ history; start a brand-new branch off the latest default branch and open a
 **new** PR for the next set of changes. One merged PR = one done unit of work;
 every new change after that needs its own fresh branch and PR.
 
+## Testing discipline
+
+The test suite lives in `test/` and runs in CI on every push/PR
+(`.github/workflows/test.yml`). Run it locally with `bash test/run.sh`. See
+`test/TESTING.md` for what's covered and how to add cases.
+
+- Every bug fix starts with a failing test that reproduces the bug,
+  committed in the same PR. No fix without a reproducing test.
+- New behavior ships with tests covering the happy path + at least
+  one edge/error case.
+- NEVER weaken, skip, comment out, or delete a test to make CI pass.
+  If a test fails, first determine whether the CODE or the TEST is
+  wrong, and state which in the PR description.
+- A test may only change when the behavior it asserts intentionally
+  changed. Call that out explicitly.
+- Don't over-mock. Prefer real collaborators; mock only I/O and
+  external services.
+- Run the full suite before opening/updating the PR; paste the result.
+
 ## What schedrunner is
 
 `runner.sh` is launched once a minute by a macOS LaunchAgent

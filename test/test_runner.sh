@@ -36,6 +36,17 @@ poll_until 5 test -f "$sent"
 assert_file "$sent" "interval due: script executed"
 assert_contains "$(cat "$d/.last_run_times" 2>/dev/null)" "$s" "interval due: last-run timestamp recorded"
 
+# --- behavior: an eval-form entry ("cd <dir> && bash <script>") runs ---------
+# Used to run a repo script from its root (the runner never cd's). The first
+# token isn't a .sh path, so it goes through eval, not `bash <path>`.
+d="$(new_sandbox)"; work="$(make_tmpdir)"; mkdir -p "$work/Deploy"; sent="$work/ran.flag"
+printf '#!/bin/bash\npwd > "%s"\n' "$sent" > "$work/Deploy/refresh.sh"
+printf 'interval|1|cd %s && bash Deploy/refresh.sh\n' "$work" > "$d/scripts.conf"
+bash "$d/runner.sh" >/dev/null 2>&1
+poll_until 5 test -f "$sent"
+assert_file "$sent" "eval-form (cd && bash): non-.sh entry runs the target script"
+assert_contains "$(cat "$sent" 2>/dev/null)" "$(basename "$work")" "eval-form: ran from the cd'd directory"
+
 # --- behavior: a .sh script with no execute bit still runs ------------------
 # Dropbox does not sync execute bits across devices, so runner.sh invokes .sh
 # entries via `bash` rather than relying on +x.

@@ -3,37 +3,37 @@
 repos:
   - name: schedrunner
     type: orchestrator
-    remote: https://github.com/hkmoser/schedrunner.git
+    remote: git@github.com:hkmoser/schedrunner.git
     mirror: false
 
   - name: findmypy
     type: service
-    remote: https://github.com/hkmoser/findmypy.git
+    remote: git@github.com:hkmoser/findmypy.git
     mirror: true
 
   - name: sync-ynab
     type: service
-    remote: https://github.com/hkmoser/sync-ynab.git
+    remote: git@github.com:hkmoser/sync-ynab.git
     mirror: true
 
   - name: messages-export
     type: service
-    remote: https://github.com/hkmoser/messages-export.git
+    remote: git@github.com:hkmoser/messages-export.git
     mirror: true
 
   - name: ha-events
     type: service
-    remote: https://github.com/hkmoser/ha-events.git
+    remote: git@github.com:hkmoser/ha-events.git
     mirror: true
 
   - name: boot-notify
     type: service
-    remote: https://github.com/hkmoser/boot-notify.git
+    remote: git@github.com:hkmoser/boot-notify.git
     mirror: true
 
   - name: iOS-shell
     type: app
-    remote: https://github.com/hkmoser/iOS-shell.git
+    remote: git@github.com:hkmoser/iOS-shell.git
     mirror: true
 
   # native iOS apps are type: app (schedrunner builds them, never runs them).

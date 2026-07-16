@@ -13,3 +13,10 @@ __pycache__/
 
 # macOS
 .DS_Store
+
+# Mirror cache clones (only mirror/ is committed, not .cache/)
+.cache/
+
+# Node
+node_modules/
+package-lock.json

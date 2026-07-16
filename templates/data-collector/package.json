@@ -1,0 +1,10 @@
+{
+  "name": "template-data-collector",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "collect": "node src/collect.js",
+    "lint": "node --check src/collect.js",
+    "test": "echo \"no tests yet\" && exit 0"
+  }
+}

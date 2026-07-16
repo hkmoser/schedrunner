@@ -1,0 +1,7 @@
+# How schedrunner runs this repo. schedule + run => cron service.
+type: service
+runtime: node20
+schedule: "0 * * * *"     # hourly; adjust per collector
+run: "node src/collect.js"
+env:
+  - SOURCE_URL

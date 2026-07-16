@@ -1,0 +1,4 @@
+# deploy (no schedule) => deploy-on-change service.
+type: service
+runtime: node20
+deploy: "npx wrangler deploy"

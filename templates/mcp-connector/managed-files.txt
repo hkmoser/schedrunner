@@ -1,0 +1,5 @@
+.github/workflows/ci.yml
+.gitignore
+tsconfig.json
+CLAUDE.md
+managed-files.txt

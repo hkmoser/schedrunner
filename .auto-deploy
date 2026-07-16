@@ -24,6 +24,14 @@ if [[ -f "$installed_plist" ]] && cmp -s "$repo_plist" "$installed_plist"; then
   exit 0
 fi
 
+# Install/update Node dependencies so scripts/sync-mirror.mjs and
+# scripts/create-service.mjs can import 'yaml'. Runs only when package.json
+# exists; --omit=dev skips devDependencies not needed at runtime.
+if [[ -f package.json ]]; then
+  echo "auto-deploy: installing Node dependencies"
+  npm install --omit=dev --no-audit --no-fund --prefer-offline 2>&1 | sed 's/^/auto-deploy: /'
+fi
+
 echo "auto-deploy: LaunchAgent plist changed (or not installed) — reloading"
 if [[ -n "${SCHEDRUNNER_RELOAD_CMD:-}" ]]; then
   eval "$SCHEDRUNNER_RELOAD_CMD"

@@ -38,10 +38,15 @@ for (const r of repos) {
 
 const status = sh("git", ["status", "--porcelain", "mirror"]);
 if (status) {
+  // Rebase onto any remote advances before committing, so our push is always
+  // fast-forward. If a concurrent merge snuck in between fetch and push,
+  // --ff-only aborts cleanly — the next sync retries from scratch.
+  run("git", ["fetch", "origin", "main"]);
+  run("git", ["rebase", "origin/main"]);
   run("git", ["add", "mirror"]);
   run("git", ["-c", "user.email=schedrunner@local", "-c", "user.name=schedrunner",
               "commit", "-m", "chore(mirror): sync ecosystem source [skip ci]"]);
-  run("git", ["push"]);
+  run("git", ["push", "--ff-only", "origin", "main"]);
   console.log("mirror updated");
 } else {
   console.log("mirror already up to date");

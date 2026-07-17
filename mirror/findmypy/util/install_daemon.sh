@@ -40,10 +40,20 @@ install() {
     cp "$SRC_PLIST" "$DEST_PLIST"
     echo "[install_daemon] copied plist -> $DEST_PLIST"
 
-    # Reload: bootout old (ignore if absent), bootstrap new, enable.
+    # Reload: bootout old, then bootstrap. bootout is async, so give it a moment
+    # to fully deregister — otherwise bootstrap can fail with "5: Input/output
+    # error" (label still loaded). If bootstrap still reports already-loaded, fall
+    # back to kickstart, which restarts the running job in place (picks up new code
+    # since the plist still points at afm_live_daemon.py).
     launchctl bootout "$GUI/$LABEL" 2>/dev/null || true
-    launchctl bootstrap "$GUI" "$DEST_PLIST"
-    launchctl enable "$GUI/$LABEL"
+    sleep 1
+    if launchctl bootstrap "$GUI" "$DEST_PLIST" 2>/dev/null; then
+        echo "[install_daemon] bootstrapped $LABEL"
+    else
+        echo "[install_daemon] bootstrap reported already-loaded — kickstarting instead"
+        launchctl kickstart -k "$GUI/$LABEL"
+    fi
+    launchctl enable "$GUI/$LABEL" 2>/dev/null || true
     echo "[install_daemon] (re)loaded $LABEL — launchd will keep it alive"
     echo "[install_daemon] logs: ~/log/afm-daemon.log"
 }

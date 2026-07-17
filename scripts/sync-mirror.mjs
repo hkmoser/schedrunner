@@ -52,7 +52,7 @@ if (status) {
   run("git", ["add", "mirror"]);
   run("git", ["-c", "user.email=schedrunner@local", "-c", "user.name=schedrunner",
               "commit", "-m", "chore(mirror): sync ecosystem source [skip ci]"]);
-  run("git", ["push", "--ff-only", "origin", "main"]);
+  run("git", ["push", "origin", "main"]);
   console.log("mirror updated");
 } else {
   console.log("mirror already up to date");

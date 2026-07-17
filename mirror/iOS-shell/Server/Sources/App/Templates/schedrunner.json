@@ -1,0 +1,77 @@
+{
+  "type": "screen",
+  "style": { "background": "$bg" },
+  "children": [
+    {
+      "type": "scroll",
+      "children": [
+        {
+          "type": "vstack",
+          "style": { "spacing": 16, "padding": 16 },
+          "children": [
+            {
+              "type": "hstack",
+              "style": { "align": "center" },
+              "children": [
+                { "type": "text", "binding": "schedrunner.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                { "type": "spacer" },
+                { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+              ]
+            },
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+              "children": [
+                {
+                  "type": "hstack",
+                  "style": { "align": "center", "spacing": 10 },
+                  "children": [
+                    { "type": "text", "props": { "text": "Status" }, "style": { "font": "subhead", "color": "$textSecondary" } },
+                    { "type": "spacer" },
+                    { "type": "badge", "binding": "schedrunner.statusFormatted", "style": { "color": "schedrunner.statusDirection" } }
+                  ]
+                },
+                { "type": "text", "binding": "schedrunner.countsFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                { "type": "text", "binding": "schedrunner.subtitleFormatted", "style": { "font": "caption2", "color": "$textSecondary" } }
+              ]
+            },
+            {
+              "type": "vstack",
+              "props": { "repeat": "schedrunner.jobs" },
+              "style": { "spacing": 12 },
+              "children": [
+                {
+                  "type": "card",
+                  "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 14 },
+                  "children": [
+                    {
+                      "type": "hstack",
+                      "style": { "align": "center", "spacing": 8 },
+                      "children": [
+                        { "type": "text", "binding": "item.name", "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+                        { "type": "spacer" },
+                        { "type": "badge", "binding": "item.statusFormatted", "style": { "color": "item.direction" } }
+                      ]
+                    },
+                    {
+                      "type": "hstack",
+                      "style": { "align": "center", "spacing": 8 },
+                      "children": [
+                        { "type": "text", "binding": "item.lastFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                        { "type": "spacer" },
+                        { "type": "text", "binding": "item.nextFormatted", "style": { "font": "caption", "color": "$accent" } }
+                      ]
+                    },
+                    { "type": "text", "binding": "item.metaFormatted", "style": { "font": "caption2", "color": "$textSecondary" } }
+                  ]
+                }
+              ]
+            },
+            { "type": "text", "binding": "schedrunner.logLabel", "style": { "font": "subhead", "weight": "semibold", "color": "$textPrimary" } },
+            { "type": "code", "binding": "schedrunner.logTail" }
+          ]
+        }
+      ]
+    }
+  ]
+}

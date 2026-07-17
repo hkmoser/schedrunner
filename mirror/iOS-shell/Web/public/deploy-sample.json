@@ -1,0 +1,593 @@
+{
+  "schemaVersion": 1,
+  "theme": {
+    "colors": {
+      "bg": "#0b1020",
+      "bgAccent": "#16204a",
+      "cardBg": "#161c2e",
+      "textPrimary": "#f2f5ff",
+      "textSecondary": "#9aa4c4",
+      "accent": "#6ea8fe",
+      "up": "#43d18a",
+      "down": "#ff6b6b",
+      "divider": "#2a3350"
+    },
+    "fonts": {
+      "family": "-apple-system, system-ui, sans-serif"
+    },
+    "spacing": 12,
+    "radius": 20
+  },
+  "data": {
+    "meta": {
+      "updatedAtFormatted": "Updated just now",
+      "stale": false
+    },
+    "deploy": {
+      "title": "Deploy",
+      "subtitleFormatted": "App health & deployment — server, CI, iOS build, ship",
+      "serverFormatted": "⚠ Stale — running a1b2c3d, latest is e4f5g6h",
+      "serverDirection": "down",
+      "headFormatted": "checked-out HEAD: e4f5g6h",
+      "iosStatusFormatted": "Update ready",
+      "iosDirection": "up",
+      "iosDetailFormatted": "OTA published — tap the install button to put it on the phone.",
+      "iosAutoBuildFormatted": "iOS auto-build: ON",
+      "autoDeployFormatted": "Post-pull hook: SUCCESS(e4f5g6h) 2026-07-05 09:14:02",
+      "logLabel": "iOS build log (last 60 lines)",
+      "logFormatted": "== build & install OTA ==\nxcodebuild archive…\n** ARCHIVE SUCCEEDED **\nexported Dashboard.ipa\n[ios-autodeploy] SUCCESS build 251",
+      "ciFormatted": "CI running · 1m ago",
+      "ciDirection": "#6ea8fe",
+      "installActions": [
+        {
+          "labelFormatted": "Install iOS app · v0.1.251 (build 251)",
+          "installURL": "itms-services://?action=download-manifest&url=https://macmini.example.ts.net/app/manifest.plist"
+        }
+      ],
+      "shipLabel": "2 to ship",
+      "shipItems": [
+        {
+          "number": 129,
+          "labelFormatted": "#129 · new dashboard card",
+          "metaFormatted": "feature/card → main",
+          "shipPostHref": "/repos_pr?owner=hkmoser&name=ios-shell&branch=feature/card&base=main&pr=129",
+          "behindNote": "",
+          "rebaseActions": []
+        },
+        {
+          "name": "wip-fix",
+          "labelFormatted": "wip-fix",
+          "metaFormatted": "↑2 unmerged → main · ↓3 behind",
+          "shipPostHref": "/repos_pr?owner=hkmoser&name=ios-shell&branch=wip-fix&base=main&pr=",
+          "behindNote": "↓3 behind main — rebase recommended before shipping",
+          "rebaseActions": [
+            {
+              "labelFormatted": "Rebase onto main & ship",
+              "postHref": "/repos_pr?owner=hkmoser&name=ios-shell&branch=wip-fix&base=main&pr=&rebase=1"
+            }
+          ]
+        }
+      ],
+      "ciStages": [
+        {
+          "nameFormatted": "✓ server-ci",
+          "direction": "up"
+        },
+        {
+          "nameFormatted": "⏳ ios-ci · running",
+          "direction": "#6ea8fe"
+        },
+        {
+          "nameFormatted": "◦ web-ci · queued",
+          "direction": "#9aa4c4"
+        }
+      ],
+      "ciRunUrl": "https://github.com/hkmoser/ios-shell/actions/runs/123",
+      "ciRunLinkFormatted": "View run on GitHub →",
+      "ciLogLabel": "CI log · ios-ci (tail)",
+      "ciLogFormatted": "xcodebuild archive…\n** ARCHIVE SUCCEEDED **\nexported Dashboard.ipa",
+      "headlineFormatted": "⚠ Update available — server is running a1b2c3d, latest is e4f5g6h",
+      "headlineDirection": "down",
+      "remedyFormatted": "Tap Redeploy to rebuild the server from the checked-out commit (e4f5g6h).",
+      "redeployActions": [
+        {
+          "labelFormatted": "Redeploy now"
+        }
+      ],
+      "deployLogLabel": "Last deploy run · 3m ago",
+      "deployLogFormatted": "== auto-deploy ==\nserver sources changed — rebuilding (release)…\nbuild succeeded\nrestarted com.joemoser.dashboard.server\n/healthz now reports e4f5g6h\n✓ redeploy succeeded"
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": {
+      "background": "$bg"
+    },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": {
+              "spacing": 12,
+              "padding": 16
+            },
+            "children": [
+              {
+                "type": "hstack",
+                "style": {
+                  "align": "center"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "binding": "deploy.title",
+                    "style": {
+                      "font": "largeTitle",
+                      "weight": "bold",
+                      "color": "$textPrimary"
+                    }
+                  },
+                  {
+                    "type": "spacer"
+                  },
+                  {
+                    "type": "text",
+                    "binding": "meta.updatedAtFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    },
+                    "action": {
+                      "type": "refresh"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "deploy.subtitleFormatted",
+                "style": {
+                  "font": "caption",
+                  "color": "$textSecondary"
+                }
+              },
+              {
+                "type": "text",
+                "binding": "deploy.headlineFormatted",
+                "style": {
+                  "font": "title3",
+                  "weight": "bold",
+                  "color": "deploy.headlineDirection"
+                }
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 16,
+                  "padding": 14
+                },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "style": {
+                      "align": "center",
+                      "spacing": 8
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": {
+                          "text": "1 · Ship"
+                        },
+                        "style": {
+                          "font": "headline",
+                          "weight": "semibold",
+                          "color": "$textPrimary"
+                        }
+                      },
+                      {
+                        "type": "spacer"
+                      },
+                      {
+                        "type": "text",
+                        "binding": "deploy.shipLabel",
+                        "style": {
+                          "font": "caption",
+                          "color": "$textSecondary"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "vstack",
+                    "props": {
+                      "repeat": "deploy.shipItems"
+                    },
+                    "style": {
+                      "spacing": 6
+                    },
+                    "children": [
+                      {
+                        "type": "vstack",
+                        "style": {
+                          "spacing": 6,
+                          "background": "$bg",
+                          "cornerRadius": 10,
+                          "padding": 10
+                        },
+                        "children": [
+                          {
+                            "type": "hstack",
+                            "style": {
+                              "align": "center",
+                              "spacing": 10
+                            },
+                            "children": [
+                              {
+                                "type": "vstack",
+                                "style": {
+                                  "spacing": 2
+                                },
+                                "children": [
+                                  {
+                                    "type": "text",
+                                    "binding": "item.labelFormatted",
+                                    "style": {
+                                      "font": "subhead",
+                                      "weight": "semibold",
+                                      "color": "$textPrimary"
+                                    }
+                                  },
+                                  {
+                                    "type": "text",
+                                    "binding": "item.metaFormatted",
+                                    "style": {
+                                      "font": "caption",
+                                      "color": "$textSecondary"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "spacer"
+                              },
+                              {
+                                "type": "button",
+                                "props": {
+                                  "text": "Ship"
+                                },
+                                "action": {
+                                  "type": "submit",
+                                  "urlBinding": "item.shipPostHref"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "text",
+                            "binding": "item.behindNote",
+                            "style": {
+                              "font": "caption",
+                              "color": "$down"
+                            }
+                          },
+                          {
+                            "type": "vstack",
+                            "props": {
+                              "repeat": "item.rebaseActions"
+                            },
+                            "style": {
+                              "spacing": 4
+                            },
+                            "children": [
+                              {
+                                "type": "hstack",
+                                "style": {
+                                  "align": "center",
+                                  "spacing": 8
+                                },
+                                "children": [
+                                  {
+                                    "type": "spacer"
+                                  },
+                                  {
+                                    "type": "button",
+                                    "props": {
+                                      "text": "Rebase & ship"
+                                    },
+                                    "action": {
+                                      "type": "submit",
+                                      "urlBinding": "item.postHref"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 16,
+                  "padding": 14
+                },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "style": {
+                      "align": "center",
+                      "spacing": 8
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": {
+                          "text": "2 · CI"
+                        },
+                        "style": {
+                          "font": "headline",
+                          "weight": "semibold",
+                          "color": "$textPrimary"
+                        }
+                      },
+                      {
+                        "type": "spacer"
+                      },
+                      {
+                        "type": "badge",
+                        "binding": "deploy.ciFormatted",
+                        "style": {
+                          "color": "deploy.ciDirection"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "vstack",
+                    "props": {
+                      "repeat": "deploy.ciStages"
+                    },
+                    "style": {
+                      "spacing": 2
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "binding": "item.nameFormatted",
+                        "style": {
+                          "font": "subhead",
+                          "color": "item.direction"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "text",
+                    "binding": "deploy.ciRunLinkFormatted",
+                    "style": {
+                      "font": "caption",
+                      "weight": "semibold",
+                      "color": "$accent"
+                    },
+                    "action": {
+                      "type": "openURL",
+                      "urlBinding": "deploy.ciRunUrl"
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "binding": "deploy.ciLogLabel",
+                    "style": {
+                      "font": "caption",
+                      "weight": "semibold",
+                      "color": "$textPrimary"
+                    }
+                  },
+                  {
+                    "type": "code",
+                    "binding": "deploy.ciLogFormatted"
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 16,
+                  "padding": 14
+                },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "style": {
+                      "align": "center",
+                      "spacing": 8
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": {
+                          "text": "3 · Deploy"
+                        },
+                        "style": {
+                          "font": "headline",
+                          "weight": "semibold",
+                          "color": "$textPrimary"
+                        }
+                      },
+                      {
+                        "type": "spacer"
+                      },
+                      {
+                        "type": "badge",
+                        "binding": "deploy.iosStatusFormatted",
+                        "style": {
+                          "color": "deploy.iosDirection"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "text",
+                    "binding": "deploy.autoDeployFormatted",
+                    "style": {
+                      "font": "subhead",
+                      "color": "$textPrimary"
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "binding": "deploy.iosDetailFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "binding": "deploy.iosAutoBuildFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    }
+                  },
+                  {
+                    "type": "vstack",
+                    "props": {
+                      "repeat": "deploy.installActions"
+                    },
+                    "children": [
+                      {
+                        "type": "button",
+                        "binding": "item.labelFormatted",
+                        "props": {
+                          "text": "Install iOS app",
+                          "icon": "square.and.arrow.down"
+                        },
+                        "action": {
+                          "type": "openURL",
+                          "urlBinding": "item.installURL"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 16,
+                  "padding": 14
+                },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "style": {
+                      "align": "center",
+                      "spacing": 8
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": {
+                          "text": "4 · Current"
+                        },
+                        "style": {
+                          "font": "headline",
+                          "weight": "semibold",
+                          "color": "$textPrimary"
+                        }
+                      },
+                      {
+                        "type": "spacer"
+                      },
+                      {
+                        "type": "badge",
+                        "binding": "deploy.serverFormatted",
+                        "style": {
+                          "color": "deploy.serverDirection"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "text",
+                    "binding": "deploy.headFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "binding": "deploy.remedyFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$down"
+                    }
+                  },
+                  {
+                    "type": "vstack",
+                    "props": {
+                      "repeat": "deploy.redeployActions"
+                    },
+                    "children": [
+                      {
+                        "type": "button",
+                        "binding": "item.labelFormatted",
+                        "props": {
+                          "text": "Redeploy now",
+                          "icon": "arrow.triangle.2.circlepath"
+                        },
+                        "action": {
+                          "type": "submit",
+                          "url": "/deploy_kick"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "deploy.deployLogLabel",
+                "style": {
+                  "font": "headline",
+                  "weight": "semibold",
+                  "color": "$textPrimary"
+                }
+              },
+              {
+                "type": "code",
+                "binding": "deploy.deployLogFormatted"
+              },
+              {
+                "type": "text",
+                "binding": "deploy.logLabel",
+                "style": {
+                  "font": "headline",
+                  "weight": "semibold",
+                  "color": "$textPrimary"
+                }
+              },
+              {
+                "type": "code",
+                "binding": "deploy.logFormatted"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

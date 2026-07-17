@@ -1,0 +1,106 @@
+# XcodeGen project definition. Generate with: xcodegen generate
+# (run from the repo root on the Mac mini). iOS 18 floor.
+name: Dashboard
+options:
+  bundleIdPrefix: com.joemoser
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+
+configFiles:
+  Debug: Config.xcconfig
+  Release: Config.xcconfig
+
+settings:
+  base:
+    DEVELOPMENT_TEAM: $(DEVELOPMENT_TEAM)
+    PRODUCT_BUNDLE_IDENTIFIER: $(PRODUCT_BUNDLE_IDENTIFIER)
+    # MARKETING_VERSION and CURRENT_PROJECT_VERSION are intentionally NOT set here — a pbxproj
+    # setting would override the xcconfig. Both are defined in Config.xcconfig (defaults) and
+    # overridden by the git commit count in the generated Config.local.xcconfig, so the visible
+    # version (0.1.<count>) AND the build number auto-increment every deploy.
+    SWIFT_VERSION: "5.10"
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    GENERATE_INFOPLIST_FILE: NO
+
+targets:
+  Dashboard:
+    type: application
+    platform: iOS
+    sources:
+      - path: App/Sources
+    resources:
+      - App/Resources/Assets.xcassets
+    info:
+      path: App/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: $(DASHBOARD_APP_NAME)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # Asset-catalog app icon. Two independent things must line up, or the home screen is blank:
+        #   1. ASSETCATALOG_COMPILER_APPICON_NAME=AppIcon (below) so actool compiles the AppIcon set
+        #      into Assets.car, and
+        #   2. the TOP-LEVEL `CFBundleIconName` string here so SpringBoard can look the icon up.
+        # With a manual Info.plist + GENERATE_INFOPLIST_FILE: NO, actool does NOT auto-inject this
+        # key, so it's set explicitly. (Only the top-level string matters; the nested CFBundleIcons
+        # dict was dropped — an incomplete one, without CFBundleIconFiles, can confuse resolution.)
+        # The AppIcon set now ships EVERY iPhone size (40/58/60/80/87/120/180 + 1024) rather than a
+        # single 1024, because command-line archive builds don't reliably synthesize the small
+        # home-screen sizes (120/180) from a lone 1024 — which left the home screen iconless.
+        CFBundleIconName: AppIcon
+        UILaunchScreen: {}
+        UIBackgroundModes: [fetch, processing, remote-notification]
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.joemoser.dashboard.refresh
+        NSFaceIDUsageDescription: Unlock your dashboard with Face ID.
+        NSCalendarsUsageDescription: Show your events on the dashboard.
+        NSCalendarsFullAccessUsageDescription: Show your events on the dashboard.
+        DashboardHost: $(DASHBOARD_HOST)
+        DashboardPort: $(DASHBOARD_PORT)
+        NSSupportsLiveActivities: true
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+    # Push Notifications capability (APNs) for log-failure alerts + Live Activity updates.
+    # aps-environment is "development" for the dev/OTA builds shipped here; a TestFlight/App
+    # Store build needs "production". Push is auto-provisionable by Xcode automatic signing.
+    # The Live Activity shares its data type by SOURCE (no App Group required).
+    entitlements:
+      path: App/Resources/Dashboard.entitlements
+      properties:
+        aps-environment: development
+    dependencies:
+      - target: DashboardWidget
+        embed: true
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1"
+        INFOPLIST_KEY_UIStatusBarStyle: UIStatusBarStyleLightContent
+        # Designate the AppIcon set as the app icon. XcodeGen doesn't set this by default,
+        # so without it Xcode compiles the asset catalog but never marks the icon — the home
+        # screen shows blank. (The icon must also be opaque PNG, which it now is.)
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+
+  # Widget extension hosting the Live Activity. Compiles the shared attributes file directly
+  # (no App Group), plus the WidgetKit/ActivityKit UI. Its bundle id is the app's + ".widget".
+  DashboardWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widget/Sources
+      - path: App/Sources/Shared/DashboardActivityAttributes.swift
+    info:
+      path: Widget/Info.plist
+      properties:
+        CFBundleDisplayName: $(DASHBOARD_APP_NAME)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # The Home Screen widgets fetch /widget/* over Tailscale — bake the host in like the app.
+        DashboardHost: $(DASHBOARD_HOST)
+        DashboardPort: $(DASHBOARD_PORT)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(PRODUCT_BUNDLE_IDENTIFIER).widget
+        TARGETED_DEVICE_FAMILY: "1"

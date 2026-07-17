@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-09T14:00:00Z",
+  "theme": {
+    "colors": {
+      "bg": "#0b1020", "bgAccent": "#16204a", "cardBg": "#161c2e",
+      "textPrimary": "#f2f5ff", "textSecondary": "#9aa4c4", "accent": "#6ea8fe",
+      "up": "#43d18a", "down": "#ff6b6b", "divider": "#2a3350"
+    },
+    "fonts": { "family": "-apple-system, system-ui, sans-serif" },
+    "spacing": 12, "radius": 20
+  },
+  "nav": [
+    { "title": "Home", "icon": "house.fill", "path": "/dashboard" },
+    { "title": "Settings", "icon": "gearshape.fill", "children": [
+      { "title": "Preferences", "icon": "slider.horizontal.3", "path": "/screen/config" },
+      { "title": "Secrets & Keys", "icon": "key.fill", "path": "/screen/settings" }
+    ] }
+  ],
+  "data": {
+    "meta": { "updatedAtFormatted": "Updated just now", "stale": false },
+    "settings": {
+      "title": "Settings",
+      "subtitleFormatted": "stored in Google Secret Manager · .env still wins if set",
+      "noteFormatted": "Saved values apply automatically — the server restarts itself on save.",
+      "groups": [
+        {
+          "title": "Market data",
+          "fields": [
+            { "key": "TWELVEDATA_KEY", "label": "Twelve Data API key", "type": "secret", "value": "", "placeholderFormatted": "•••• set" },
+            { "key": "FRED_KEY", "label": "FRED API key", "type": "secret", "value": "", "placeholderFormatted": "not set" }
+          ]
+        },
+        {
+          "title": "Notifications",
+          "fields": [
+            { "key": "DASHBOARD_NOTIFY_ENABLED", "label": "All notifications", "type": "bool", "value": "true" },
+            { "key": "DASHBOARD_NOTIFY_LOG_FAILURES", "label": "Log-failure alerts", "type": "bool", "value": "true" },
+            { "key": "DASHBOARD_NOTIFY_REPOS", "label": "PR / branch alerts", "type": "bool", "value": "false" }
+          ]
+        }
+      ]
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": { "background": "$bg" },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": { "spacing": 12, "padding": 16 },
+            "children": [
+              {
+                "type": "hstack",
+                "style": { "align": "center" },
+                "children": [
+                  { "type": "text", "binding": "settings.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                  { "type": "spacer" },
+                  { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+                ]
+              },
+              { "type": "text", "binding": "settings.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+              { "type": "text", "binding": "settings.noteFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+              {
+                "type": "vstack",
+                "props": { "repeat": "settings.groups" },
+                "style": { "spacing": 6 },
+                "children": [
+                  {
+                    "type": "disclosure",
+                    "binding": "item.title",
+                    "props": { "open": true },
+                    "children": [
+                      {
+                        "type": "card",
+                        "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+                        "children": [
+                          {
+                            "type": "vstack",
+                            "props": { "repeat": "item.fields" },
+                            "children": [
+                              { "type": "field", "binding": "item" }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "button",
+                "props": { "text": "Save settings" },
+                "action": { "type": "submit", "url": "/settings" }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

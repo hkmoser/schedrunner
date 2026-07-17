@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-18T14:00:00Z",
+  "theme": {
+    "colors": { "bg": "#0b1020", "bgAccent": "#16204a", "cardBg": "#161c2e", "textPrimary": "#f2f5ff", "textSecondary": "#9aa4c4", "accent": "#6ea8fe", "up": "#43d18a", "down": "#ff6b6b", "divider": "#2a3350" },
+    "fonts": { "family": "-apple-system, system-ui, sans-serif" }, "spacing": 12, "radius": 20
+  },
+  "nav": [
+    { "title": "Home", "icon": "house.fill", "path": "/dashboard" },
+    { "title": "System", "icon": "wrench.and.screwdriver.fill", "children": [
+      { "title": "Logs", "icon": "doc.text.fill", "path": "/screen/logs" },
+      { "title": "Repos", "icon": "chevron.left.forwardslash.chevron.right", "path": "/screen/repos" }
+    ] },
+    { "title": "Docs", "icon": "folder.fill", "path": "/screen/docs" }
+  ],
+  "data": {
+    "meta": { "updatedAtFormatted": "Updated just now", "stale": false },
+    "docs": {
+      "title": "Home",
+      "subtitleFormatted": "/Private/Home",
+      "kind": "dir",
+      "markdown": "",
+      "upFormatted": "← /Private",
+      "upHref": "/screen/docs",
+      "entries": [
+        { "name": "Projects", "kind": "folder", "icon": "folder.fill", "metaFormatted": "6 items", "navHref": "/screen/docs?path=Home%2FProjects" },
+        { "name": "Ideas.md", "kind": "file", "icon": "doc.text.fill", "metaFormatted": "2h ago", "navHref": "/screen/docs?path=Home%2FIdeas.md" }
+      ],
+      "rowCount": 2
+    }
+  },
+  "screen": {
+    "type": "screen", "style": { "background": "$bg" },
+    "children": [
+      { "type": "scroll", "children": [
+        { "type": "vstack", "style": { "spacing": 14, "padding": 16 }, "children": [
+          { "type": "hstack", "style": { "align": "center" }, "children": [
+            { "type": "text", "binding": "docs.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+            { "type": "spacer" },
+            { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+          ] },
+          { "type": "text", "binding": "docs.subtitleFormatted", "style": { "font": "caption", "color": "$accent" } },
+          { "type": "text", "binding": "docs.upFormatted", "style": { "font": "subhead", "weight": "semibold", "color": "$textPrimary" }, "action": { "type": "navigate", "urlBinding": "docs.upHref" } },
+          { "type": "card", "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 8 }, "children": [
+            { "type": "vstack", "props": { "repeat": "docs.entries" }, "style": { "spacing": 0 }, "children": [
+              { "type": "hstack", "style": { "align": "center", "spacing": 12, "padding": 10 }, "action": { "type": "navigate", "urlBinding": "item.navHref" }, "children": [
+                { "type": "image", "binding": "item.icon", "style": { "font": "title3", "color": "$accent" } },
+                { "type": "vstack", "style": { "spacing": 2 }, "children": [
+                  { "type": "text", "binding": "item.name", "style": { "font": "body", "weight": "semibold", "color": "$textPrimary" } },
+                  { "type": "text", "binding": "item.metaFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                ] },
+                { "type": "spacer" },
+                { "type": "image", "props": { "name": "chevron.right" }, "style": { "font": "caption", "color": "$textSecondary" } }
+              ] }
+            ] }
+          ] },
+          { "type": "text", "binding": "docs.emptyFormatted", "style": { "font": "subhead", "color": "$textSecondary", "align": "center" } },
+          { "type": "markdown", "binding": "docs.markdown" }
+        ] }
+      ] }
+    ]
+  }
+}

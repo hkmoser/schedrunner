@@ -1,0 +1,8 @@
+requests>=2.26.0
+pyicloud
+pandas
+google-cloud-bigquery
+pandas-gbq>=0.26.1
+google-api-python-client
+google-cloud-bigquery-storage
+db-dtypes

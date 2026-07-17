@@ -1,0 +1,60 @@
+{
+  "type": "screen",
+  "style": { "background": "$bg" },
+  "children": [
+    {
+      "type": "scroll",
+      "children": [
+        {
+          "type": "vstack",
+          "style": { "spacing": 12, "padding": 16 },
+          "children": [
+            {
+              "type": "hstack",
+              "style": { "align": "center" },
+              "children": [
+                { "type": "text", "binding": "settings.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                { "type": "spacer" },
+                { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+              ]
+            },
+            { "type": "text", "binding": "settings.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+            { "type": "text", "binding": "settings.noteFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+            {
+              "type": "vstack",
+              "props": { "repeat": "settings.groups" },
+              "style": { "spacing": 6 },
+              "children": [
+                {
+                  "type": "disclosure",
+                  "binding": "item.title",
+                  "props": { "open": true },
+                  "children": [
+                    {
+                      "type": "card",
+                      "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+                      "children": [
+                        {
+                          "type": "vstack",
+                          "props": { "repeat": "item.fields" },
+                          "children": [
+                            { "type": "field", "binding": "item" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": { "text": "Save settings" },
+              "action": { "type": "submit", "url": "/settings" }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

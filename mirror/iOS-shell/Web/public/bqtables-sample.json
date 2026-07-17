@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-18T14:00:00Z",
+  "theme": {
+    "colors": { "bg": "#0b1020", "bgAccent": "#16204a", "cardBg": "#161c2e", "textPrimary": "#f2f5ff", "textSecondary": "#9aa4c4", "accent": "#6ea8fe", "up": "#43d18a", "down": "#ff6b6b", "divider": "#2a3350" },
+    "fonts": { "family": "-apple-system, system-ui, sans-serif" }, "spacing": 12, "radius": 20
+  },
+  "nav": [
+    { "title": "Home", "icon": "house.fill", "path": "/dashboard" },
+    { "title": "System", "icon": "wrench.and.screwdriver.fill", "children": [
+      { "title": "BQ Tables", "icon": "tablecells", "path": "/screen/bqtables" }
+    ] }
+  ],
+  "data": {
+    "meta": { "updatedAtFormatted": "Updated just now", "stale": false },
+    "bqtables": {
+      "title": "BigQuery",
+      "subtitleFormatted": "ecstatic-pod-443723-f6 · 3 datasets",
+      "kind": "list",
+      "tables": [
+        { "name": "home_afm", "kind": "Dataset", "icon": "tablecells", "metaFormatted": "dataset", "navHref": "/screen/bqtables?dataset=home_afm" },
+        { "name": "analytics", "kind": "Dataset", "icon": "tablecells", "metaFormatted": "dataset", "navHref": "/screen/bqtables?dataset=analytics" },
+        { "name": "budget", "kind": "Dataset", "icon": "tablecells", "metaFormatted": "dataset", "navHref": "/screen/bqtables?dataset=budget" }
+      ],
+      "tabs": [],
+      "fields": [],
+      "rowCount": 3
+    }
+  },
+  "screen": {
+    "type": "screen", "style": { "background": "$bg" },
+    "children": [
+      { "type": "scroll", "children": [
+        { "type": "vstack", "style": { "spacing": 14, "padding": 16 }, "children": [
+          { "type": "hstack", "style": { "align": "center" }, "children": [
+            { "type": "text", "binding": "bqtables.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+            { "type": "spacer" },
+            { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+          ] },
+          { "type": "text", "binding": "bqtables.subtitleFormatted", "style": { "font": "caption", "color": "$accent" } },
+          { "type": "text", "binding": "bqtables.upFormatted", "style": { "font": "subhead", "weight": "semibold", "color": "$textPrimary" }, "action": { "type": "navigate", "urlBinding": "bqtables.upHref" } },
+          { "type": "hstack", "props": { "repeat": "bqtables.tabs" }, "style": { "spacing": 8, "wrap": true }, "children": [
+            { "type": "badge", "binding": "item.label", "style": { "color": "item.color" }, "action": { "type": "navigate", "urlBinding": "item.navHref" } }
+          ] },
+          { "type": "table", "binding": "bqtables.preview" },
+          { "type": "card", "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 8 }, "children": [
+            { "type": "vstack", "props": { "repeat": "bqtables.tables" }, "style": { "spacing": 0 }, "children": [
+              { "type": "hstack", "style": { "align": "center", "spacing": 12, "padding": 10 }, "action": { "type": "navigate", "urlBinding": "item.navHref" }, "children": [
+                { "type": "image", "binding": "item.icon", "style": { "font": "title3", "color": "$accent" } },
+                { "type": "vstack", "style": { "spacing": 2 }, "children": [
+                  { "type": "text", "binding": "item.name", "style": { "font": "body", "weight": "semibold", "color": "$textPrimary" } },
+                  { "type": "text", "binding": "item.metaFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                ] },
+                { "type": "spacer" },
+                { "type": "image", "props": { "name": "chevron.right" }, "style": { "font": "caption", "color": "$textSecondary" } }
+              ] }
+            ] }
+          ] },
+          { "type": "vstack", "props": { "repeat": "bqtables.fields" }, "style": { "spacing": 0 }, "children": [
+            { "type": "hstack", "style": { "align": "center", "spacing": 10, "padding": 8 }, "children": [
+              { "type": "vstack", "style": { "spacing": 1 }, "children": [
+                { "type": "text", "binding": "item.name", "style": { "font": "body", "weight": "semibold", "color": "$textPrimary" } },
+                { "type": "text", "binding": "item.descFormatted", "style": { "font": "caption2", "color": "$textSecondary" } }
+              ] },
+              { "type": "spacer" },
+              { "type": "badge", "binding": "item.typeFormatted", "style": { "color": "$accent" } }
+            ] },
+            { "type": "divider", "style": { "color": "$divider" } }
+          ] },
+          { "type": "text", "binding": "bqtables.emptyFormatted", "style": { "font": "subhead", "color": "$textSecondary", "align": "center" } }
+        ] }
+      ] }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.log
+
+# Local secrets / runtime state (never commit)
+.mail_collector_config.json
+.gchat_collector_profile/

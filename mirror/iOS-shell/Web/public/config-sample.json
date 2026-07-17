@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-09T14:00:00Z",
+  "theme": {
+    "colors": {
+      "bg": "#0b1020", "bgAccent": "#16204a", "cardBg": "#161c2e",
+      "textPrimary": "#f2f5ff", "textSecondary": "#9aa4c4", "accent": "#6ea8fe",
+      "up": "#43d18a", "down": "#ff6b6b", "divider": "#2a3350"
+    },
+    "fonts": { "family": "-apple-system, system-ui, sans-serif" },
+    "spacing": 12, "radius": 20
+  },
+  "nav": [
+    { "title": "Home", "icon": "house.fill", "path": "/dashboard" },
+    { "title": "Location", "icon": "map.fill", "children": [
+      { "title": "Activity", "icon": "map.fill", "path": "/screen/afm" },
+      { "title": "48h Transactions", "icon": "clock.arrow.circlepath", "path": "/screen/afm48" }
+    ] },
+    { "title": "Money", "icon": "dollarsign.circle.fill", "children": [
+      { "title": "Balances", "icon": "dollarsign.circle.fill", "path": "/screen/balances" },
+      { "title": "YNAB", "icon": "creditcard.fill", "path": "/screen/ynab" }
+    ] },
+    { "title": "Smart Home", "icon": "house.circle.fill", "path": "/screen/smarthome" },
+    { "title": "Config", "icon": "slider.horizontal.3", "path": "/screen/config" }
+  ],
+  "data": {
+    "meta": { "updatedAtFormatted": "Updated just now", "stale": false },
+    "config": {
+      "title": "Config",
+      "subtitleFormatted": "dashboard_config · 4 settings",
+      "groups": [
+        {
+          "title": "Activity",
+          "items": [
+            { "key": "afm_device", "value": "iPhone 16", "type": "enum", "label": "Activity device", "group": "Activity", "options": [
+              { "value": "iPhone 16", "label": "Talia's iPhone (iPhone 16)" },
+              { "value": "iPhone 17 Pro Max", "label": "joePhone17 (iPhone 17 Pro Max)" }
+            ] }
+          ]
+        },
+        {
+          "title": "Alerts",
+          "items": [
+            { "key": "alerts.threshold", "value": "42", "type": "int", "label": "Alert threshold", "group": "Alerts" },
+            { "key": "alerts.enabled", "value": "true", "type": "bool", "label": "Alerts enabled", "group": "Alerts" }
+          ]
+        },
+        {
+          "title": "General",
+          "items": [
+            { "key": "mode", "value": "auto", "type": "enum", "label": "Mode", "group": "General", "options": ["auto", "manual", "off"] }
+          ]
+        }
+      ]
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": { "background": "$bg" },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": { "spacing": 12, "padding": 16 },
+            "children": [
+              {
+                "type": "hstack",
+                "style": { "align": "center" },
+                "children": [
+                  { "type": "text", "binding": "config.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                  { "type": "spacer" },
+                  { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+                ]
+              },
+              { "type": "text", "binding": "config.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+              {
+                "type": "vstack",
+                "props": { "repeat": "config.groups" },
+                "style": { "spacing": 6 },
+                "children": [
+                  {
+                    "type": "disclosure",
+                    "binding": "item.title",
+                    "children": [
+                      {
+                        "type": "card",
+                        "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+                        "children": [
+                          {
+                            "type": "vstack",
+                            "props": { "repeat": "item.items" },
+                            "children": [ { "type": "field", "binding": "item" } ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+                "children": [
+                  { "type": "text", "props": { "text": "Add setting" }, "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+                  { "type": "field", "props": { "field": "__new_key", "label": "Key", "fieldType": "string", "value": "" } },
+                  { "type": "field", "props": { "field": "__new_value", "label": "Value", "fieldType": "string", "value": "" } },
+                  { "type": "field", "props": { "field": "__new_type", "label": "Type", "fieldType": "enum", "value": "string", "options": ["string", "int", "float", "bool", "enum"] } },
+                  { "type": "field", "props": { "field": "__new_category", "label": "Group", "fieldType": "string", "value": "" } }
+                ]
+              },
+              { "type": "button", "props": { "text": "Save changes" }, "action": { "type": "submit", "url": "/config" } }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

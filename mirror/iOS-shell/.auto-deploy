@@ -1,0 +1,11 @@
+#!/bin/bash
+# Entry point the EXTERNAL deploy service runs after `git pull` (see CLAUDE.md → "How this repo
+# actually gets deployed"). Delegates to the post-pull hook, which makes the running server match
+# the just-pulled code and VERIFIES /healthz reports the new build — so a stale server can't slip
+# through silently the way a bare `make update` could.
+#
+# Why not just `make update`? `make update` relies only on content-hash detection and never checks
+# that the running process actually became current. auto_deploy.sh redeploys whenever /healthz != HEAD
+# (self-correcting even if detection skipped), verifies the result, and records a status line.
+cd "$(dirname "$0")" || exit 1
+exec bash Deploy/auto_deploy.sh

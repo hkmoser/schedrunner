@@ -1,0 +1,27 @@
+#!/bin/bash
+# Post-pull hook for schedrunner auto-deploy.
+# Runs from repo root after every remote advance.
+
+set -euo pipefail
+
+VENV=".venv"
+LOG="$HOME/Dropbox/Source/schedrunner/log/ha-events.log"
+
+echo "$(date '+%Y-%m-%d %H:%M:%S') auto-deploy: updating deps" >> "$LOG"
+
+if [ -f "$VENV/bin/python" ]; then
+    "$VENV/bin/pip" install --quiet -r requirements.txt >> "$LOG" 2>&1
+fi
+
+# Restart the service if it's running
+PID_FILE=".ha-events.pid"
+if [ -f "$PID_FILE" ]; then
+    OLD_PID=$(cat "$PID_FILE")
+    if kill -0 "$OLD_PID" 2>/dev/null; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') auto-deploy: restarting ha-events (was pid $OLD_PID)" >> "$LOG"
+        kill "$OLD_PID" && sleep 2
+        rm -f "$PID_FILE"
+        bash run.sh
+    fi
+fi
+echo "$(date '+%Y-%m-%d %H:%M:%S') auto-deploy: done" >> "$LOG"

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-19T14:00:00Z",
+  "theme": {
+    "colors": { "bg": "#0b1020", "bgAccent": "#16204a", "cardBg": "#161c2e", "textPrimary": "#f2f5ff", "textSecondary": "#9aa4c4", "accent": "#6ea8fe", "up": "#43d18a", "down": "#ff6b6b", "divider": "#2a3350" },
+    "fonts": { "family": "-apple-system, system-ui, sans-serif" }, "spacing": 12, "radius": 20
+  },
+  "nav": [
+    { "title": "Home", "icon": "house.fill", "path": "/dashboard" },
+    { "title": "System", "icon": "wrench.and.screwdriver.fill", "children": [
+      { "title": "Schedrunner", "icon": "timer", "path": "/screen/schedrunner" },
+      { "title": "Sched Logs", "icon": "doc.text.magnifyingglass", "path": "/screen/schedlogs" }
+    ] }
+  ],
+  "data": {
+    "meta": { "updatedAtFormatted": "Updated just now", "stale": false },
+    "schedlogs": {
+      "title": "Sched Logs",
+      "subtitleFormatted": "3 scripts · ~/Dropbox/Source/schedrunner/log",
+      "entries": [
+        { "name": "backup", "metaFormatted": "18m ago · 92s", "statusFormatted": "OK", "statusColor": "up", "snippetFormatted": "syncing files...\ndone: 412 files" },
+        { "name": "crawl", "metaFormatted": "2m ago · running?", "statusFormatted": "running?", "statusColor": "#9aa4c4", "snippetFormatted": "working..." },
+        { "name": "sync", "metaFormatted": "2h ago · 5s", "statusFormatted": "FAILED", "statusColor": "down", "snippetFormatted": "connecting...\nERROR: timeout\nFAILED (exit 1)" }
+      ],
+      "rowCount": 3
+    }
+  },
+  "screen": {
+    "type": "screen", "style": { "background": "$bg" },
+    "children": [
+      { "type": "scroll", "children": [
+        { "type": "vstack", "style": { "spacing": 16, "padding": 16 }, "children": [
+          { "type": "hstack", "style": { "align": "center" }, "children": [
+            { "type": "text", "binding": "schedlogs.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+            { "type": "spacer" },
+            { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+          ] },
+          { "type": "text", "binding": "schedlogs.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+          { "type": "vstack", "props": { "repeat": "schedlogs.entries" }, "style": { "spacing": 12 }, "children": [
+            { "type": "card", "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 14 }, "children": [
+              { "type": "hstack", "style": { "align": "center" }, "children": [
+                { "type": "vstack", "style": { "spacing": 2 }, "children": [
+                  { "type": "text", "binding": "item.name", "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+                  { "type": "text", "binding": "item.metaFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                ] },
+                { "type": "spacer" },
+                { "type": "badge", "binding": "item.statusFormatted", "style": { "color": "item.statusColor" } }
+              ] },
+              { "type": "code", "binding": "item.snippetFormatted" }
+            ] }
+          ] }
+        ] }
+      ] }
+    ]
+  }
+}

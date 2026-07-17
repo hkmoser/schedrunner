@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-20T14:00:00Z",
+  "theme": {
+    "colors": { "bg": "#0b1020", "bgAccent": "#16204a", "cardBg": "#161c2e", "textPrimary": "#f2f5ff", "textSecondary": "#9aa4c4", "accent": "#6ea8fe", "up": "#43d18a", "down": "#ff6b6b", "divider": "#2a3350" },
+    "fonts": { "family": "-apple-system, system-ui, sans-serif" }, "spacing": 12, "radius": 20
+  },
+  "nav": [
+    { "title": "Home", "icon": "house.fill", "path": "/dashboard" },
+    { "title": "Messages", "icon": "message.fill", "path": "/screen/messages" },
+    { "title": "Config", "icon": "slider.horizontal.3", "path": "/screen/config" }
+  ],
+  "data": {
+    "meta": { "updatedAtFormatted": "Updated just now", "stale": false },
+    "messages": {
+      "title": "Messages",
+      "subtitleFormatted": "5 recent · 2 sources",
+      "emptyFormatted": "",
+      "sources": [
+        { "label": "iMessage / SMS", "status": "OK", "direction": "up", "metaFormatted": "3 recent" },
+        { "label": "joe@gmail.com", "status": "OK", "direction": "up", "metaFormatted": "2 recent" }
+      ],
+      "groups": [
+        { "key": "imessage", "title": "iMessage / SMS", "icon": "message.fill", "kind": "messages", "items": [
+          { "titleFormatted": "Me", "detailFormatted": "On my way", "direction": "out", "icon": "paperplane.fill", "timeFormatted": "Jun 20, 1:01 PM" },
+          { "titleFormatted": "+1 555 123 4567", "detailFormatted": "Hey are you around?", "direction": "in", "icon": "message.fill", "timeFormatted": "Jun 20, 1:00 PM" },
+          { "titleFormatted": "Mom", "detailFormatted": "Call me when you get a sec", "direction": "in", "icon": "message.fill", "timeFormatted": "Jun 20, 11:42 AM" }
+        ] },
+        { "key": "joe@gmail.com", "title": "joe@gmail.com", "icon": "envelope.fill", "kind": "email", "items": [
+          { "titleFormatted": "GitHub", "detailFormatted": "[iOS-Shell] PR #55 merged", "icon": "envelope.fill", "timeFormatted": "Jun 20, 12:58 PM" },
+          { "titleFormatted": "Calendar", "detailFormatted": "Reminder: Dentist 3:00 PM", "icon": "envelope.fill", "timeFormatted": "Jun 20, 9:15 AM" }
+        ] }
+      ],
+      "rowCount": 5
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": { "background": "$bg" },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": { "spacing": 16, "padding": 16 },
+            "children": [
+              {
+                "type": "hstack",
+                "style": { "align": "center" },
+                "children": [
+                  { "type": "text", "binding": "messages.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                  { "type": "spacer" },
+                  { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+                ]
+              },
+              { "type": "text", "binding": "messages.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+              { "type": "text", "binding": "messages.emptyFormatted", "style": { "font": "subhead", "color": "$textSecondary", "align": "center" } },
+              {
+                "type": "card",
+                "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+                "children": [
+                  { "type": "text", "props": { "text": "Sources" }, "style": { "font": "subhead", "weight": "semibold", "color": "$textSecondary" } },
+                  {
+                    "type": "vstack",
+                    "props": { "repeat": "messages.sources" },
+                    "style": { "spacing": 10 },
+                    "children": [
+                      {
+                        "type": "hstack",
+                        "style": { "align": "center", "spacing": 8 },
+                        "children": [
+                          {
+                            "type": "vstack",
+                            "style": { "spacing": 2 },
+                            "children": [
+                              { "type": "text", "binding": "item.label", "style": { "font": "body", "weight": "semibold", "color": "$textPrimary" } },
+                              { "type": "text", "binding": "item.metaFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                            ]
+                          },
+                          { "type": "spacer" },
+                          { "type": "badge", "binding": "item.status", "style": { "color": "item.direction" } }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "vstack",
+                "props": { "repeat": "messages.groups" },
+                "style": { "spacing": 16 },
+                "children": [
+                  {
+                    "type": "card",
+                    "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+                    "children": [
+                      {
+                        "type": "hstack",
+                        "style": { "align": "center", "spacing": 10 },
+                        "children": [
+                          { "type": "image", "binding": "item.icon", "style": { "font": "title3", "color": "$accent" } },
+                          { "type": "text", "binding": "item.title", "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } }
+                        ]
+                      },
+                      { "type": "divider", "style": { "color": "$divider" } },
+                      {
+                        "type": "vstack",
+                        "props": { "repeat": "item.items" },
+                        "style": { "spacing": 12 },
+                        "children": [
+                          {
+                            "type": "hstack",
+                            "style": { "align": "center", "spacing": 12 },
+                            "children": [
+                              { "type": "image", "binding": "item.icon", "style": { "font": "body", "color": "$textSecondary" } },
+                              {
+                                "type": "vstack",
+                                "style": { "spacing": 2 },
+                                "children": [
+                                  { "type": "text", "binding": "item.titleFormatted", "style": { "font": "body", "weight": "semibold", "color": "$textPrimary" } },
+                                  { "type": "text", "binding": "item.detailFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                                ]
+                              },
+                              { "type": "spacer" },
+                              { "type": "text", "binding": "item.timeFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

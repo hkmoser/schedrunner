@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  afm_live_daemon LaunchAgent — PERSISTENT (KeepAlive), NOT scheduled.
+
+  This replaces the StartInterval-based afm_live.py agent. Key differences from
+  the cron/scheduled agent:
+    * NO StartInterval / StartCalendarInterval — the process is long-lived and
+      loops internally (AFM_INTERVAL_SECS). launchd's job is only to keep it up.
+    * KeepAlive=true — launchd restarts it if it exits (e.g. after a session
+      death + util/auth.sh, it recovers on the next restart).
+    * ThrottleInterval=300 — space restarts so a dead session doesn't hot-loop.
+
+  OWNERSHIP: register/own this through schedrunner exactly as schedrunner owns the
+  current afm_live agent. The only substantive change schedrunner needs to carry
+  is: drop StartInterval, add KeepAlive + ThrottleInterval, point ProgramArguments
+  at afm_live_daemon.py. Adjust the absolute paths below to match your venv/repo.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.joemoser.afm-daemon</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/joemoser/Dropbox/Source/afm/findmypy/.venv/bin/python</string>
+        <string>/Users/joemoser/Dropbox/Source/afm/findmypy/afm_live_daemon.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/joemoser/Dropbox/Source/afm/findmypy</string>
+
+    <!-- Persistent, not scheduled: keep it alive, never fire on an interval. -->
+    <key>KeepAlive</key>
+    <true/>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>ThrottleInterval</key>
+    <integer>300</integer>
+
+    <!-- BigQuery auth uses gcloud ADC (~/.config/gcloud), which is auto-found
+         because launchd sets $HOME. Pushcut key is in the script. So no credential
+         env is needed here. If a future dependency needs an exported var that the
+         shell/schedrunner had, add it below — a launchd agent does NOT inherit it. -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>AFM_INTERVAL_SECS</key>
+        <string>300</string>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <!-- Absolute path required: launchd does NOT expand ~. install_daemon.sh
+         creates ~/log if missing (launchd fails silently if the dir is absent). -->
+    <key>StandardOutPath</key>
+    <string>/Users/joemoser/log/afm-daemon.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/joemoser/log/afm-daemon.log</string>
+</dict>
+</plist>

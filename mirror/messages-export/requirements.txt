@@ -1,0 +1,3 @@
+# Core collectors (export_messages.py, email_collector.py) are pure stdlib — no deps.
+# Only the Google Chat collector needs a browser-automation library:
+playwright>=1.44

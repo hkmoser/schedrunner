@@ -1,0 +1,18 @@
+#!/bin/bash
+# Post-pull for findmypy (run by schedrunner's auto-deploy after each pull).
+set -euo pipefail
+
+# Re-sync pip deps in case requirements changed.
+.venv/bin/pip install -r requirements.txt -q
+
+# Turn on the persistent daemon (idempotent: (re)installs the LaunchAgent and
+# reloads it, so each deploy also restarts the daemon on the new code). launchd's
+# KeepAlive then keeps it alive.
+#
+# This also DISABLES the cron afm_live.py version: the daemon holds
+# /tmp/afm_live.lock for its whole life, so every schedrunner afm_live.py tick
+# sees the lock and exits immediately ("Skipped (still running)"). No schedrunner
+# job edit needed; afm_live.py stays untouched as the rollback target.
+#
+# To roll back: bash util/install_daemon.sh uninstall  (frees the lock; cron resumes)
+bash util/install_daemon.sh

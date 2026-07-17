@@ -1,0 +1,59 @@
+id,category_group_id,category_group_name,name,hidden,original_category_group_id,note,budgeted,activity,balance,goal_type,goal_needs_whole_amount,goal_day,goal_cadence,goal_cadence_frequency,goal_creation_month,goal_target,goal_target_month,goal_percentage_complete,goal_months_to_budget,goal_under_funded,goal_overall_funded,goal_overall_left,deleted
+c2ac8adf-7dd9-45d5-b8f8-ad5def414f5c,c44f36a4-d376-401e-9280-cdb00004a3e3,Internal Master Category,Inflow: Ready to Assign,False,,,0,5762240,99841250,,,,,,,0,,,,,,,False
+11203880-bfff-472f-92bb-3d00745c4dcc,c44f36a4-d376-401e-9280-cdb00004a3e3,Internal Master Category,Uncategorized,False,,,0,-289450,-289450,,,,,,,0,,,,,,,False
+5c22164a-0684-4235-a3c6-5aeba590f511,88381101-cbc5-4a4b-8712-2d084960526a,Bills,Mortgage,False,,,4018550,-4018550,0,NEED,False,1,1,1,2025-02-01,4019000,,99,1,450,4018550,450,False
+187b8216-47c7-4487-a3d4-a4bca4f7039b,88381101-cbc5-4a4b-8712-2d084960526a,Bills,Water,False,,,34000,0,34000,NEED,False,,1,1,2024-09-01,34000,,100,1,0,34000,0,False
+d504500d-e30b-441a-ad6a-74b960f9000f,88381101-cbc5-4a4b-8712-2d084960526a,Bills,Electric/Gas,False,,,85000,-203480,-118480,NEED,False,14,1,1,2024-09-01,85000,,100,1,0,85000,0,False
+e69526db-af02-4348-836b-e8137f7d20ec,88381101-cbc5-4a4b-8712-2d084960526a,Bills,Internet,False,,,94990,-94990,0,NEED,,12,1,1,2024-09-01,89990,,100,1,0,94990,0,False
+3415092d-e97d-4760-a69d-e4f667d03647,88381101-cbc5-4a4b-8712-2d084960526a,Bills,Trash Service,False,,,35000,-105000,0,NEED,False,,1,3,2024-08-01,105000,2023-03-31,100,1,0,105000,0,False
+3aa057d0-7276-4d07-af3c-1142fc202f36,88381101-cbc5-4a4b-8712-2d084960526a,Bills,Sewer,False,,,35330,0,63670,NEED,False,,1,3,2024-08-01,99000,2023-01-15,64,2,0,63670,35330,False
+3a49022c-b237-49d7-9b38-5a3947a87449,88381101-cbc5-4a4b-8712-2d084960526a,Bills,Home Insurance,True,,,0,0,0,,,,,,,0,,,,,,,False
+e8e23b3d-3763-4744-997b-53f6cffc2faf,88381101-cbc5-4a4b-8712-2d084960526a,Bills,Auto Insurance,False,,,153850,-153850,0,NEED,,11,1,1,2024-09-01,152000,,100,1,0,153850,0,False
+edc2305d-7757-4a8b-ba15-8046515ef6ce,88381101-cbc5-4a4b-8712-2d084960526a,Bills,Mobile Phone,False,,,157000,0,157000,NEED,,21,1,1,2024-09-01,157000,,100,1,0,157000,0,False
+0093f3d3-1fb5-40cf-9016-fa8824b5dc62,6ece41ee-f992-44b4-a4cb-1f249900d802,Debt,Credit Cards,False,,,1001000,-1210000,-209000,NEED,True,15,1,1,2024-09-01,733000,,100,1,0,1001000,0,False
+e6da923f-54a3-4101-b79e-4680642ab6e5,6ece41ee-f992-44b4-a4cb-1f249900d802,Debt,Personal Loan,False,,,237250,-237250,0,DEBT,,,1,1,2024-09-01,234000,,100,1,0,237250,0,False
+1693df42-7ed3-4107-b481-2705c5059e8a,6ece41ee-f992-44b4-a4cb-1f249900d802,Debt,Auto Loan,True,,,0,0,0,,,,,,,0,,,,,,,False
+7028957c-24da-4f3d-9ee9-d214da99b7c1,9398e100-bb31-470b-9b2d-d0f7037b4c05,Essentials,Transportation,False,,,550000,-523360,26640,NEED,,0,2,1,2024-08-01,110000,,100,1,0,550000,0,False
+28cf159a-0d1a-4df6-8773-17f11e817716,9398e100-bb31-470b-9b2d-d0f7037b4c05,Essentials,Groceries,False,,,1345000,-1046890,298110,NEED,False,6,2,1,2024-08-01,269000,,100,1,0,1345000,0,False
+51cd0b17-c010-4cf3-9aa1-4a8f6bd1c5aa,9398e100-bb31-470b-9b2d-d0f7037b4c05,Essentials,Eating Out,False,,,1665000,-1336700,328300,NEED,False,6,2,1,2024-08-01,333000,,100,1,0,1665000,0,False
+d15c19e0-cd85-4c89-bed7-de58a2b5cf8b,9398e100-bb31-470b-9b2d-d0f7037b4c05,Essentials,Household Goods,False,,,225000,0,225000,NEED,False,6,2,1,2024-08-01,45000,,100,1,0,225000,0,False
+1427c389-560a-4ac1-a623-b5d1478594d9,24fc111e-f376-488d-9847-5321efa38f80,Services,Home Cleaning,False,,,207000,0,207000,NEED,False,15,1,1,2024-09-01,207000,,100,1,0,207000,0,False
+1831ca8e-8b92-4c99-b30e-aa55587e21ea,24fc111e-f376-488d-9847-5321efa38f80,Services,Landscaping,False,,,78000,0,78000,NEED,,1,1,1,2024-09-01,78000,,100,1,0,78000,0,False
+61e5d16c-ed4b-47ce-aa11-cb6816005312,24fc111e-f376-488d-9847-5321efa38f80,Services,Exterminator,False,,,53000,-52290,710,NEED,,15,1,1,2024-09-01,53000,,100,1,0,53000,0,False
+e8b94ceb-0729-4551-9c79-b4a41132f559,24fc111e-f376-488d-9847-5321efa38f80,Services,Personal Care,False,,,63080,-63080,0,NEED,,,1,1,2024-09-01,40000,,100,1,0,63080,0,False
+b79fea15-5eef-4ec4-a6c1-83873a4cb279,24fc111e-f376-488d-9847-5321efa38f80,Services,Dry Cleaning,False,,,10000,0,10000,NEED,True,,1,1,2024-09-01,10000,,100,1,0,10000,0,False
+517d26b6-cd89-40bd-883a-4a07e619b38b,24fc111e-f376-488d-9847-5321efa38f80,Services,Home Services,False,,,0,0,0,,,,,,,0,,,,,,,False
+1a8c8be1-2b78-401b-be2a-2dd582185c44,b6439c4e-b084-4266-a177-2a5013b77091,Subscriptions,Therapy,False,,,487500,0,487500,NEED,False,6,2,1,2024-08-01,97500,,100,1,0,487500,0,False
+8a767d7a-3fed-48b6-a14c-c7925440a41d,b6439c4e-b084-4266-a177-2a5013b77091,Subscriptions,Gym Membership,False,,,95000,-95000,0,NEED,,,1,1,2024-09-01,95000,,100,1,0,95000,0,False
+e53b966a-36fe-464d-8cba-2ac18cc1cf24,b6439c4e-b084-4266-a177-2a5013b77091,Subscriptions,Streaming Services,False,,,75000,-29650,45350,NEED,False,,1,1,2024-09-01,75000,,100,1,0,75000,0,False
+4c912858-c711-41ff-b850-0885ff20be49,b6439c4e-b084-4266-a177-2a5013b77091,Subscriptions,Online Tools,False,,,310250,-396310,-86060,NEED,False,,1,1,2024-09-01,192000,,100,1,0,310250,0,False
+9f86d3f3-00a5-41ad-94aa-7c564d0c5c22,b6439c4e-b084-4266-a177-2a5013b77091,Subscriptions,Other Subscriptions,True,,,0,0,0,,,,,,,0,,,,,,,False
+8b09e0fb-79c0-4314-bbc6-97cf795c89a0,fbc03512-2545-47ea-96a4-4f1af81f2f7b,Occassional,Medical,False,,,252840,0,374440,NEED,False,,0,,2024-08-01,3000000,2025-10-01,41,8,0,1230160,1769840,False
+3bd8d3f0-61a3-4210-a858-9a2cc401f78e,fbc03512-2545-47ea-96a4-4f1af81f2f7b,Occassional,Auto Maintenance,False,,,100060,0,314910,NEED,False,,13,1,2024-08-01,1200000,2025-10-01,41,8,0,499600,700400,False
+def5aa6d-31f5-4faa-9bb5-d93d4fca1f34,fbc03512-2545-47ea-96a4-4f1af81f2f7b,Occassional,Home Maintenance,False,,,90350,0,352280,NEED,False,,13,1,2024-08-01,1200000,2025-10-01,47,8,0,567620,632380,False
+6291a2e7-d9a9-4eaf-9f31-195a6ed75063,fbc03512-2545-47ea-96a4-4f1af81f2f7b,Occassional,Taxes,False,,,21810,0,21810,NEED,True,,13,1,2024-09-01,350000,2025-10-01,56,8,0,197360,152640,False
+7c5ff68d-5d96-4ce5-9e92-efca14d796d8,fbc03512-2545-47ea-96a4-4f1af81f2f7b,Occassional,Fees,False,,,34580,-10000,24580,NEED,True,,13,1,2024-09-01,600000,2025-10-01,59,8,0,358010,241990,False
+8a92e0b6-0bab-471b-bab8-9f24ced2eb62,e49f4bce-0011-4591-af93-e614988d71c9,Goals,Emergency Fund,False,,,-191820,0,950190,TB,,,,,2024-08-01,5000000,,19,0,0,950190,4049810,False
+afa5e572-6763-4c91-994d-5fabc7a24c9f,e49f4bce-0011-4591-af93-e614988d71c9,Goals,Extra Debt Payments,False,,,500000,0,1500000,NEED,True,,1,1,2024-09-01,500000,,100,1,0,500000,0,False
+b3e2e4b7-9a04-4af1-95e0-b0ebf529ded8,e49f4bce-0011-4591-af93-e614988d71c9,Goals,Prepay Fund,False,,,0,0,0,,,,,,,0,,,,,,,False
+a098dcb0-e687-45d5-b07e-1dac8419a3aa,e49f4bce-0011-4591-af93-e614988d71c9,Goals,Independence Fund,False,,,0,0,0,,,,,,,0,,,,,,,False
+75c316f5-b3f1-443c-abd6-a64e8a18955e,e49f4bce-0011-4591-af93-e614988d71c9,Goals,Retirement Fund,False,,,0,0,0,,,,,,,0,,,,,,,False
+85dff297-34b5-4c48-b26d-31e5b1ff037a,7d9961ba-6d4f-4e54-9581-4005aa0fb559,Lifestyle,Lifestyle All,False,,,-234620,0,0,,,,,,,0,,,,,,,False
+9a44c366-4774-4637-9324-680ab85fe42d,7d9961ba-6d4f-4e54-9581-4005aa0fb559,Lifestyle,Clothing,False,,,0,0,0,,,,,,,0,,,,,,,False
+2593ba58-bb4d-473f-9c23-4412b745c124,7d9961ba-6d4f-4e54-9581-4005aa0fb559,Lifestyle,Furnishing,False,,,0,0,0,,,,,,,0,,,,,,,False
+88b033d2-5ea2-4c36-a7eb-24345790848c,7d9961ba-6d4f-4e54-9581-4005aa0fb559,Lifestyle,Fitness,False,,,348950,-348950,0,,,,,,,0,,,,,,,False
+a54144ce-aed0-474d-a176-7b0bfe969492,7d9961ba-6d4f-4e54-9581-4005aa0fb559,Lifestyle,Education,False,,,0,0,0,,,,,,,0,,,,,,,False
+66ffeb47-2f6b-40f2-98d4-5a7d88b1d1fe,7d9961ba-6d4f-4e54-9581-4005aa0fb559,Lifestyle,Home Improvement,False,,,90040,-90040,0,,,,,,,0,,,,,,,False
+56d0e0b2-9550-4035-b8b9-5a623bffdbb3,82f7ba91-b846-43bc-b6a5-5d080bfee74d,Wishlist,Wishlist All,False,,,-377700,0,0,,,,,,,0,,,,,,,False
+1a8c6cc0-3744-4b0c-aff3-9bbb1c9a9a81,82f7ba91-b846-43bc-b6a5-5d080bfee74d,Wishlist,Adventure,False,,,350000,-350000,0,,,,,,,0,,,,,,,False
+0fdea1a2-174c-4ca9-863a-d44fa32b2f4a,82f7ba91-b846-43bc-b6a5-5d080bfee74d,Wishlist,Electronics,False,,,74190,-74190,0,,,,,,,0,,,,,,,False
+5aaf62a6-0a5e-4d84-9dcb-e2ee8d4d4c4d,82f7ba91-b846-43bc-b6a5-5d080bfee74d,Wishlist,Travel,False,,,0,0,0,,,,,,,0,,,,,,,False
+c894b308-ad5d-44d5-a3bd-c02effaca4dc,82f7ba91-b846-43bc-b6a5-5d080bfee74d,Wishlist,Entertainment,False,,,0,0,0,,,,,,,0,,,,,,,False
+90b2a6c7-01e0-4631-9e86-09930e8601d3,82f7ba91-b846-43bc-b6a5-5d080bfee74d,Wishlist,Sports Gear,False,,,0,-97520,-97520,,,,,,,0,,,,,,,False
+006b2b8d-ecd1-41cc-8138-ea001d0bd7f4,82f7ba91-b846-43bc-b6a5-5d080bfee74d,Wishlist,Gifts,False,,,0,0,0,,,,,,,0,,,,,,,False
+479394fd-3239-4d6b-ba08-ac0e899c687d,82f7ba91-b846-43bc-b6a5-5d080bfee74d,Wishlist,Giving,False,,,0,0,0,,,,,,,0,,,,,,,False
+8c93472b-bcb2-4bb2-acb4-033a7a4328cd,88be6288-6ebe-4379-bcd2-79c6dda8748d,Other,Business Expenses,False,,,290440,-440440,-150000,,,,,,,0,,,,,,,False
+04f7b851-5439-44f0-9109-e712b09a06df,88be6288-6ebe-4379-bcd2-79c6dda8748d,Other,Interest,False,,,0,0,0,,,,,,,0,,,,,,,False
+5759b6e6-966f-492c-a2f1-ba70b3692483,88be6288-6ebe-4379-bcd2-79c6dda8748d,Other,Home Buying,True,,,0,0,0,,,,,,,0,,,,,,,False
+ddb9b846-d3c4-4ae5-ae7d-a66b9b0c4a07,88be6288-6ebe-4379-bcd2-79c6dda8748d,Other,Disputed,False,,,0,0,0,,,,,,,0,,,,,,,False
+861a2942-c687-41fd-af8f-6e735264c76d,88be6288-6ebe-4379-bcd2-79c6dda8748d,Other,Moving,False,,,0,0,0,,,,,,,0,,,,,,,False

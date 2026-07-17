@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-12T14:00:00Z",
+  "theme": {
+    "colors": {
+      "bg": "#0b1020", "bgAccent": "#16204a", "cardBg": "#161c2e",
+      "textPrimary": "#f2f5ff", "textSecondary": "#9aa4c4", "accent": "#6ea8fe",
+      "up": "#43d18a", "down": "#ff6b6b", "divider": "#2a3350"
+    },
+    "fonts": { "family": "-apple-system, system-ui, sans-serif" },
+    "spacing": 12, "radius": 20
+  },
+  "nav": [
+    { "title": "Home", "icon": "house.fill", "path": "/dashboard" },
+    { "title": "Location", "icon": "map.fill", "children": [
+      { "title": "Activity", "icon": "map.fill", "path": "/screen/afm" },
+      { "title": "48h Transactions", "icon": "clock.arrow.circlepath", "path": "/screen/afm48" }
+    ] },
+    { "title": "Money", "icon": "dollarsign.circle.fill", "children": [
+      { "title": "Balances", "icon": "dollarsign.circle.fill", "path": "/screen/balances" },
+      { "title": "YNAB", "icon": "creditcard.fill", "path": "/screen/ynab" }
+    ] },
+    { "title": "Smart Home", "icon": "house.circle.fill", "path": "/screen/smarthome" },
+    { "title": "Config", "icon": "slider.horizontal.3", "path": "/screen/config" }
+  ],
+  "data": {
+    "meta": { "updatedAtFormatted": "Updated just now", "stale": false },
+    "balances": {
+      "title": "Balances",
+      "subtitleFormatted": "6 accounts · ynab_balances · as of Jun 12, 2:00 PM",
+      "netFormatted": "$48,250.00",
+      "netDirection": "up",
+      "asOfFormatted": "as of Jun 12, 2:00 PM",
+      "netWorthCards": [
+        {
+          "titleFormatted": "Net worth",
+          "currentFormatted": "$51,002.77",
+          "currentDirection": "up",
+          "changeFormatted": "▲ $7,002.77 · 30d",
+          "changeDirection": "up",
+          "rangeFormatted": "May 22 – Jun 20",
+          "spanFormatted": "Low $44,000.00 · High $51,002.77",
+          "footnoteFormatted": "≈ first 4 days estimated",
+          "series": [
+            { "dashed": true, "color": "#8893b5", "x": [0, 0.0909, 0.1818, 0.2727, 0.3636], "points": [44000, 44300, 44100, 44800, 45200] },
+            { "x": [0.3636, 0.4545, 0.5455, 0.6364, 0.7273, 0.8182, 0.9091, 1], "points": [45200, 46000, 46500, 47200, 48100, 49000, 50200, 51002.77] }
+          ]
+        }
+      ],
+      "groups": [
+        { "title": "Operational", "subtotalFormatted": "$6,100.00", "subtotalDirection": "up", "countFormatted": "2 accounts", "accounts": [
+          { "name": "WF Bills", "balanceFormatted": "$2,000.00", "direction": "up", "kind": "Asset" },
+          { "name": "WF Spending", "balanceFormatted": "$4,100.00", "direction": "up", "kind": "Asset" }
+        ] },
+        { "title": "Shared", "subtotalFormatted": "$3,250.00", "subtotalDirection": "up", "countFormatted": "1 account", "accounts": [
+          { "name": "WF Shared", "balanceFormatted": "$3,250.00", "direction": "up", "kind": "Asset" }
+        ] },
+        { "title": "Lifestyle", "subtotalFormatted": "$27,600.00", "subtotalDirection": "up", "countFormatted": "2 accounts", "accounts": [
+          { "name": "Ally Savings", "balanceFormatted": "$18,400.00", "direction": "up", "kind": "Asset" },
+          { "name": "Ally Spending", "balanceFormatted": "$9,200.00", "direction": "up", "kind": "Asset" }
+        ] },
+        { "title": "Real Estate", "subtotalFormatted": "$11,300.00", "subtotalDirection": "up", "countFormatted": "1 account", "accounts": [
+          { "name": "Ally Mortgage Escrow", "balanceFormatted": "$11,300.00", "direction": "up", "kind": "Asset" }
+        ] }
+      ],
+      "accounts": [
+        { "name": "WF Bills", "balanceFormatted": "$2,000.00", "direction": "up", "kind": "Asset", "group": "Operational" },
+        { "name": "WF Spending", "balanceFormatted": "$4,100.00", "direction": "up", "kind": "Asset", "group": "Operational" },
+        { "name": "WF Shared", "balanceFormatted": "$3,250.00", "direction": "up", "kind": "Asset", "group": "Shared" },
+        { "name": "Ally Savings", "balanceFormatted": "$18,400.00", "direction": "up", "kind": "Asset", "group": "Lifestyle" },
+        { "name": "Ally Spending", "balanceFormatted": "$9,200.00", "direction": "up", "kind": "Asset", "group": "Lifestyle" },
+        { "name": "Ally Mortgage Escrow", "balanceFormatted": "$11,300.00", "direction": "up", "kind": "Asset", "group": "Real Estate" }
+      ]
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": { "background": "$bg" },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": { "spacing": 16, "padding": 16 },
+            "children": [
+              {
+                "type": "hstack",
+                "style": { "align": "center" },
+                "children": [
+                  { "type": "text", "binding": "balances.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                  { "type": "spacer" },
+                  { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+                ]
+              },
+              {
+                "type": "card",
+                "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+                "children": [
+                  { "type": "text", "props": { "text": "Net" }, "style": { "font": "subhead", "color": "$textSecondary" } },
+                  { "type": "text", "binding": "balances.netFormatted", "style": { "font": "largeTitle", "weight": "bold", "color": "balances.netDirection" } },
+                  { "type": "text", "binding": "balances.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                ]
+              },
+              {
+                "type": "vstack",
+                "props": { "repeat": "balances.netWorthCards" },
+                "style": { "spacing": 16 },
+                "children": [
+                  {
+                    "type": "card",
+                    "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+                    "children": [
+                      {
+                        "type": "hstack",
+                        "style": { "align": "center", "spacing": 8 },
+                        "children": [
+                          { "type": "text", "binding": "item.titleFormatted", "style": { "font": "headline", "weight": "bold", "color": "$textPrimary" } },
+                          { "type": "spacer" },
+                          { "type": "text", "binding": "item.currentFormatted", "style": { "font": "headline", "weight": "bold", "color": "item.currentDirection" } }
+                        ]
+                      },
+                      { "type": "lineChart", "binding": "item.series", "style": { "height": 160 } },
+                      {
+                        "type": "hstack",
+                        "style": { "align": "center", "spacing": 8 },
+                        "children": [
+                          { "type": "text", "binding": "item.changeFormatted", "style": { "font": "caption", "weight": "semibold", "color": "item.changeDirection" } },
+                          { "type": "spacer" },
+                          { "type": "text", "binding": "item.rangeFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                        ]
+                      },
+                      { "type": "text", "binding": "item.spanFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                      { "type": "text", "binding": "item.footnoteFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "vstack",
+                "props": { "repeat": "balances.groups" },
+                "style": { "spacing": 16 },
+                "children": [
+                  {
+                    "type": "card",
+                    "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+                    "children": [
+                      {
+                        "type": "hstack",
+                        "style": { "align": "center", "spacing": 8 },
+                        "children": [
+                          { "type": "text", "binding": "item.title", "style": { "font": "headline", "weight": "bold", "color": "$textPrimary" } },
+                          { "type": "spacer" },
+                          { "type": "text", "binding": "item.subtotalFormatted", "style": { "font": "headline", "weight": "bold", "color": "item.subtotalDirection" } }
+                        ]
+                      },
+                      { "type": "divider", "style": { "color": "$divider" } },
+                      {
+                        "type": "vstack",
+                        "props": { "repeat": "item.accounts" },
+                        "style": { "spacing": 14 },
+                        "children": [
+                          {
+                            "type": "hstack",
+                            "style": { "align": "center" },
+                            "children": [
+                              {
+                                "type": "vstack",
+                                "style": { "spacing": 2 },
+                                "children": [
+                                  { "type": "text", "binding": "item.name", "style": { "font": "body", "weight": "semibold", "color": "$textPrimary" } },
+                                  { "type": "text", "binding": "item.kind", "style": { "font": "caption", "color": "$textSecondary" } }
+                                ]
+                              },
+                              { "type": "spacer" },
+                              { "type": "text", "binding": "item.balanceFormatted", "style": { "font": "headline", "weight": "semibold", "color": "item.direction" } }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

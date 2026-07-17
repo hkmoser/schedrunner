@@ -1,0 +1,57 @@
+{
+  "type": "screen",
+  "style": { "background": "$bg" },
+  "children": [
+    {
+      "type": "scroll",
+      "children": [
+        {
+          "type": "vstack",
+          "style": { "spacing": 16, "padding": 16 },
+          "children": [
+            {
+              "type": "hstack",
+              "style": { "align": "center" },
+              "children": [
+                { "type": "text", "binding": "schedlogs.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                { "type": "spacer" },
+                { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+              ]
+            },
+            { "type": "text", "binding": "schedlogs.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+            {
+              "type": "vstack",
+              "props": { "repeat": "schedlogs.entries" },
+              "style": { "spacing": 12 },
+              "children": [
+                {
+                  "type": "card",
+                  "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 14 },
+                  "children": [
+                    {
+                      "type": "hstack",
+                      "style": { "align": "center" },
+                      "children": [
+                        {
+                          "type": "vstack",
+                          "style": { "spacing": 2 },
+                          "children": [
+                            { "type": "text", "binding": "item.name", "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+                            { "type": "text", "binding": "item.metaFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                          ]
+                        },
+                        { "type": "spacer" },
+                        { "type": "badge", "binding": "item.statusFormatted", "style": { "color": "item.statusColor" } }
+                      ]
+                    },
+                    { "type": "code", "binding": "item.snippetFormatted" }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

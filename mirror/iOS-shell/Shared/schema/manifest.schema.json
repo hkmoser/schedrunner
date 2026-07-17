@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iosshell.local/manifest.schema.json",
+  "title": "Dashboard Manifest",
+  "description": "The single SDUI contract rendered by both the web PWA and the native iOS shell.",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "screen"],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "MAJOR schema version. Clients render an 'update the shell' card if this exceeds the version they support."
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "theme": { "$ref": "#/$defs/theme" },
+    "data": {
+      "type": "object",
+      "description": "Value bag that nodes bind into via dotted paths (e.g. stocks.SPY.changePct).",
+      "additionalProperties": true
+    },
+    "nav": {
+      "type": "array",
+      "description": "Navigation tree shared across pages. Up to two levels: a top-level item is either a direct link (has `path`) or a section header (has `children`). Rendered as a slide-out hamburger menu.",
+      "items": { "$ref": "#/$defs/navItem" }
+    },
+    "screen": { "$ref": "#/$defs/node" }
+  },
+  "$defs": {
+    "navItem": {
+      "type": "object",
+      "required": ["title"],
+      "additionalProperties": true,
+      "properties": {
+        "title": { "type": "string" },
+        "icon": { "type": "string" },
+        "path": { "type": "string", "description": "Leaf destination. Omitted for section headers." },
+        "children": {
+          "type": "array",
+          "description": "Second-level items, making this a section header.",
+          "items": { "$ref": "#/$defs/navItem" }
+        }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "colors": {
+          "type": "object",
+          "description": "Semantic color tokens. Hex strings. Referenced from styles as \"$tokenName\".",
+          "additionalProperties": { "type": "string" }
+        },
+        "fonts": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "spacing": { "type": "number" },
+        "radius": { "type": "number" }
+      }
+    },
+    "node": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Component type. Unknown types render an inert placeholder (forward-compatible)."
+        },
+        "id": { "type": "string" },
+        "props": { "type": "object", "additionalProperties": true },
+        "style": { "$ref": "#/$defs/style" },
+        "binding": {
+          "type": "string",
+          "description": "Dotted path into the data bag. local.* paths resolve only on native; unresolved bindings render a placeholder."
+        },
+        "action": { "$ref": "#/$defs/action" },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/node" }
+        }
+      }
+    },
+    "style": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "padding": { "type": ["number", "object"] },
+        "spacing": { "type": "number" },
+        "color": { "type": "string" },
+        "background": { "type": "string" },
+        "cornerRadius": { "type": "number" },
+        "font": { "type": "string", "description": "Font role token, e.g. title, headline, body, caption." },
+        "weight": { "type": "string", "enum": ["regular", "medium", "semibold", "bold"] },
+        "align": { "type": "string", "enum": ["leading", "center", "trailing"] },
+        "width": { "type": ["number", "string"] },
+        "height": { "type": ["number", "string"] },
+        "opacity": { "type": "number" }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["refresh", "openURL", "navigate", "setPref", "submit", "focus", "none"],
+          "description": "Declarative action vocabulary. Unknown types are treated as no-ops."
+        },
+        "url": { "type": "string" },
+        "urlBinding": { "type": "string", "description": "For openURL: resolve the target URL from a data path." },
+        "valueBinding": { "type": "string", "description": "Resolve `value` from a data path (e.g. focus a map segment by index)." },
+        "screenId": { "type": "string" },
+        "key": { "type": "string" },
+        "value": {}
+      }
+    }
+  }
+}

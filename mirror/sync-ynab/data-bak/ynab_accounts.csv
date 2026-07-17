@@ -1,0 +1,7 @@
+id,name,type,on_budget,closed,note,balance,cleared_balance,uncleared_balance,transfer_payee_id,direct_import_linked,direct_import_in_error,last_reconciled_at,debt_original_balance,debt_interest_rates,debt_minimum_payments,debt_escrow_amounts,deleted
+1f1191b5-29e8-4645-bac4-d74c671a7ccd,Spending,checking,True,False,,675750,675750,0,38abcd79-cc98-4046-91ca-60c08d75c223,True,False,,,{},{},{},False
+fc7323fe-fe79-47df-9a8b-ff12b2f43cc4,Bills,checking,True,False,,7980210,2521210,5459000,0cf6cd2d-13cf-4932-9ea3-bc2f01e01789,True,False,,,{},{},{},False
+60368922-40ce-431e-ae98-baaf785baac0,Savings,savings,True,False,,-5000,-5000,0,c5bf97ca-0b02-4836-8c07-234befdf9c5d,True,False,,,{},{},{},False
+766dd79f-a175-4f04-969c-909b99659cee,Ally Spending,checking,True,False,,863150,863150,0,96a5ae89-3048-470e-9126-9e535dfceca0,True,False,,,{},{},{},False
+357fde3b-e398-496b-b78d-2631b22e0a2e,Ally Savings,savings,True,False,,11640,11640,0,807539ad-4b02-4ffc-b9ec-6f295beb0354,True,False,,,{},{},{},False
+c7d8b55a-69c6-4657-b8f0-6763a4cf7a67,Ally Spending Alt,checking,True,False,,10010,10010,0,1880a494-c2c1-44a7-a4bd-c28e6bf761e8,True,False,,,{},{},{},False

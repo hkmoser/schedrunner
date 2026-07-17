@@ -1,0 +1,7 @@
+id,name,balance,cleared_balance,uncleared_balance
+1f1191b5-29e8-4645-bac4-d74c671a7ccd,Spending,675.75,675.75,0.0
+fc7323fe-fe79-47df-9a8b-ff12b2f43cc4,Bills,7980.21,2521.21,5459.0
+60368922-40ce-431e-ae98-baaf785baac0,Savings,-5.0,-5.0,0.0
+766dd79f-a175-4f04-969c-909b99659cee,Ally Spending,863.15,863.15,0.0
+357fde3b-e398-496b-b78d-2631b22e0a2e,Ally Savings,11.64,11.64,0.0
+c7d8b55a-69c6-4657-b8f0-6763a4cf7a67,Ally Spending Alt,10.01,10.01,0.0

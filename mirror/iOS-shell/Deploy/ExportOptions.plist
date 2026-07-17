@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Export options for the native iOS OTA build (Deploy/build_and_install_ota.sh).
+     This is a TEMPLATE: build_and_install_ota.sh copies it to build/ and substitutes
+     __TEAM_ID__ / __BUNDLE_ID__ / __TS_HOST__ before calling `xcodebuild -exportArchive`.
+     Do not edit the substituted copy under build/ — edit this template.
+
+     method = development: signs with your team's development profile so the IPA installs
+     on devices registered to the team (Xcode automatic signing registers your iPhone on
+     first run, or use Deploy/register_device.sh). The `manifest` dict makes xcodebuild
+     emit a manifest.plist next to the IPA for itms-services OTA install over Tailscale.
+     (Xcode 16 renamed this method to "debugging"; xcodebuild still accepts "development".) -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>method</key>
+  <string>development</string>
+
+  <key>teamID</key>
+  <string>__TEAM_ID__</string>
+
+  <key>signingStyle</key>
+  <string>automatic</string>
+
+  <!-- Thin the IPA to the connected device family; safe for a single-device install. -->
+  <key>thinning</key>
+  <string>&lt;none&gt;</string>
+
+  <key>compileBitcode</key>
+  <false/>
+  <key>stripSwiftSymbols</key>
+  <true/>
+  <key>uploadSymbols</key>
+  <false/>
+
+  <!-- Make xcodebuild generate manifest.plist for itms-services OTA install. The URLs
+       point at where build_and_install_ota.sh publishes the artifacts on the server. -->
+  <key>manifest</key>
+  <dict>
+    <key>appURL</key>
+    <string>https://__TS_HOST__/app/Dashboard.ipa</string>
+    <key>displayImageURL</key>
+    <string>https://__TS_HOST__/icons/apple-touch-icon.png</string>
+    <key>fullSizeImageURL</key>
+    <string>https://__TS_HOST__/icons/apple-touch-icon.png</string>
+  </dict>
+</dict>
+</plist>

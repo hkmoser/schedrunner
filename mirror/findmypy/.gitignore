@@ -1,0 +1,24 @@
+/.DS_Store
+findmypy.egg-info/
+dist/
+build/
+afm/
+afm_output/
+afm_test/
+afm*/
+*.csv
+venv/
+.venv/
+.venv*/
+__pycache__/
+*.pyc
+
+# Runtime alert-dedup / smart-alert state — must NOT be tracked, or a deploy
+# git-pull reverts the counters and re-fires stale notifications.
+ctr_last.txt
+ctr_ch_last.txt
+ctr_ch_last_state.json
+test_ctr_last.txt
+test_ctr_ch_last.txt
+test_ctr_ch_last_state.json
+smart_state.json

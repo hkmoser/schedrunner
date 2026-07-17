@@ -1,0 +1,181 @@
+{
+  "type": "screen",
+  "style": { "background": "$bg" },
+  "children": [
+    {
+      "type": "scroll",
+      "children": [
+        {
+          "type": "vstack",
+          "style": { "spacing": 12, "padding": 16 },
+          "children": [
+            {
+              "type": "hstack",
+              "style": { "align": "center" },
+              "children": [
+                { "type": "text", "binding": "deploy.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                { "type": "spacer" },
+                { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+              ]
+            },
+            { "type": "text", "binding": "deploy.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+            { "type": "text", "binding": "deploy.headlineFormatted", "style": { "font": "title3", "weight": "bold", "color": "deploy.headlineDirection" } },
+
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 14 },
+              "children": [
+                {
+                  "type": "hstack",
+                  "style": { "align": "center", "spacing": 8 },
+                  "children": [
+                    { "type": "text", "props": { "text": "1 · Merge" }, "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+                    { "type": "spacer" },
+                    { "type": "text", "binding": "deploy.shipLabel", "style": { "font": "caption", "color": "$textSecondary" } }
+                  ]
+                },
+                {
+                  "type": "vstack",
+                  "props": { "repeat": "deploy.shipItems" },
+                  "style": { "spacing": 6 },
+                  "children": [
+                    {
+                      "type": "vstack",
+                      "style": { "spacing": 6, "background": "$bg", "cornerRadius": 10, "padding": 10 },
+                      "children": [
+                        {
+                          "type": "hstack",
+                          "style": { "align": "center", "spacing": 10 },
+                          "children": [
+                            {
+                              "type": "vstack",
+                              "style": { "spacing": 2 },
+                              "children": [
+                                { "type": "text", "binding": "item.labelFormatted", "style": { "font": "subhead", "weight": "semibold", "color": "$textPrimary" } },
+                                { "type": "text", "binding": "item.metaFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                              ]
+                            },
+                            { "type": "spacer" },
+                            { "type": "button", "props": { "text": "Ship" }, "action": { "type": "submit", "urlBinding": "item.shipPostHref" } }
+                          ]
+                        },
+                        { "type": "text", "binding": "item.behindNote", "style": { "font": "caption", "color": "$down" } },
+                        {
+                          "type": "vstack",
+                          "props": { "repeat": "item.rebaseActions" },
+                          "style": { "spacing": 4 },
+                          "children": [
+                            {
+                              "type": "hstack",
+                              "style": { "align": "center", "spacing": 8 },
+                              "children": [
+                                { "type": "spacer" },
+                                { "type": "button", "props": { "text": "Rebase & ship" }, "action": { "type": "submit", "urlBinding": "item.postHref" } }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 14 },
+              "children": [
+                {
+                  "type": "hstack",
+                  "style": { "align": "center", "spacing": 8 },
+                  "children": [
+                    { "type": "text", "props": { "text": "2 · CI" }, "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+                    { "type": "spacer" },
+                    { "type": "badge", "binding": "deploy.ciFormatted", "style": { "color": "deploy.ciDirection" } }
+                  ]
+                },
+                {
+                  "type": "vstack",
+                  "props": { "repeat": "deploy.ciStages" },
+                  "style": { "spacing": 2 },
+                  "children": [
+                    { "type": "text", "binding": "item.nameFormatted", "style": { "font": "subhead", "color": "item.direction" } }
+                  ]
+                },
+                { "type": "text", "binding": "deploy.ciRunLinkFormatted", "style": { "font": "caption", "weight": "semibold", "color": "$accent" }, "action": { "type": "openURL", "urlBinding": "deploy.ciRunUrl" } },
+                { "type": "text", "binding": "deploy.ciLogLabel", "style": { "font": "caption", "weight": "semibold", "color": "$textPrimary" } },
+                { "type": "code", "binding": "deploy.ciLogFormatted" }
+              ]
+            },
+
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 14 },
+              "children": [
+                {
+                  "type": "hstack",
+                  "style": { "align": "center", "spacing": 8 },
+                  "children": [
+                    { "type": "text", "props": { "text": "3 · Server" }, "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+                    { "type": "spacer" },
+                    { "type": "badge", "binding": "deploy.serverBadgeFormatted", "style": { "color": "deploy.serverBadgeDirection" } }
+                  ]
+                },
+                { "type": "text", "binding": "deploy.autoDeployFormatted", "style": { "font": "subhead", "color": "$textPrimary" } },
+                { "type": "text", "binding": "deploy.headFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                {
+                  "type": "vstack",
+                  "props": { "repeat": "deploy.deployLogSnippetItems" },
+                  "style": { "spacing": 4 },
+                  "children": [
+                    { "type": "code", "binding": "item.snippetFormatted" }
+                  ]
+                },
+                { "type": "text", "binding": "deploy.remedyFormatted", "style": { "font": "caption", "color": "$down" } },
+                {
+                  "type": "vstack",
+                  "props": { "repeat": "deploy.redeployActions" },
+                  "children": [
+                    { "type": "button", "binding": "item.labelFormatted", "props": { "text": "Redeploy now", "icon": "arrow.triangle.2.circlepath" }, "action": { "type": "submit", "url": "/deploy_kick" } }
+                  ]
+                }
+              ]
+            },
+
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 14 },
+              "children": [
+                {
+                  "type": "hstack",
+                  "style": { "align": "center", "spacing": 8 },
+                  "children": [
+                    { "type": "text", "props": { "text": "4 · iOS app" }, "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+                    { "type": "spacer" },
+                    { "type": "badge", "binding": "deploy.iosStatusFormatted", "style": { "color": "deploy.iosDirection" } }
+                  ]
+                },
+                { "type": "text", "binding": "deploy.iosDetailFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                { "type": "text", "binding": "deploy.iosAutoBuildFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                {
+                  "type": "vstack",
+                  "props": { "repeat": "deploy.installActions" },
+                  "children": [
+                    { "type": "button", "binding": "item.labelFormatted", "props": { "text": "Install iOS app", "icon": "square.and.arrow.down" }, "action": { "type": "openURL", "urlBinding": "item.installURL" } }
+                  ]
+                }
+              ]
+            },
+
+            { "type": "text", "binding": "deploy.deployLogLabel", "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+            { "type": "code", "binding": "deploy.deployLogFormatted" },
+
+            { "type": "text", "binding": "deploy.logLabel", "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+            { "type": "code", "binding": "deploy.logFormatted" }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Env / secrets
+.env
+.env.local
+
+# Runtime
+*.db
+*.db-shm
+*.db-wal
+.ha-events.pid
+.ha-events.startlock/
+.last_sync_ts
+.venv/
+__pycache__/
+*.pyc
+
+# Discovery
+discovery_report.txt

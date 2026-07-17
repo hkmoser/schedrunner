@@ -1,0 +1,1372 @@
+date,account_name,category_name,payee_name,memo,amount,cleared,approved
+2024-08-31,Ally Spending,Personal Care,Love Salon Corporation Street Road,,-42000,cleared,True
+2024-08-31,Ally Spending Alt,Inflow: Ready to Assign,Starting Balance,,10010,cleared,True
+2024-08-31,Ally Spending,Inflow: Ready to Assign,Starting Balance,,923300,cleared,True
+2024-08-31,Savings,Inflow: Ready to Assign,Starting Balance,,1200010,cleared,True
+2024-08-31,Spending,Inflow: Ready to Assign,Starting Balance,,1205900,cleared,True
+2024-08-31,Ally Savings,Inflow: Ready to Assign,Starting Balance,,2901340,cleared,True
+2024-08-31,Bills,Inflow: Ready to Assign,Starting Balance,,5660450,cleared,True
+2024-09-03,Bills,Mortgage,PennyMac,,-3981060,cleared,True
+2024-09-03,Ally Spending,Therapy,Transfer to Venmo,,-130000,cleared,True
+2024-09-03,Bills,Trash Service,Recurring Payment Whitetail Disposal,,-105000,cleared,True
+2024-09-03,Bills,Transportation,E-ZPass,,-100000,cleared,True
+2024-09-03,Spending,Eating Out,Farmers Fisher Washington Dc,,-99200,cleared,True
+2024-09-03,Spending,Eating Out,Himalayan Wild Yak Ashburn Va,,-91170,cleared,True
+2024-09-03,Spending,Eating Out,Good Company D,,-78540,cleared,True
+2024-09-03,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2024-09-03,Spending,Eating Out,Blue Ridge Grill,,-63530,cleared,True
+2024-09-03,Spending,Transportation,Sunoco,,-47050,cleared,True
+2024-09-03,Spending,Eating Out,DoorDash,,-40360,cleared,True
+2024-09-03,Spending,Groceries,Baker's Daugh Washington Dc,,-33990,cleared,True
+2024-09-03,Spending,Entertainment,AMC Theatres,,-27470,cleared,True
+2024-09-03,Spending,Transportation,Shell,,-25660,cleared,True
+2024-09-03,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-09-03,Spending,Transportation,Metropolis,,-23100,cleared,True
+2024-09-03,Spending,Eating Out,Rebel Taco Brambleton Va,,-22670,cleared,True
+2024-09-03,Spending,Fitness,Great Falls Park Maclean Va,,-20000,cleared,True
+2024-09-03,Spending,Personal Care,Transfer to Venmo,,-15000,cleared,True
+2024-09-03,Spending,Groceries,The Creamery Great Falls Va,,-14500,cleared,True
+2024-09-03,Spending,Groceries,Manhattan Bag Southampton Pa,,-12560,cleared,True
+2024-09-03,Bills,Online Tools,Apple Credit Card,,-10590,cleared,True
+2024-09-03,Bills,Gym Membership,Recurring Payment Reach Climbing Reachclimbing Pa,,-10000,cleared,True
+2024-09-03,Bills,Online Tools,Apple,,-7410,cleared,True
+2024-09-03,Spending,Groceries,Pmusa Arlin,,-450,cleared,True
+2024-09-04,Spending,Groceries,Instacart,,-162080,cleared,True
+2024-09-04,Spending,Groceries,Baker's Daugh Washington Dc,,-41320,cleared,True
+2024-09-05,Bills,Personal Loan,"Upgrade, Inc.",,-237250,cleared,True
+2024-09-05,Bills,Transportation,E-ZPass,,-100000,cleared,True
+2024-09-05,Savings,Uncategorized,Transfer : Spending,,-56100,cleared,True
+2024-09-05,Spending,Eating Out,Chaia Tacos,,-47940,cleared,True
+2024-09-05,Spending,Transportation,Metropolis,,-46200,cleared,True
+2024-09-05,Spending,Groceries,Tatte Bakery & Cafe,,-40430,cleared,True
+2024-09-05,Spending,Eating Out,Muncheez Geo Washington Dc,,-37360,cleared,True
+2024-09-05,Spending,Groceries,Dog Tag Bakery Washington Dc,,-12550,cleared,True
+2024-09-05,Spending,Household Goods,FedEx,,-810,cleared,True
+2024-09-05,Spending,Uncategorized,Transfer : Savings,,56100,cleared,True
+2024-09-06,Savings,Uncategorized,Transfer : Spending,,-329300,cleared,True
+2024-09-06,Spending,Eating Out,River Club Washington Dc,,-166520,cleared,True
+2024-09-06,Spending,Groceries,Tatte Bakery & Cafe,,-57490,cleared,True
+2024-09-06,Spending,Transportation,Uber Trip,,-16950,cleared,True
+2024-09-06,Spending,Groceries,Eats Georgetow,,-13920,cleared,True
+2024-09-06,Bills,Online Tools,Apple,,-7410,cleared,True
+2024-09-06,Spending,Uncategorized,Transfer : Savings,,329300,cleared,True
+2024-09-08,Ally Spending,Furnishing,The Home Depot,,-254390,cleared,True
+2024-09-08,Ally Spending,Home Maintenance,The Home Depot,,-200340,cleared,True
+2024-09-09,Savings,Uncategorized,Transfer : Spending,,-438010,cleared,True
+2024-09-09,Ally Spending,Uncategorized,Ems Valley Square,,-249590,cleared,True
+2024-09-09,Spending,Medical,1-800 CONTACTS,,-194980,cleared,True
+2024-09-09,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2024-09-09,Bills,Landscaping,Recurring Payment Lawncare Lawnstar Lawn Tx,,-62530,cleared,True
+2024-09-09,Spending,Eating Out,DoorDash,,-57320,cleared,True
+2024-09-09,Spending,Eating Out,DoorDash,,-44240,cleared,True
+2024-09-09,Spending,Transportation,Sunoco,,-41790,cleared,True
+2024-09-09,Spending,Eating Out,DoorDash,,-40360,cleared,True
+2024-09-09,Spending,Groceries,Baker's Daugh Washington Dc,,-33990,cleared,True
+2024-09-09,Spending,Transportation,Wawa,,-24130,cleared,True
+2024-09-09,Ally Spending,Entertainment,Nugs.net,,-15890,cleared,True
+2024-09-09,Spending,Groceries,Butterscotch P,,-15650,cleared,True
+2024-09-09,Bills,Streaming Services,Spotify,,-12710,cleared,True
+2024-09-09,Bills,Online Tools,Dropbox,,-11990,cleared,True
+2024-09-09,Bills,Online Tools,Apple,,-9990,cleared,True
+2024-09-09,Spending,Transportation,Uber,,-9990,cleared,True
+2024-09-09,Bills,Online Tools,Apple,,-7410,cleared,True
+2024-09-09,Spending,Groceries,Sunoco,,-3170,cleared,True
+2024-09-09,Spending,Uncategorized,Transfer : Savings,,438010,cleared,True
+2024-09-10,Bills,Uncategorized,Chase Credit Card - Moser Joseph R,,-500000,cleared,True
+2024-09-10,Savings,Uncategorized,Transfer : Bills,,-300000,cleared,True
+2024-09-10,Bills,Uncategorized,Transfer : Spending,,-300000,uncleared,True
+2024-09-10,Spending,Groceries,Instacart,,-189290,cleared,True
+2024-09-10,Spending,Eating Out,DoorDash,,-65580,cleared,True
+2024-09-10,Bills,Online Tools,Apple,,-10590,cleared,True
+2024-09-10,Bills,Uncategorized,Transfer : Savings,,300000,uncleared,True
+2024-09-10,Spending,Uncategorized,Transfer : Bills,,300000,cleared,True
+2024-09-11,Bills,Uncategorized,Transfer : Spending,,-1400000,cleared,True
+2024-09-11,Spending,Groceries,Dunkin' Auto Reload,,-25000,cleared,True
+2024-09-11,Ally Spending,Inflow: Ready to Assign,Fingerpaint Mar Direct Deposit,,532010,cleared,True
+2024-09-11,Spending,Uncategorized,Transfer : Bills,,1400000,cleared,True
+2024-09-12,Bills,Home Cleaning,The Cleaning Autho,,-196100,cleared,True
+2024-09-12,Bills,Auto Insurance,Geico,,-152200,cleared,True
+2024-09-12,Ally Spending,Gifts,Amazon,,-147650,cleared,True
+2024-09-12,Spending,Entertainment,Jaspers Backya Conshohocken Pa,,-135640,cleared,True
+2024-09-12,Bills,Online Tools,Apple,,-38140,cleared,True
+2024-09-12,Bills,Eating Out,Uber Eats,,-19200,cleared,True
+2024-09-12,Bills,Eating Out,Uber Eats,,-18850,cleared,True
+2024-09-12,Bills,Online Tools,Apple,,-10590,cleared,True
+2024-09-12,Spending,Eating Out,DoorDash,,-9990,cleared,True
+2024-09-12,Bills,Eating Out,Uber Eats,,-4650,cleared,True
+2024-09-12,Bills,Eating Out,Uber Eats,,-3390,cleared,True
+2024-09-13,Bills,Uncategorized,Transfer : Savings,,-300000,cleared,True
+2024-09-13,Bills,Internet,Verizon,,-89990,cleared,True
+2024-09-13,Bills,Electric/Gas,PECO Energy Company,,-25220,cleared,True
+2024-09-13,Spending,Transportation,Metropolis,,-23100,cleared,True
+2024-09-13,Bills,Online Tools,Recurring Payment Uxfolio Httpsuxfol Io De,,-15000,cleared,True
+2024-09-13,Bills,Home Cleaning,The Cleaning Autho,,-10000,cleared,True
+2024-09-13,Ally Spending,Streaming Services,Nintendo,,-4230,cleared,True
+2024-09-13,Savings,Uncategorized,Transfer : Bills,,300000,cleared,True
+2024-09-13,Bills,Inflow: Ready to Assign,Fingerpaint Mar Direct Deposit Moser Joseph,,5000000,cleared,True
+2024-09-14,Ally Spending,Gifts,Xatric Limo Inverness,,-300000,cleared,True
+2024-09-14,Ally Spending,Gifts,ATM Withdrawal,,-200000,cleared,True
+2024-09-14,Ally Savings,Uncategorized,Transfer : Ally Spending,,-100000,cleared,True
+2024-09-14,Ally Savings,Uncategorized,Transfer : Ally Spending,,-100000,cleared,True
+2024-09-14,Ally Spending,Uncategorized,Transfer : Ally Savings,,100000,cleared,True
+2024-09-14,Ally Spending,Uncategorized,Transfer : Ally Savings,,100000,cleared,True
+2024-09-15,Ally Savings,Uncategorized,Transfer : Ally Spending,,-100000,cleared,True
+2024-09-15,Ally Spending,Uncategorized,Transfer : Ally Savings,,100000,cleared,True
+2024-09-16,Ally Savings,Uncategorized,Transfer : Ally Spending,,-500000,cleared,True
+2024-09-16,Bills,Uncategorized,Wells Fargo Credit Card,,-500000,cleared,True
+2024-09-16,Bills,Credit Cards,Chase Credit Card - Moser Joseph R,,-226000,cleared,True
+2024-09-16,Spending,Eating Out,DoorDash,,-127910,cleared,True
+2024-09-16,Spending,Gifts,Ic Dixie Li via I Dixieliqu Ca,,-115090,cleared,True
+2024-09-16,Spending,Groceries,Instacart,,-89540,cleared,True
+2024-09-16,Ally Spending,Eating Out,La Bonne Vache Prospect Street No,,-77800,cleared,True
+2024-09-16,Ally Spending,Gifts,D & U Leather Mugs Turnpike,,-68900,cleared,True
+2024-09-16,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2024-09-16,Spending,Groceries,Tatte Bakery & Cafe,,-53620,cleared,True
+2024-09-16,Spending,Gifts,Georgetown Cupcake,,-48060,cleared,True
+2024-09-16,Spending,Groceries,Tatte Bakery & Cafe,,-41240,cleared,True
+2024-09-16,Spending,Groceries,Cafe Con Bagel Washington Dc,,-36640,cleared,True
+2024-09-16,Spending,Transportation,Shell,,-36480,cleared,True
+2024-09-16,Spending,Groceries,Baker's Daugh Washington Dc,,-36400,cleared,True
+2024-09-16,Ally Spending,Groceries,Par Maman Georgetown Wisconsin Ave,,-34120,cleared,True
+2024-09-16,Spending,Gifts,Party City,,-31800,cleared,True
+2024-09-16,Spending,Transportation,Uber Trip,,-26740,cleared,True
+2024-09-16,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-09-16,Spending,Transportation,Uber Trip,,-22620,cleared,True
+2024-09-16,Ally Spending,Home Maintenance,Transfer to Venmo,,-15000,cleared,True
+2024-09-16,Spending,Groceries,Shell,,-10420,cleared,True
+2024-09-16,Bills,Online Tools,Apple,,-7410,cleared,True
+2024-09-16,Ally Spending,Uncategorized,Transfer : Ally Savings,,500000,cleared,True
+2024-09-17,Bills,Exterminator,Cooper Pest So,,-52290,cleared,True
+2024-09-17,Spending,Groceries,Par Maman Georgeto Washington Dc,,-41920,cleared,True
+2024-09-17,Bills,Online Tools,OpenAI,,-21200,cleared,True
+2024-09-17,Spending,Fees,Monthly Service Fee,,-10000,cleared,True
+2024-09-17,Savings,Inflow: Ready to Assign,Interest Payment,,10,cleared,True
+2024-09-18,Ally Spending,Eating Out,Lapis Columbia,,-121600,cleared,True
+2024-09-18,Bills,Online Tools,PayPal Purchase,,-52990,cleared,True
+2024-09-18,Spending,Groceries,Tatte Bakery & Cafe,,-50590,cleared,True
+2024-09-18,Ally Spending,Disputed,CVS,,-42390,cleared,True
+2024-09-18,Ally Spending,Gifts,CVS,,-42390,cleared,True
+2024-09-18,Spending,Groceries,Baker's Daugh Washington Dc,,-28650,cleared,True
+2024-09-18,Bills,Online Tools,Apple,,-10590,cleared,True
+2024-09-18,Spending,Groceries,Bitty & Beau's,,-8770,cleared,True
+2024-09-18,Spending,Transportation,Metropolis,,-6990,cleared,True
+2024-09-18,Spending,Transportation,ParkMobile,,-2750,cleared,True
+2024-09-19,Spending,Eating Out,Call Your Mot,,-27690,cleared,True
+2024-09-19,Spending,Eating Out,Uber Eats,,-18850,cleared,True
+2024-09-20,Bills,Transportation,E-ZPass,,-100000,cleared,True
+2024-09-20,Spending,Eating Out,Uber Eats,,-93740,cleared,True
+2024-09-20,Bills,Transportation,Uber,,-32270,cleared,True
+2024-09-20,Spending,Eating Out,Uber Eats,,-23400,cleared,True
+2024-09-20,Bills,Online Tools,PayPal Purchase,,-15890,cleared,True
+2024-09-20,Bills,Transportation,Uber,,-7740,cleared,True
+2024-09-20,Bills,Transportation,Uber,,-5000,cleared,True
+2024-09-20,Bills,Transportation,Uber,,-4560,cleared,True
+2024-09-21,Ally Savings,Uncategorized,Transfer : Ally Spending,,-1000000,cleared,True
+2024-09-21,Ally Spending,Travel,Bozeman Spirits Di W Main,,-62440,cleared,True
+2024-09-21,Ally Spending,Travel,Country Bookshelf W Main,,-11990,cleared,True
+2024-09-21,Ally Spending,Inflow: Ready to Assign,Interest Paid,,50,cleared,True
+2024-09-21,Ally Savings,Inflow: Ready to Assign,Interest Paid,,9590,cleared,True
+2024-09-21,Ally Spending,Uncategorized,Transfer : Ally Savings,,1000000,cleared,True
+2024-09-22,Ally Spending,Eating Out,Cousins Pub Bozem E Main St Ste,,-66790,cleared,True
+2024-09-23,Ally Spending,Travel,Old Saloon E Railroad Ln,,-360000,cleared,True
+2024-09-23,Ally Spending,Travel,Jam on Main,,-357500,cleared,True
+2024-09-23,Bills,Mobile Phone,AT&T,,-156210,cleared,True
+2024-09-23,Bills,Online Tools,Apple,,-145190,cleared,True
+2024-09-23,Ally Savings,Uncategorized,Transfer : Ally Spending,,-100000,cleared,True
+2024-09-23,Ally Savings,Uncategorized,Transfer : Ally Spending,,-100000,cleared,True
+2024-09-23,Ally Savings,Uncategorized,Transfer : Ally Spending,,-100000,cleared,True
+2024-09-23,Ally Spending,Eating Out,Mountains Walking N Plum Ave,,-55500,cleared,True
+2024-09-23,Spending,Eating Out,Squatters,,-54590,cleared,True
+2024-09-23,Bills,Online Tools,Atlantic.net,,-39290,cleared,True
+2024-09-23,Bills,Transportation,Uber,,-32560,cleared,True
+2024-09-23,Spending,Groceries,Tatte Bakery & Cafe,,-32000,cleared,True
+2024-09-23,Spending,Gifts,Amazon,,-30590,cleared,True
+2024-09-23,Spending,Transportation,Shell,,-30060,cleared,True
+2024-09-23,Ally Spending,Travel,Emigrant General Store Po Box,,-29840,cleared,True
+2024-09-23,Ally Spending,Travel,Biome Slow Craft E Peach,,-24000,cleared,True
+2024-09-23,Spending,Transportation,Metropolis,,-23100,cleared,True
+2024-09-23,Ally Spending,Travel,Old Saloon E Railroad Ln,,-18000,cleared,True
+2024-09-23,Spending,Groceries,Roly-poly Coff,,-7000,cleared,True
+2024-09-23,Bills,Transportation,Uber,,-6580,cleared,True
+2024-09-23,Spending,Groceries,Capitol Grounds Co Dulles Va,,-5500,cleared,True
+2024-09-23,Spending,Travel,Chalet Sports,,-4950,cleared,True
+2024-09-23,Ally Spending,Uncategorized,Transfer : Ally Savings,,100000,cleared,True
+2024-09-23,Ally Spending,Uncategorized,Transfer : Ally Savings,,100000,cleared,True
+2024-09-23,Ally Spending,Uncategorized,Transfer : Ally Savings,,100000,cleared,True
+2024-09-24,Ally Spending,Travel,Livingston Bar and N Main St,,-532400,cleared,True
+2024-09-24,Ally Savings,Uncategorized,Transfer : Ally Spending,,-500000,cleared,True
+2024-09-24,Bills,Credit Cards,Amazon Store Card,,-60000,cleared,True
+2024-09-24,Spending,Eating Out,Feed Cafe Bozeman Mt,,-52200,cleared,True
+2024-09-24,Spending,Groceries,Amazon,,-38000,cleared,True
+2024-09-24,Ally Spending,Travel,Delta,,-35000,cleared,True
+2024-09-24,Spending,Travel,Chico Hot Springs Pray Mt,,-25000,cleared,True
+2024-09-24,Bills,Streaming Services,Netflix,,-24370,cleared,True
+2024-09-24,Spending,Travel,Chico Hot Springs Pray Mt,,-7320,cleared,True
+2024-09-24,Spending,Travel,Chico Hot Springs Pray Mt,,-3250,cleared,True
+2024-09-24,Ally Spending,Uncategorized,Transfer : Ally Savings,,500000,cleared,True
+2024-09-25,Bills,Uncategorized,Transfer : Spending,,-1400000,cleared,True
+2024-09-25,Ally Spending,Eating Out,The Red Hen First,,-126310,cleared,True
+2024-09-25,Ally Savings,Uncategorized,Transfer : Ally Spending,,-100000,cleared,True
+2024-09-25,Ally Savings,Uncategorized,Transfer : Ally Spending,,-100000,cleared,True
+2024-09-25,Spending,Eating Out,Roosters Brew,,-49490,cleared,True
+2024-09-25,Spending,Transportation,Metropolis,,-23100,cleared,True
+2024-09-25,Bills,Online Tools,Apple,,-20110,cleared,True
+2024-09-25,Ally Spending,Uncategorized,Transfer : Ally Savings,,100000,cleared,True
+2024-09-25,Ally Spending,Uncategorized,Transfer : Ally Savings,,100000,cleared,True
+2024-09-25,Ally Spending,Inflow: Ready to Assign,Fingerpaint Mar Direct Deposit,,532020,cleared,True
+2024-09-25,Spending,Uncategorized,Transfer : Bills,,1400000,cleared,True
+2024-09-26,Spending,Eating Out,Uber Eats,,-65460,cleared,True
+2024-09-26,Ally Spending,Eating Out,Iad Dulles Economy Saarinen Cir,,-56000,cleared,True
+2024-09-26,Bills,Online Tools,PayPal,,-54990,cleared,True
+2024-09-26,Bills,Online Tools,Apple,,-42390,cleared,True
+2024-09-26,Spending,Groceries,Baker's Daugh Washington Dc,,-28650,cleared,True
+2024-09-26,Bills,Streaming Services,Hulu,,-26490,cleared,True
+2024-09-26,Spending,Eating Out,Uber Eats,,-21200,cleared,True
+2024-09-26,Spending,Groceries,Dog Tag Bakery Washington Dc,,-20480,cleared,True
+2024-09-27,Bills,Uncategorized,Transfer : Savings,,-300000,cleared,True
+2024-09-27,Bills,Water,Pennsylvania Ame Payment Joseph R Moser,,-27860,cleared,True
+2024-09-27,Spending,Groceries,Wawa,,-10800,cleared,True
+2024-09-27,Bills,Online Tools,Recurring Payment Evernote,,-10600,cleared,True
+2024-09-27,Spending,Transportation,Metropolis,,-6990,cleared,True
+2024-09-27,Savings,Uncategorized,Transfer : Bills,,300000,cleared,True
+2024-09-27,Bills,Inflow: Ready to Assign,Fingerpaint Mar Direct Deposit Moser Joseph,,5000000,cleared,True
+2024-09-28,Ally Spending,Travel,United Airlines,,-233480,cleared,True
+2024-09-28,Ally Spending,Personal Care,Love Salon Corporation Street Road,,-42000,cleared,True
+2024-09-29,Spending,Groceries,Ic Instacar,,-123710,cleared,True
+2024-09-29,Spending,Eating Out,DoorDash,,-57090,cleared,True
+2024-09-29,Ally Spending,Travel,United Airlines,,-45990,cleared,True
+2024-09-29,Spending,Eating Out,DoorDash,,-40360,cleared,True
+2024-09-29,Spending,Eating Out,DoorDash,,-40360,cleared,True
+2024-09-29,Spending,Transportation,Wawa,,-40350,cleared,True
+2024-09-29,Spending,Auto Maintenance,& Harrisburg,,-39500,cleared,True
+2024-09-29,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-09-29,Spending,Dry Cleaning,Frazer Clean,,-24550,cleared,True
+2024-09-29,Spending,Streaming Services,Kindle Unlimited,,-12710,cleared,True
+2024-09-29,Bills,Streaming Services,Peacock,,-8470,cleared,True
+2024-09-29,Spending,Gifts,FedEx Office,,-7720,cleared,True
+2024-09-30,Bills,Transportation,Uber,,-25700,cleared,True
+2024-09-30,Spending,Groceries,Call Your Moth,,-24370,cleared,True
+2024-09-30,Spending,Groceries,Butterscotch P,,-15650,cleared,True
+2024-09-30,Bills,Transportation,Uber,,-12000,cleared,True
+2024-09-30,Bills,Online Tools,Apple,,-8460,cleared,True
+2024-10-01,Bills,Medical,Kdc Dentistry,,-52000,cleared,True
+2024-10-01,Bills,Online Tools,Apple Credit Card,,-10590,cleared,True
+2024-10-01,Ally Spending,Clothing,Aswemove Berkshire Lane Burlington,,39090,cleared,True
+2024-10-01,Ally Spending,Clothing,Aswemove Berkshire Lane Burlington,,44540,cleared,True
+2024-10-01,Bills,Inflow: Ready to Assign,Chase Credit Card Rewards,,190800,cleared,True
+2024-10-02,Bills,Mortgage,PennyMac,,-3981060,cleared,True
+2024-10-02,Spending,Eating Out,DoorDash,,-62530,cleared,True
+2024-10-02,Ally Spending,Travel,Transfer to Venmo,,-31000,cleared,True
+2024-10-02,Bills,Gym Membership,Recurring Payment Reach Climbing Reachclimbing Pa,,-10000,cleared,True
+2024-10-02,Spending,Groceries,Brewed Awakeni,,-6000,cleared,True
+2024-10-02,Ally Spending,Disputed,CVS,,42390,cleared,True
+2024-10-03,Spending,Auto Maintenance,Spa Car Wash & Det Berwyn Pa,,-69950,cleared,True
+2024-10-03,Spending,Household Goods,Lowe's,,-58280,cleared,True
+2024-10-03,Bills,Exterminator,Cooper Pest So,,-52290,cleared,True
+2024-10-03,Ally Spending,Fitness,Saddles to Spurs Skippack Pike,,-45000,cleared,True
+2024-10-03,Spending,Transportation,Wawa,,-41590,cleared,True
+2024-10-03,Spending,Groceries,Butterscotch P,,-16670,cleared,True
+2024-10-04,Ally Spending,Travel,American Skyview Drive,,-215480,cleared,True
+2024-10-04,Spending,Groceries,Giant Food,,-22770,cleared,True
+2024-10-04,Bills,Online Tools,Apple,,-18000,cleared,True
+2024-10-05,Ally Spending,Eating Out,Ahso Restaurant Brambleton Plaza,,-124640,cleared,True
+2024-10-05,Ally Spending,Fitness,Saddles to Spurs Skippack Pike,,-80000,cleared,True
+2024-10-06,Ally Spending,Eating Out,The Market at Gan Boon,,-174230,cleared,True
+2024-10-06,Ally Savings,Uncategorized,Transfer : Ally Spending,,-100000,cleared,True
+2024-10-06,Ally Spending,Travel,United Airlines,,-29990,cleared,True
+2024-10-06,Ally Spending,Travel,United Airlines,,-29990,cleared,True
+2024-10-06,Ally Spending,Travel,Ual Inflt Wifionboard N Canal St,,-8000,cleared,True
+2024-10-06,Ally Spending,Uncategorized,Transfer : Ally Savings,,100000,cleared,True
+2024-10-07,Bills,Personal Loan,"Upgrade, Inc.",,-237250,cleared,True
+2024-10-07,Spending,Business Expenses,SpotHero,,-196700,cleared,True
+2024-10-07,Ally Spending,Eating Out,Mews Tavern Main,,-188690,cleared,True
+2024-10-07,Bills,Transportation,E-ZPass,,-100000,cleared,True
+2024-10-07,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2024-10-07,Bills,Landscaping,Recurring Payment Lawncare Lawnstar Lawn Tx,,-62530,cleared,True
+2024-10-07,Spending,Eating Out,DoorDash,,-56260,cleared,True
+2024-10-07,Spending,Transportation,Shell,,-41280,cleared,True
+2024-10-07,Bills,Transportation,Uber,,-38910,cleared,True
+2024-10-07,Spending,Eating Out,DoorDash,,-32090,cleared,True
+2024-10-07,Spending,Groceries,Butterscotch P,,-32060,cleared,True
+2024-10-07,Bills,Online Tools,Zapier.com,,-31790,cleared,True
+2024-10-07,Bills,Transportation,Uber,,-31520,cleared,True
+2024-10-07,Spending,Transportation,American Airlines,,-26290,cleared,True
+2024-10-07,Spending,Transportation,Metropolis,,-23100,cleared,True
+2024-10-07,Bills,Transportation,Uber,,-19800,cleared,True
+2024-10-07,Bills,Online Tools,Apple,,-14820,cleared,True
+2024-10-07,Ally Spending,Groceries,Cool Beans Cafe Kingstown Road,,-13930,cleared,True
+2024-10-07,Bills,Streaming Services,Spotify,,-12710,cleared,True
+2024-10-07,Bills,Online Tools,Apple,,-9990,cleared,True
+2024-10-07,Bills,Transportation,Uber,,-9000,cleared,True
+2024-10-07,Bills,Transportation,Uber,,-9000,cleared,True
+2024-10-07,Bills,Transportation,Uber,,-9000,cleared,True
+2024-10-07,Bills,Transportation,Uber,,-5740,cleared,True
+2024-10-07,Ally Spending,Groceries,Shell Boutique Beach Street,,-5000,cleared,True
+2024-10-08,Bills,Uncategorized,Transfer : Spending,,-200000,uncleared,True
+2024-10-08,Savings,Uncategorized,Transfer : Bills,,-200000,cleared,True
+2024-10-08,Ally Spending,Eating Out,Coast Guard House Rest Ocean,,-191350,cleared,True
+2024-10-08,Spending,Fitness,Transfer to Venmo,,-60000,cleared,True
+2024-10-08,Spending,Uncategorized,Transfer : Bills,,-50000,cleared,True
+2024-10-08,Spending,Groceries,Half Moon Emp Warwick Ri,,-22680,cleared,True
+2024-10-08,Bills,Online Tools,Dropbox,,-11990,cleared,True
+2024-10-08,Spending,Transportation,Uber,,-9990,cleared,True
+2024-10-08,Bills,Uncategorized,Transfer : Spending,,50000,cleared,True
+2024-10-08,Bills,Uncategorized,Transfer : Savings,,200000,uncleared,True
+2024-10-08,Spending,Uncategorized,Transfer : Bills,,200000,cleared,True
+2024-10-09,Bills,Uncategorized,Transfer : Spending,,-1400000,cleared,True
+2024-10-09,Spending,Eating Out,DoorDash,,-68780,cleared,True
+2024-10-09,Spending,Groceries,Co a Warwick,,-34030,cleared,True
+2024-10-09,Spending,Groceries,Dog Tag Bakery Washington Dc,,-31400,cleared,True
+2024-10-09,Ally Spending,Travel,Intelsat.com,,-10000,cleared,True
+2024-10-09,Spending,Eating Out,DoorDash,,-9870,cleared,True
+2024-10-09,Spending,Uncategorized,Transfer : Bills,,1400000,cleared,True
+2024-10-10,Bills,Credit Cards,Chase Credit Card - Moser Joseph R,,-266000,cleared,True
+2024-10-10,Spending,Groceries,Tatte Bakery & Cafe,,-57490,cleared,True
+2024-10-10,Spending,Groceries,Blue Bottle Coffee,,-33600,cleared,True
+2024-10-10,Spending,Eating Out,Uber Eats,,-21200,cleared,True
+2024-10-10,Bills,Therapy,BetterHelp,,-15000,cleared,True
+2024-10-11,Bills,Uncategorized,Transfer : Savings,,-300000,cleared,True
+2024-10-11,Spending,Eating Out,Ellē,,-168600,cleared,True
+2024-10-11,Spending,Transportation,Metropolis,,-23100,cleared,True
+2024-10-11,Spending,Groceries,Baker's Daugh Washington Dc,,-22750,cleared,True
+2024-10-11,Bills,Home Cleaning,The Cleaning Autho,,-10000,cleared,True
+2024-10-11,Savings,Uncategorized,Transfer : Bills,,300000,cleared,True
+2024-10-11,Bills,Inflow: Ready to Assign,Fingerpaint Mar Direct Deposit Moser Joseph,,3066960,cleared,True
+2024-10-15,Bills,Credit Cards,Chase Credit Card - Moser Joseph R,,-237000,cleared,True
+2024-10-15,Bills,Home Cleaning,The Cleaning Authority,,-196100,cleared,True
+2024-10-15,Bills,Auto Insurance,GEICO Auto Insurance,,-153970,cleared,True
+2024-10-15,Spending,Eating Out,DoorDash,,-92970,cleared,True
+2024-10-15,Spending,Eating Out,DoorDash,,-90460,cleared,True
+2024-10-15,Bills,Internet,Verizon,,-89990,cleared,True
+2024-10-15,Bills,Sewer,Valley Forge Sewer Authority Recurring,,-85000,cleared,True
+2024-10-15,Bills,Online Tools,Apple,,-82670,cleared,True
+2024-10-15,Bills,Gym Membership,Recurring Payment Reach Climbing Reachclimbing Pa,,-67420,cleared,True
+2024-10-15,Spending,Groceries,Instacart,,-66620,cleared,True
+2024-10-15,Spending,Groceries,Brewed Awakening,,-66460,cleared,True
+2024-10-15,Spending,Groceries,Mont Clare Del,,-65340,cleared,True
+2024-10-15,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2024-10-15,Spending,Eating Out,DoorDash,,-56260,cleared,True
+2024-10-15,Bills,Online Tools,Apple,,-45550,cleared,True
+2024-10-15,Spending,Eating Out,Taphouse 23,,-41900,cleared,True
+2024-10-15,Spending,Transportation,Wawa,,-36520,cleared,True
+2024-10-15,Bills,Electric/Gas,PECO Energy Company,,-31250,cleared,True
+2024-10-15,Spending,Transportation,Sunoco,,-29320,cleared,True
+2024-10-15,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-10-15,Bills,Transportation,Uber,,-17440,cleared,True
+2024-10-15,Bills,Therapy,BetterHelp,,-15000,cleared,True
+2024-10-15,Bills,Online Tools,Uxfolio,,-15000,cleared,True
+2024-10-15,Spending,Groceries,Wendy's,,-11950,cleared,True
+2024-10-15,Bills,Online Tools,Apple,,-10590,cleared,True
+2024-10-15,Spending,Groceries,Amtrak,,-10500,cleared,True
+2024-10-15,Spending,Eating Out,DoorDash,,-9990,cleared,True
+2024-10-15,Spending,Groceries,Landis Supermarket,,-7590,cleared,True
+2024-10-15,Bills,Transportation,Uber,,-5000,cleared,True
+2024-10-15,Spending,Groceries,Dunkin' Donuts,,-4970,cleared,True
+2024-10-15,Spending,Eating Out,DoorDash,,-4500,cleared,True
+2024-10-15,Spending,Business Expenses,SpotHero,,196700,cleared,True
+2024-10-15,Bills,Inflow: Ready to Assign,Veeva Systems I Direct Deposit W B Moser Joseph,,3701430,cleared,True
+2024-10-16,Bills,Credit Cards,Online Sched Payment to Platinum,,-195000,cleared,True
+2024-10-16,Bills,Exterminator,Cooper Pest So,,-52290,cleared,True
+2024-10-16,Spending,Groceries,Tatte Bakery,,-47090,cleared,True
+2024-10-16,Spending,Groceries,Cafe Con Bagel,,-32680,cleared,True
+2024-10-16,Spending,Groceries,7-Eleven,,-15680,cleared,True
+2024-10-16,Bills,Transportation,Uber,,-13980,cleared,True
+2024-10-16,Spending,Groceries,& Desser Manhattan,,-10170,cleared,True
+2024-10-16,Spending,Fees,Monthly Service Fee,,-10000,cleared,True
+2024-10-16,Spending,Groceries,Le Cafe Coffee,,-5900,cleared,True
+2024-10-16,Bills,Transportation,Uber,,-4000,cleared,True
+2024-10-17,Spending,Eating Out,DoorDash,,-107400,cleared,True
+2024-10-17,Spending,Groceries,The Picnic Bas,,-23540,cleared,True
+2024-10-17,Spending,Groceries,Marvelous by F,,-21740,cleared,True
+2024-10-17,Bills,Online Tools,OpenAI,,-21200,cleared,True
+2024-10-17,Spending,Travel,Amtrak,,-14000,cleared,True
+2024-10-17,Spending,Groceries,Best Bagel and Coffee,,-12110,cleared,True
+2024-10-17,Spending,Groceries,Hudson News,,-5490,cleared,True
+2024-10-18,Bills,Transportation,Uber,,-45690,cleared,True
+2024-10-18,Spending,Groceries,Eats Georgetow,,-18480,cleared,True
+2024-10-18,Spending,Groceries,7-Eleven,,-14830,cleared,True
+2024-10-18,Bills,Transportation,Uber,,-13000,cleared,True
+2024-10-18,Bills,Travel,Uber Holdings Canada Inc.,,-12260,cleared,True
+2024-10-18,Bills,Online Tools,Apple,,-10590,cleared,True
+2024-10-18,Bills,Travel,Uber Holdings Canada Inc.,,-3790,cleared,True
+2024-10-21,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2024-10-21,Bills,Landscaping,LawnStar,,-62530,cleared,True
+2024-10-21,Spending,Groceries,Call Your Moth Washington Dc,,-28760,cleared,True
+2024-10-21,Bills,Online Tools,PayPal Purchase,,-15890,cleared,True
+2024-10-21,Spending,Groceries,Structure Coff,,-14890,cleared,True
+2024-10-21,Bills,Travel,Uber Holdings Canada Inc.,,-13240,cleared,True
+2024-10-21,Spending,Groceries,Jean Coutu,,-10640,cleared,True
+2024-10-21,Spending,Groceries,Structure Coff,,-7830,cleared,True
+2024-10-21,Bills,Travel,Uber Holdings Canada Inc.,,-7560,cleared,True
+2024-10-21,Spending,Travel,Intl Cafe Pista Montreal Can,,-5710,cleared,True
+2024-10-21,Spending,Groceries,International Purchase Transaction Fee,,-440,cleared,True
+2024-10-21,Spending,Groceries,International Purchase Transaction Fee,,-310,cleared,True
+2024-10-21,Spending,Groceries,International Purchase Transaction Fee,,-230,cleared,True
+2024-10-21,Spending,Groceries,International Purchase Transaction Fee,,-170,cleared,True
+2024-10-21,Ally Spending,Inflow: Ready to Assign,Interest Paid,,40,cleared,True
+2024-10-21,Ally Savings,Inflow: Ready to Assign,Interest Paid,,520,cleared,True
+2024-10-22,Bills,Mobile Phone,AT&T,,-156280,cleared,True
+2024-10-22,Bills,Therapy,BetterHelp,,-15000,cleared,True
+2024-10-22,Bills,Online Tools,Apple,,-10590,cleared,True
+2024-10-22,Spending,Transportation,In-Flight Wi-Fi,,-9800,cleared,True
+2024-10-22,Spending,Transportation,Lyft,,-5050,cleared,True
+2024-10-22,Spending,Groceries,International Purchase Transaction Fee,,-290,cleared,True
+2024-10-23,Bills,Uncategorized,Transfer : Spending,,-1400000,cleared,True
+2024-10-23,Bills,Online Tools,Atlantic.net,,-39290,cleared,True
+2024-10-23,Spending,Groceries,Intl Yul Resto Lesters Dorval Can,,-19650,cleared,True
+2024-10-23,Spending,Groceries,International Purchase Transaction Fee,,-580,cleared,True
+2024-10-23,Spending,Uncategorized,Transfer : Bills,,1400000,cleared,True
+2024-10-24,Spending,Eating Out,DoorDash,,-175290,cleared,True
+2024-10-24,Bills,Credit Cards,Amazon Store Card,,-87000,cleared,True
+2024-10-24,Spending,Groceries,Tatte Bakery,,-24570,cleared,True
+2024-10-24,Bills,Streaming Services,Netflix,,-24370,cleared,True
+2024-10-24,Spending,Groceries,Baker's Daugh Washington Dc,,-20460,cleared,True
+2024-10-24,Bills,Online Tools,Apple,,-20110,cleared,True
+2024-10-24,Bills,Household Goods,Amazon,,-19830,cleared,True
+2024-10-24,Spending,Groceries,Shell,,-14960,cleared,True
+2024-10-24,Bills,Groceries,Amazon,,-13670,cleared,True
+2024-10-25,Bills,Uncategorized,Transfer : Savings,,-300000,cleared,True
+2024-10-25,Spending,Groceries,Tatte Bakery,,-28210,cleared,True
+2024-10-25,Spending,Groceries,Cafe Con Bagel,,-16450,cleared,True
+2024-10-25,Spending,Clothing,T.J. Maxx,,-13760,cleared,True
+2024-10-25,Savings,Uncategorized,Transfer : Bills,,300000,cleared,True
+2024-10-28,Spending,Groceries,Instacart,,-199560,cleared,True
+2024-10-28,Spending,Eating Out,Maman,,-77360,cleared,True
+2024-10-28,Spending,Household Goods,KeyMe Locksmiths,,-77320,cleared,True
+2024-10-28,Spending,Eating Out,Pizzeria Paradiso,,-75470,cleared,True
+2024-10-28,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2024-10-28,Spending,Groceries,Tatte Bakery,,-53670,cleared,True
+2024-10-28,Spending,Eating Out,DoorDash,,-53520,cleared,True
+2024-10-28,Bills,Online Tools,Apple,,-42390,cleared,True
+2024-10-28,Spending,Transportation,Wawa,,-35410,cleared,True
+2024-10-28,Spending,Groceries,Call Your Moth Washington Dc,,-30600,cleared,True
+2024-10-28,Spending,Groceries,Blue Bottle Coffee,,-29900,cleared,True
+2024-10-28,Bills,Streaming Services,Hulu,,-28610,cleared,True
+2024-10-28,Bills,Water,Pennsylvania Ame Payment Joseph R Moser,,-28190,cleared,True
+2024-10-28,Spending,Groceries,Tatte Bakery,,-26660,cleared,True
+2024-10-28,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-10-28,Spending,Groceries,Butterscotch P,,-15650,cleared,True
+2024-10-28,Spending,Groceries,Safeway,,-15480,cleared,True
+2024-10-28,Spending,Groceries,Eats Georgetow,,-15400,cleared,True
+2024-10-28,Bills,Online Tools,Evernote,,-10600,cleared,True
+2024-10-28,Spending,Groceries,Blue Bottle Coffee,,-8330,cleared,True
+2024-10-28,Spending,Groceries,Bitty & Beau's,,-7770,cleared,True
+2024-10-28,Spending,Transportation,Metropolis Parking,,-6990,cleared,True
+2024-10-28,Spending,Groceries,Safeway,,-5450,cleared,True
+2024-10-29,Spending,Eating Out,DoorDash,,-61140,cleared,True
+2024-10-29,Bills,Online Tools,Apple,,-21190,cleared,True
+2024-10-29,Spending,Streaming Services,Kindle Unlimited,,-12710,cleared,True
+2024-10-29,Bills,Streaming Services,Peacock Premium,,-8470,cleared,True
+2024-10-29,Bills,Inflow: Ready to Assign,Optum Bank,,-170,cleared,True
+2024-10-29,Bills,Inflow: Ready to Assign,Optum Bank,,50,cleared,True
+2024-10-29,Bills,Inflow: Ready to Assign,Optum Bank,,120,cleared,True
+2024-10-29,Ally Spending,Inflow: Ready to Assign,Veeva Systems I Direct Deposit,,493270,cleared,True
+2024-10-29,Bills,Inflow: Ready to Assign,Veeva Systems in Direct Pay Joe Moser,,1478900,cleared,True
+2024-10-30,Spending,Eating Out,DoorDash,,-72100,cleared,True
+2024-10-30,Spending,Eating Out,DoorDash,,-48030,cleared,True
+2024-10-31,Bills,Eating Out,Uber Eats,,-32850,cleared,True
+2024-10-31,Spending,Eating Out,DoorDash,,-22580,cleared,True
+2024-10-31,Bills,Eating Out,Uber Eats,,-8170,cleared,True
+2024-10-31,Bills,Inflow: Ready to Assign,Veeva Systems I Direct Deposit W B Moser Joseph,,5000000,cleared,True
+2024-11-01,Bills,Uncategorized,Transfer : Spending,,-1500000,cleared,True
+2024-11-01,Spending,Eating Out,DoorDash,,-56260,cleared,True
+2024-11-01,Bills,Online Tools,Apple Credit Card,,-10590,cleared,True
+2024-11-01,Spending,Uncategorized,Transfer : Bills,,1500000,cleared,True
+2024-11-04,Bills,Mortgage,PennyMac,,-3981060,cleared,True
+2024-11-04,Bills,Gym Membership,Recurring Payment Reach Climbing Reachclimbing Pa,,-95000,cleared,True
+2024-11-04,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2024-11-04,Spending,Eating Out,DoorDash,,-57090,cleared,True
+2024-11-04,Spending,Eating Out,Sly Fox Brewi Pottstown Pa,,-51400,cleared,True
+2024-11-04,Spending,Transportation,Wawa,,-37940,cleared,True
+2024-11-04,Spending,Eating Out,DoorDash,,-30950,cleared,True
+2024-11-04,Spending,Eating Out,Sly Fox Brewi Pottstown Pa,,-30000,cleared,True
+2024-11-04,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-11-04,Bills,Medical,CVS Pharmacy,,-24150,cleared,True
+2024-11-04,Spending,Groceries,Nudy's Cafe,,-20280,cleared,True
+2024-11-04,Spending,Groceries,Burger King,,-15570,cleared,True
+2024-11-04,Spending,Groceries,Wegmans,,-12990,cleared,True
+2024-11-04,Spending,Eating Out,Sly Fox Brewi Pottstown Pa,,-7000,cleared,True
+2024-11-05,Bills,Personal Loan,"Upgrade, Inc.",,-237250,cleared,True
+2024-11-05,Spending,Eating Out,DoorDash,,-81110,cleared,True
+2024-11-05,Spending,Dry Cleaning,Parkway Cleaners R,,-28900,cleared,True
+2024-11-05,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-11-05,Spending,Groceries,Nudy's Cafe,,-20280,cleared,True
+2024-11-06,Spending,Eating Out,DoorDash,,-61170,cleared,True
+2024-11-06,Spending,Eating Out,DoorDash,,-21560,cleared,True
+2024-11-06,Bills,Online Tools,Apple,,-7410,cleared,True
+2024-11-07,Bills,Home Cleaning,The Cleaning Authority,,-196100,cleared,True
+2024-11-07,Spending,Personal Care,Freedom Massage,,-137500,cleared,True
+2024-11-07,Spending,Eating Out,DoorDash,,-75330,cleared,True
+2024-11-07,Bills,Online Tools,Zapier,,-31790,cleared,True
+2024-11-07,Spending,Fitness,Transfer to Venmo,,-20000,cleared,True
+2024-11-07,Bills,Streaming Services,Spotify,,-12710,cleared,True
+2024-11-07,Bills,Online Tools,Apple,,-9990,cleared,True
+2024-11-08,Spending,Eating Out,DoorDash,,-49570,cleared,True
+2024-11-08,Spending,Personal Care,Love Salon Corpora Pa,,-42000,cleared,True
+2024-11-08,Spending,Transportation,Wawa,,-32180,cleared,True
+2024-11-08,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-11-08,Spending,Groceries,Giant,,-24990,cleared,True
+2024-11-08,Spending,Eating Out,DoorDash,,-24460,cleared,True
+2024-11-08,Spending,Groceries,Nudy's Cafe,,-20280,cleared,True
+2024-11-08,Bills,Online Tools,Dropbox,,-11990,cleared,True
+2024-11-08,Bills,Home Cleaning,The Cleaning Authority,,-10000,cleared,True
+2024-11-08,Spending,Eating Out,Uber One,,-9990,cleared,True
+2024-11-08,Spending,Groceries,Wawa,,-2750,cleared,True
+2024-11-12,Bills,Credit Cards,Chase Credit Card - Moser Joseph R,,-250000,cleared,True
+2024-11-12,Bills,Auto Insurance,GEICO Auto Insurance,,-153970,cleared,True
+2024-11-12,Spending,Groceries,Instacart,,-97100,cleared,True
+2024-11-12,Spending,Eating Out,Lock Mont Clare Pa,,-96780,cleared,True
+2024-11-12,Spending,Eating Out,Starview Brews Columbia Pa,,-92930,cleared,True
+2024-11-12,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2024-11-12,Spending,Eating Out,DoorDash,,-55930,cleared,True
+2024-11-12,Spending,Eating Out,DoorDash,,-47230,cleared,True
+2024-11-12,Spending,Eating Out,DoorDash,,-40290,cleared,True
+2024-11-12,Bills,Online Tools,Apple,,-38140,cleared,True
+2024-11-12,Spending,Groceries,Butterscotch P,,-20990,cleared,True
+2024-11-12,Spending,Groceries,Butterscotch P,,-12340,cleared,True
+2024-11-12,Bills,Online Tools,Apple,,-10590,cleared,True
+2024-11-12,Spending,Eating Out,DoorDash,,-9990,cleared,True
+2024-11-12,Spending,Clothing,Pmusa,,-1300,cleared,True
+2024-11-13,Bills,Internet,Verizon,,-89990,cleared,True
+2024-11-13,Spending,Eating Out,DoorDash,,-64360,cleared,True
+2024-11-13,Spending,Household Goods,Duane Reade,,-56200,cleared,True
+2024-11-13,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-11-13,Bills,Online Tools,Uxfolio,,-15000,cleared,True
+2024-11-13,Spending,Groceries,7-Eleven,,-10420,cleared,True
+2024-11-13,Ally Spending,Inflow: Ready to Assign,Veeva Systems I Direct Deposit,,345330,cleared,True
+2024-11-14,Bills,Credit Cards,Chase Credit Card - Moser Joseph R,,-227000,cleared,True
+2024-11-14,Spending,Groceries,Wegmans,,-47470,cleared,True
+2024-11-14,Bills,Electric/Gas,PECO Energy Company,,-42200,cleared,True
+2024-11-14,Spending,Transportation,Wawa,,-32900,cleared,True
+2024-11-14,Spending,Business Expenses,Barney Brown,,-20800,cleared,True
+2024-11-14,Spending,Business Expenses,Zaro's,,-16730,cleared,True
+2024-11-14,Spending,Business Expenses,Pio Bagel,,-7790,cleared,True
+2024-11-14,Bills,Business Expenses,SEPTA,,-6000,cleared,True
+2024-11-15,Bills,Uncategorized,Transfer : Spending,,-1500000,cleared,True
+2024-11-15,Spending,Giving,ATM Withdrawal,,-40000,cleared,True
+2024-11-15,Spending,Groceries,Nudy's Cafe,,-20280,cleared,True
+2024-11-15,Spending,Fees,ATM Fee,,-3000,cleared,True
+2024-11-15,Spending,Uncategorized,Transfer : Bills,,1500000,cleared,True
+2024-11-15,Bills,Inflow: Ready to Assign,Veeva Systems I Direct Deposit W B Moser Joseph,,5000000,cleared,True
+2024-11-18,Bills,Credit Cards,Wells Fargo Credit Card,,-197000,cleared,True
+2024-11-18,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2024-11-18,Spending,Eating Out,DoorDash,,-56260,cleared,True
+2024-11-18,Bills,Exterminator,Cooper Pest So,,-52290,cleared,True
+2024-11-18,Spending,Giving,South Central Pa Scpclimbers O,,-50000,cleared,True
+2024-11-18,Spending,Eating Out,Taphouse 23,,-47460,cleared,True
+2024-11-18,Ally Spending,Business Expenses,Wework.com,,-39000,cleared,True
+2024-11-18,Spending,Transportation,Wawa,,-38320,cleared,True
+2024-11-18,Spending,Eating Out,Tacos Mechanicsburg Pa,,-35510,cleared,True
+2024-11-18,Spending,Eating Out,Troubles End Brewi Collegeville Pa,,-30840,cleared,True
+2024-11-18,Spending,Eating Out,Troubles End Brewi Collegeville Pa,,-30000,cleared,True
+2024-11-18,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-11-18,Bills,Online Tools,OpenAI,,-21200,cleared,True
+2024-11-18,Spending,Eating Out,SC3,,-20480,cleared,True
+2024-11-18,Bills,Online Tools,Apple,,-10590,cleared,True
+2024-11-18,Spending,Fees,Monthly Service Fee,,-10000,cleared,True
+2024-11-18,Spending,Eating Out,Whisk & Crumb,,-10000,cleared,True
+2024-11-18,Bills,Gym Membership,Recurring Payment Reach Climbing Reachclimbing Pa,,-9000,cleared,True
+2024-11-18,Spending,Eating Out,Troubles End Brewi Collegeville Pa,,-8500,cleared,True
+2024-11-18,Spending,Eating Out,Troubles End Brewi Collegeville Pa,,-8500,cleared,True
+2024-11-18,Savings,Inflow: Ready to Assign,Interest,,10,cleared,True
+2024-11-19,Bills,Transportation,EZ Pass,,-130000,cleared,True
+2024-11-19,Spending,Eating Out,Farmers Fisher Washington Dc,,-108540,cleared,True
+2024-11-20,Spending,Transportation,Metropolis Parking,,-48200,cleared,True
+2024-11-20,Spending,Groceries,Call Your Moth Washington Dc,,-24160,cleared,True
+2024-11-20,Spending,Groceries,D Cava Rossly,,-17490,cleared,True
+2024-11-20,Bills,Online Tools,PayPal Purchase,,-15890,cleared,True
+2024-11-20,Bills,Online Tools,Apple,,-10590,cleared,True
+2024-11-20,Spending,Gifts,FedEx Office,,-810,cleared,True
+2024-11-21,Spending,Eating Out,DoorDash,,-124930,cleared,True
+2024-11-21,Spending,Gifts,Amazon,,-30590,cleared,True
+2024-11-21,Spending,Groceries,Tatte Bakery,,-30310,cleared,True
+2024-11-21,Spending,Groceries,Cafe Con Bagel,,-24420,cleared,True
+2024-11-21,Ally Spending,Inflow: Ready to Assign,Interest Paid,,30,cleared,True
+2024-11-21,Ally Savings,Inflow: Ready to Assign,Interest Paid,,40,cleared,True
+2024-11-22,Bills,Mobile Phone,AT&T,,-161310,cleared,True
+2024-11-22,Bills,Therapy,Transfer to Venmo,,-130000,cleared,True
+2024-11-22,Spending,Eating Out,DoorDash,,-58660,cleared,True
+2024-11-22,Spending,Transportation,Wawa,,-39150,cleared,True
+2024-11-22,Spending,Groceries,Amazon,,-38780,cleared,True
+2024-11-22,Spending,Groceries,Amazon,,-38000,cleared,True
+2024-11-22,Bills,Household Goods,Amazon,,-22250,cleared,True
+2024-11-22,Spending,Groceries,Butterscotch P,,-17940,cleared,True
+2024-11-22,Spending,Groceries,Peet's Coffee,,-15940,cleared,True
+2024-11-22,Spending,Groceries,Amazon,,-7250,cleared,True
+2024-11-25,Bills,Credit Cards,Amazon Store Card,,-96000,cleared,True
+2024-11-25,Bills,Online Tools,Apple,,-84790,cleared,True
+2024-11-25,Spending,Eating Out,DoorDash,,-77770,cleared,True
+2024-11-25,Bills,Therapy,Betterhe,,-65000,cleared,True
+2024-11-25,Spending,Eating Out,DoorDash,,-59360,cleared,True
+2024-11-25,Spending,Eating Out,DoorDash,,-44080,cleared,True
+2024-11-25,Bills,Online Tools,Atlantic.net,,-39290,cleared,True
+2024-11-25,Bills,Online Tools,Apple,,-31800,cleared,True
+2024-11-25,Spending,Groceries,Giant,,-25990,cleared,True
+2024-11-25,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-11-25,Spending,Eating Out,DoorDash,,-24730,cleared,True
+2024-11-25,Bills,Streaming Services,Netflix,,-24370,cleared,True
+2024-11-25,Spending,Groceries,Butterscotch P,,-20290,cleared,True
+2024-11-25,Bills,Online Tools,Apple,,-15890,cleared,True
+2024-11-25,Bills,Online Tools,Apple,,-4220,cleared,True
+2024-11-25,Ally Spending,Inflow: Ready to Assign,Veeva Systems I Direct Deposit,,345330,cleared,True
+2024-11-26,Spending,Eating Out,DoorDash,,-60860,cleared,True
+2024-11-26,Bills,Online Tools,Apple,,-42390,cleared,True
+2024-11-26,Bills,Streaming Services,Hulu,,-28610,cleared,True
+2024-11-26,Spending,Eating Out,SC3,,-16000,cleared,True
+2024-11-26,Spending,Dry Cleaning,Parkway Cleaners R,,-6700,cleared,True
+2024-11-27,Bills,Medical,1-800 CONTACTS,,-194980,cleared,True
+2024-11-27,Savings,Uncategorized,Transfer : Spending,,-83770,cleared,True
+2024-11-27,Spending,Eating Out,DoorDash,,-61520,cleared,True
+2024-11-27,Bills,Water,Pennsylvania Ame Payment Joseph R Moser,,-39450,cleared,True
+2024-11-27,Bills,Online Tools,Evernote,,-10600,cleared,True
+2024-11-27,Spending,Travel,Suica,,-6500,cleared,True
+2024-11-27,Spending,Travel,International Purchase Transaction Fee,,-190,cleared,True
+2024-11-27,Spending,Uncategorized,Transfer : Savings,,83770,cleared,True
+2024-11-27,Bills,Inflow: Ready to Assign,Veeva Systems in Direct Pay Joe Moser,,709860,cleared,True
+2024-11-27,Bills,Inflow: Ready to Assign,Veeva Systems I Direct Deposit,,5000000,cleared,True
+2024-11-29,Savings,Uncategorized,Transfer : Spending,,-234830,cleared,True
+2024-11-29,Spending,Groceries,Butterscotch P,,-94080,cleared,True
+2024-11-29,Spending,Eating Out,DoorDash,,-93640,cleared,True
+2024-11-29,Ally Spending,Home Improvement,The Home Depot,,-72040,cleared,True
+2024-11-29,Spending,Eating Out,DoorDash,,-36500,cleared,True
+2024-11-29,Spending,Entertainment,AMC Theatres,,-36020,cleared,True
+2024-11-29,Spending,Eating Out,DoorDash,,-28780,cleared,True
+2024-11-29,Spending,Transportation,Wawa,,-25680,cleared,True
+2024-11-29,Spending,Transportation,Wawa,,-21790,cleared,True
+2024-11-29,Spending,Streaming Services,Kindle Unlimited,,-12710,cleared,True
+2024-11-29,Bills,Streaming Services,Peacock Premium,,-8470,cleared,True
+2024-11-29,Spending,Uncategorized,Transfer : Savings,,234830,cleared,True
+2024-12-02,Bills,Mortgage,PennyMac,,-3981060,cleared,True
+2024-12-02,Bills,Uncategorized,Transfer : Spending,,-1500000,cleared,True
+2024-12-02,Spending,Eating Out,Starr Oster Washington Dc,,-199500,cleared,True
+2024-12-02,Spending,Groceries,Instacart,,-122410,cleared,True
+2024-12-02,Spending,Eating Out,DoorDash,,-99830,cleared,True
+2024-12-02,Spending,Eating Out,Crust,,-99000,cleared,True
+2024-12-02,Bills,Gym Membership,Recurring Payment Reach Climbing Reachclimbing Pa,,-95000,cleared,True
+2024-12-02,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2024-12-02,Spending,Eating Out,Kitchen & Washington Dc,,-60100,cleared,True
+2024-12-02,Spending,Groceries,Call Your Moth,,-29240,cleared,True
+2024-12-02,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-12-02,Spending,Transportation,Metropolis Parking,,-24100,cleared,True
+2024-12-02,Spending,Transportation,Metropolis Parking,,-24100,cleared,True
+2024-12-02,Spending,Groceries,Baker's Daugh Washington Dc,,-24050,cleared,True
+2024-12-02,Spending,Groceries,Wawa,,-18870,cleared,True
+2024-12-02,Spending,Groceries,Instacart,,-18070,cleared,True
+2024-12-02,Spending,Transportation,Wawa,,-10610,cleared,True
+2024-12-02,Bills,Online Tools,Apple Credit Card,,-10590,cleared,True
+2024-12-02,Spending,Giving,Smithsonian Zoo,,-10000,cleared,True
+2024-12-02,Spending,Gifts,T.J. Maxx,,-8470,cleared,True
+2024-12-02,Spending,Groceries,Zoo Market & Cafe,,-5630,cleared,True
+2024-12-02,Spending,Uncategorized,Transfer : Bills,,1500000,cleared,True
+2024-12-03,Ally Spending,Gifts,Pleshy Cozy Flocchini Circle,,-150000,cleared,True
+2024-12-03,Bills,Trash Service,Whitetail Disposal,,-105000,cleared,True
+2024-12-03,Spending,Eating Out,DoorDash,,-68640,cleared,True
+2024-12-03,Bills,Eating Out,Uber Eats,,-53240,cleared,True
+2024-12-03,Spending,Transportation,Shell,,-36390,cleared,True
+2024-12-03,Spending,Transportation,Shell,,-28540,cleared,True
+2024-12-03,Spending,Eating Out,Billy Hicks G Washington Dc,,-26650,cleared,True
+2024-12-03,Bills,Eating Out,Uber Eats,,-11040,cleared,True
+2024-12-04,Bills,Eating Out,Transfer to Venmo,,-15000,cleared,True
+2024-12-05,Bills,Personal Loan,"Upgrade, Inc.",,-237250,cleared,True
+2024-12-05,Bills,Home Cleaning,The Cleaning Authority,,-196100,cleared,True
+2024-12-05,Spending,Eating Out,Sushi & Co,,-33150,cleared,True
+2024-12-05,Bills,Travel,Transfer to Venmo,,-5000,cleared,True
+2024-12-06,Bills,Business Expenses,Executive Hote,,-757440,cleared,True
+2024-12-06,Spending,Eating Out,The Keg Room Nyc,,-39400,cleared,True
+2024-12-06,Spending,Business Expenses,The Keg Room Nyc,,-39400,cleared,True
+2024-12-06,Bills,Credit Cards,Best Buy Credit Card,,-30000,cleared,True
+2024-12-06,Spending,Eating Out,Hospitality Foo,,-18070,cleared,True
+2024-12-06,Spending,Eating Out,Toast Cafe,,-13990,cleared,True
+2024-12-06,Bills,Home Cleaning,The Cleaning Authority,,-10000,cleared,True
+2024-12-06,Bills,Online Tools,Apple,,-7410,cleared,True
+2024-12-06,Bills,Business Expenses,SEPTA,,-6000,cleared,True
+2024-12-09,Savings,Uncategorized,Transfer : Spending,,-317740,cleared,True
+2024-12-09,Spending,Groceries,Instacart,,-314920,cleared,True
+2024-12-09,Bills,Transportation,EZ Pass,,-130000,cleared,True
+2024-12-09,Spending,Groceries,Wine and Spirits,,-105960,cleared,True
+2024-12-09,Spending,Eating Out,DoorDash,,-76930,cleared,True
+2024-12-09,Spending,Eating Out,DoorDash,,-76480,cleared,True
+2024-12-09,Bills,Household Goods,Amazon Return,,-66370,cleared,True
+2024-12-09,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2024-12-09,Spending,Personal Care,Recurring Payment Love Salon Corpora Lovesalon Pa,,-42000,cleared,True
+2024-12-09,Bills,Online Tools,Zapier,,-31790,cleared,True
+2024-12-09,Bills,Travel,Transfer to Venmo,,-30000,cleared,True
+2024-12-09,Spending,Transportation,Wawa,,-28920,cleared,True
+2024-12-09,Spending,Groceries,Twelve Brewi Phoenixville Pa,,-25310,cleared,True
+2024-12-09,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-12-09,Spending,Eating Out,DoorDash,,-23660,cleared,True
+2024-12-09,Spending,Groceries,Nudy's Cafe,,-22030,cleared,True
+2024-12-09,Spending,Eating Out,DoorDash,,-20360,cleared,True
+2024-12-09,Spending,Groceries,Wawa,,-20210,cleared,True
+2024-12-09,Spending,Groceries,Toast Cafe,,-13990,cleared,True
+2024-12-09,Spending,Business Expenses,Vesuvio Bakery,,-13130,cleared,True
+2024-12-09,Bills,Streaming Services,Spotify,,-12710,cleared,True
+2024-12-09,Bills,Online Tools,Dropbox,,-11990,cleared,True
+2024-12-09,Bills,Online Tools,Apple,,-9990,cleared,True
+2024-12-09,Spending,Eating Out,Uber One,,-9990,cleared,True
+2024-12-09,Bills,Online Tools,Apple,,-4130,cleared,True
+2024-12-09,Spending,Uncategorized,Transfer : Savings,,317740,cleared,True
+2024-12-10,Bills,Credit Cards,Chase Credit Card - Moser Joseph R,,-362000,cleared,True
+2024-12-10,Spending,Eating Out,Riverwalck Sa Parryville Pa,,-59320,cleared,True
+2024-12-10,Savings,Uncategorized,Transfer : Spending,,-44000,cleared,True
+2024-12-10,Bills,Online Tools,Apple,,-16950,cleared,True
+2024-12-10,Spending,Eating Out,Blue Mountain F&b,,-11000,cleared,True
+2024-12-10,Spending,Eating Out,Blue Mountain F&b,,-11000,cleared,True
+2024-12-10,Spending,Eating Out,Blue Mountain F&b,,-10600,cleared,True
+2024-12-10,Spending,Eating Out,Blue Mountain Ski,,-10000,cleared,True
+2024-12-10,Spending,Uncategorized,Transfer : Savings,,44000,cleared,True
+2024-12-10,Bills,Inflow: Ready to Assign,Veeva Systems in Direct Pay Joe Moser,,75000,cleared,True
+2024-12-10,Bills,Inflow: Ready to Assign,Veeva Systems in Direct Pay Joe Moser,,75000,cleared,True
+2024-12-10,Bills,Inflow: Ready to Assign,Veeva Systems in Direct Pay Joe Moser,,1799690,cleared,True
+2024-12-11,Ally Spending,Electronics,Amazon,,-173620,cleared,True
+2024-12-11,Ally Spending,Electronics,Amazon,,-136730,cleared,True
+2024-12-11,Bills,Taxes,Clover.com,,-81370,cleared,True
+2024-12-11,Bills,Taxes,Clover.com,,-11500,cleared,True
+2024-12-11,Ally Spending,Inflow: Ready to Assign,Veeva Systems I Direct Deposit,,345330,cleared,True
+2024-12-12,Bills,Auto Insurance,GEICO Auto Insurance,,-153970,cleared,True
+2024-12-12,Bills,Electric/Gas,PECO Energy Company,,-91180,cleared,True
+2024-12-12,Savings,Uncategorized,Transfer : Spending,,-69720,cleared,True
+2024-12-12,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-12-12,Bills,Online Tools,Apple,,-21190,cleared,True
+2024-12-12,Ally Spending,Online Tools,Amazon Prime,,-15890,cleared,True
+2024-12-12,Bills,Online Tools,Apple,,-10590,cleared,True
+2024-12-12,Spending,Eating Out,DoorDash,,-9990,cleared,True
+2024-12-12,Spending,Uncategorized,Transfer : Savings,,69720,cleared,True
+2024-12-13,Savings,Uncategorized,Transfer : Spending,,-124500,cleared,True
+2024-12-13,Bills,Fees,CCU-State of Maryland,,-93600,cleared,True
+2024-12-13,Bills,Internet,Verizon,,-89990,cleared,True
+2024-12-13,Spending,Eating Out,DoorDash,,-30610,cleared,True
+2024-12-13,Bills,Online Tools,Uxfolio,,-15000,cleared,True
+2024-12-13,Spending,Uncategorized,Transfer : Savings,,124500,cleared,True
+2024-12-13,Bills,Inflow: Ready to Assign,Veeva Systems I Direct Deposit W B Moser Joseph,,5000000,cleared,True
+2024-12-14,Ally Spending,Household Goods,Amazon,,-28610,cleared,True
+2024-12-16,Bills,Uncategorized,Transfer : Spending,,-1500000,cleared,True
+2024-12-16,Bills,Credit Cards,Chase Credit Card - Moser Joseph R,,-266000,cleared,True
+2024-12-16,Bills,Credit Cards,Wells Fargo Credit Card,,-186000,cleared,True
+2024-12-16,Bills,Sports Gear,Transfer to Venmo,,-80000,cleared,True
+2024-12-16,Spending,Eating Out,Peak Food Cour,,-47300,cleared,True
+2024-12-16,Spending,Eating Out,DoorDash,,-36330,cleared,True
+2024-12-16,Spending,Transportation,Exxon,,-33810,cleared,True
+2024-12-16,Spending,Transportation,Stewart's Shops,,-32510,cleared,True
+2024-12-16,Spending,Transportation,Stewart's Shops,,-30150,cleared,True
+2024-12-16,Spending,Eating Out,DoorDash,,-29120,cleared,True
+2024-12-16,Spending,Eating Out,Shake Shack,,-25930,cleared,True
+2024-12-16,Spending,Groceries,Chick-fil-A,,-20840,cleared,True
+2024-12-16,Spending,Eating Out,K-1 Food Court,,-19800,cleared,True
+2024-12-16,Spending,Eating Out,K-1 Pub,,-18450,cleared,True
+2024-12-16,Spending,Eating Out,K-1 Pub,,-18450,cleared,True
+2024-12-16,Spending,Groceries,Wawa,,-18100,cleared,True
+2024-12-16,Spending,Eating Out,The Cascades Lodge Killington Vt,,-18000,cleared,True
+2024-12-16,Spending,Eating Out,The Cascades Lodge Killington Vt,,-17000,cleared,True
+2024-12-16,Spending,Groceries,Wawa,,-15420,cleared,True
+2024-12-16,Spending,Eating Out,K-1 Food Court,,-10170,cleared,True
+2024-12-16,Spending,Fees,Monthly Service Fee,,-10000,cleared,True
+2024-12-16,Savings,Inflow: Ready to Assign,Interest,,10,cleared,True
+2024-12-16,Spending,Uncategorized,Transfer : Bills,,1500000,cleared,True
+2024-12-17,Spending,Groceries,Instacart,,-144930,cleared,True
+2024-12-17,Spending,Eating Out,DoorDash,,-108610,cleared,True
+2024-12-17,Spending,Eating Out,Sedona Taphouse,,-69790,cleared,True
+2024-12-17,Bills,Exterminator,Cooper Pest So,,-52290,cleared,True
+2024-12-17,Spending,Groceries,Nudy's Cafe,,-40650,cleared,True
+2024-12-17,Spending,Transportation,Sunoco,,-30310,cleared,True
+2024-12-17,Bills,Online Tools,OpenAI,,-21200,cleared,True
+2024-12-18,Spending,Eating Out,DoorDash,,-75460,cleared,True
+2024-12-18,Spending,Groceries,Maggie Moo's,,-42290,cleared,True
+2024-12-18,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-12-18,Bills,Online Tools,Apple,,-10590,cleared,True
+2024-12-18,Bills,Fees,Mobile Deposit,,19670,cleared,True
+2024-12-18,Ally Spending,Inflow: Ready to Assign,Veeva Systems I Direct Deposit,,345330,cleared,True
+2024-12-19,Spending,Eating Out,Taphouse 23,,-105790,cleared,True
+2024-12-19,Spending,Groceries,Cafe Com Leite,,-19610,cleared,True
+2024-12-19,Spending,Groceries,Chick-fil-A,,-11110,cleared,True
+2024-12-20,Bills,Therapy,Transfer to Venmo,,-260000,cleared,True
+2024-12-20,Spending,Eating Out,DoorDash,,-42270,cleared,True
+2024-12-20,Bills,Online Tools,Apple,,-26490,cleared,True
+2024-12-20,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-12-20,Spending,Groceries,Butterscotch P,,-22120,cleared,True
+2024-12-20,Bills,Online Tools,PayPal Purchase,,-15890,cleared,True
+2024-12-20,Bills,Online Tools,Apple,,-12700,cleared,True
+2024-12-20,Bills,Inflow: Ready to Assign,Veeva Systems I Direct Deposit W B Moser Joseph,,5000000,cleared,True
+2024-12-21,Ally Savings,Inflow: Ready to Assign,Interest Paid,,40,cleared,True
+2024-12-21,Ally Spending,Inflow: Ready to Assign,Interest Paid,,70,cleared,True
+2024-12-23,Bills,Adventure,Transfer to Venmo,,-282000,cleared,True
+2024-12-23,Ally Spending,Furnishing,Quince,,-222380,cleared,True
+2024-12-23,Bills,Mobile Phone,AT&T,,-209010,cleared,True
+2024-12-23,Bills,Adventure,Airbnb,,-144870,cleared,True
+2024-12-23,Spending,Eating Out,DoorDash,,-63360,cleared,True
+2024-12-23,Spending,Eating Out,DoorDash,,-56820,cleared,True
+2024-12-23,Spending,Fitness,Bear Creek,,-52000,cleared,True
+2024-12-23,Spending,Groceries,Giant,,-46970,cleared,True
+2024-12-23,Bills,Online Tools,Atlantic.net,,-39290,cleared,True
+2024-12-23,Spending,Groceries,Mont Clare Del,,-31800,cleared,True
+2024-12-23,Spending,Transportation,Wawa,,-31590,cleared,True
+2024-12-23,Spending,Groceries,Mont Clare Del,,-27750,cleared,True
+2024-12-23,Spending,Groceries,Starbucks,,-25000,cleared,True
+2024-12-23,Spending,Groceries,Nudy's Cafe,,-21150,cleared,True
+2024-12-23,Spending,Groceries,Bear Creek,,-17280,cleared,True
+2024-12-23,Spending,Groceries,Bear Creek,,-12720,cleared,True
+2024-12-23,Spending,Groceries,Bear Creek,,-12720,cleared,True
+2024-12-23,Spending,Groceries,Bear Creek,,-3500,cleared,True
+2024-12-24,Ally Spending,Sports Gear,REI,,-299950,cleared,True
+2024-12-24,Bills,Credit Cards,Amazon Store Card,,-100000,cleared,True
+2024-12-24,Ally Spending,Gifts,J T Bankers Saloon S Main,,-92310,cleared,True
+2024-12-24,Ally Spending,Groceries,North Plank Road,,-88500,cleared,True
+2024-12-24,Bills,Online Tools,Apple,,-65700,cleared,True
+2024-12-24,Spending,Eating Out,DoorDash,,-43600,cleared,True
+2024-12-24,Savings,Uncategorized,Transfer : Spending,,-25000,cleared,True
+2024-12-24,Bills,Streaming Services,Netflix,,-24370,cleared,True
+2024-12-24,Bills,Online Tools,Apple,,-18000,cleared,True
+2024-12-24,Spending,Uncategorized,Transfer : Savings,,25000,cleared,True
+2024-12-25,Ally Spending,Fitness,Saddles to Spurs Skippack Pike,,-45000,cleared,True
+2024-12-25,Ally Spending,Transportation,Sunoco,,-22610,cleared,True
+2024-12-25,Ally Spending,Home Improvement,The Home Depot,,-8210,cleared,True
+2024-12-26,Savings,Uncategorized,Transfer : Spending,,-168780,cleared,True
+2024-12-26,Bills,Water,Pennsylvania Ame Payment Joseph R Moser,,-50710,cleared,True
+2024-12-26,Bills,Online Tools,Ring,,-49990,cleared,True
+2024-12-26,Bills,Online Tools,Apple,,-42390,cleared,True
+2024-12-26,Bills,Online Tools,Apple,,-33170,cleared,True
+2024-12-26,Spending,Transportation,Cumberland Farms,,-29140,cleared,True
+2024-12-26,Bills,Streaming Services,Hulu,,-28610,cleared,True
+2024-12-26,Spending,Transportation,Royal Farms,,-28390,cleared,True
+2024-12-26,Spending,Groceries,Burger King,,-14470,cleared,True
+2024-12-26,Spending,Groceries,Sunoco,,-3740,cleared,True
+2024-12-26,Spending,Uncategorized,Transfer : Savings,,168780,cleared,True
+2024-12-27,Spending,Groceries,Flatbreadc Flatbr Httpsflatbrea Nh,,-22910,cleared,True
+2024-12-27,Bills,Online Tools,Evernote,,-10600,cleared,True
+2024-12-27,Savings,Uncategorized,Transfer : Spending,,-8290,cleared,True
+2024-12-27,Spending,Uncategorized,Transfer : Savings,,8290,cleared,True
+2024-12-27,Spending,Inflow: Ready to Assign,Overdraft Transfer From Credit or Line,,374230,cleared,True
+2024-12-28,Ally Spending,Gifts,Soomanybaskets.com,,-209720,cleared,True
+2024-12-29,Ally Spending,Adventure,Wildcat Pass Route Pinkham,,-144000,cleared,True
+2024-12-30,Bills,Uncategorized,Transfer : Spending,,-1000000,cleared,True
+2024-12-30,Spending,Gifts,Abenakitrailrestau Northconway Nh,,-405740,cleared,True
+2024-12-30,Spending,Gifts,Flatbread Company,,-220570,cleared,True
+2024-12-30,Bills,Adventure,Waterville Valley Resort,,-139000,cleared,True
+2024-12-30,Spending,Gifts,Northampton Ma,,-130860,cleared,True
+2024-12-30,Ally Spending,Adventure,Snow.com Resorts,,-86000,cleared,True
+2024-12-30,Spending,Eating Out,Attitash,,-64370,cleared,True
+2024-12-30,Spending,Eating Out,Food a Waterville Va Nh,,-55000,cleared,True
+2024-12-30,Spending,Eating Out,Red Fox Bar & Gril Jackson Nh,,-48900,cleared,True
+2024-12-30,Spending,Transportation,Cumberland Farms,,-36710,cleared,True
+2024-12-30,Spending,Eating Out,DoorDash,,-34890,cleared,True
+2024-12-30,Spending,Groceries,New Hampshire Liquor and Wine,,-33940,cleared,True
+2024-12-30,Spending,Groceries,Food a Waterville Va Nh,,-17000,cleared,True
+2024-12-30,Spending,Groceries,J-Town Deli,,-16910,cleared,True
+2024-12-30,Spending,Groceries,Attitash,,-13310,cleared,True
+2024-12-30,Spending,Streaming Services,Kindle Unlimited,,-12710,cleared,True
+2024-12-30,Spending,Groceries,Wildcat F&B,,-9490,cleared,True
+2024-12-30,Bills,Streaming Services,Peacock TV,,-8470,cleared,True
+2024-12-30,Spending,Groceries,Wildcat F&B,,-6000,cleared,True
+2024-12-30,Spending,Groceries,Wildcat F&B,,-2440,cleared,True
+2024-12-30,Spending,Transportation,ParkMobile,,-600,cleared,True
+2024-12-30,Spending,Inflow: Ready to Assign,Overdraft Transfer From Credit or Line,,71460,cleared,True
+2024-12-30,Spending,Uncategorized,Transfer : Bills,,1000000,cleared,True
+2024-12-31,Spending,Gifts,Fiesta Jalisco,,-309870,cleared,True
+2024-12-31,Spending,Eating Out,Tuckerman Brew,,-115000,cleared,True
+2024-12-31,Spending,Eating Out,Tuckerman Brew,,-28750,cleared,True
+2024-12-31,Spending,Eating Out,Tuckerman Brew,,-20000,cleared,True
+2024-12-31,Spending,Eating Out,DoorDash,,-16840,cleared,True
+2024-12-31,Spending,Eating Out,Tuckerman Brew,,-10000,cleared,True
+2024-12-31,Spending,Eating Out,Tuckerman Brew,,-10000,cleared,True
+2024-12-31,Spending,Eating Out,Tuckerman Brew,,-10000,cleared,True
+2024-12-31,Spending,Inflow: Ready to Assign,Overdraft Transfer From Credit or Line,,110720,cleared,True
+2025-01-02,Bills,Mortgage,PennyMac,,-3981060,cleared,True
+2025-01-02,Bills,Inflow: Ready to Assign,Recurring Transfer to Moser J Everyday Checking,,-1500000,cleared,True
+2025-01-02,Bills,Gym Membership,Reach Climbi,,-95000,cleared,True
+2025-01-02,Spending,Eating Out,Barley & Salt Tap North Conway Nh,,-42810,cleared,True
+2025-01-02,Spending,Transportation,Wawa,,-38920,cleared,True
+2025-01-02,Spending,Eating Out,DoorDash,,-36160,cleared,True
+2025-01-02,Spending,Transportation,Cumberland Farms,,-32490,cleared,True
+2025-01-02,Spending,Groceries,McDonald's,,-23830,cleared,True
+2025-01-02,Spending,Transportation,Gulf Oil,,-20930,cleared,True
+2025-01-02,Spending,Groceries,AG Travel Plaza,,-13570,cleared,True
+2025-01-02,Bills,Credit Cards,Apple Card Payment,,-10590,cleared,True
+2025-01-02,Spending,Groceries,Cumberland Farms,,-9280,cleared,True
+2025-01-02,Bills,Inflow: Ready to Assign,Venmo,,915830,cleared,True
+2025-01-02,Spending,Inflow: Ready to Assign,Recurring Transfer From Moser J Everyday Checki,,1500000,cleared,True
+2025-01-03,Spending,Eating Out,DoorDash,,-34790,cleared,True
+2025-01-06,Spending,Groceries,Instacart,,-331790,cleared,True
+2025-01-06,Bills,Personal Loan,"Upgrade, Inc.",,-237250,cleared,True
+2025-01-06,Spending,Eating Out,DoorDash,,-112760,cleared,True
+2025-01-06,Spending,Eating Out,DoorDash,,-79790,cleared,True
+2025-01-06,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2025-01-06,Spending,Eating Out,DoorDash,,-59850,cleared,True
+2025-01-06,Bills,Credit Cards,Best Buy Credit Card,,-57000,cleared,True
+2025-01-06,Spending,Eating Out,DoorDash,,-55740,cleared,True
+2025-01-06,Spending,Eating Out,DoorDash,,-48210,cleared,True
+2025-01-06,Spending,Eating Out,DoorDash,,-47450,cleared,True
+2025-01-06,Spending,Groceries,Starbucks,,-25000,cleared,True
+2025-01-06,Spending,Eating Out,DoorDash,,-15190,cleared,True
+2025-01-06,Bills,Therapy,BetterHelp,,-15000,cleared,True
+2025-01-06,Bills,Online Tools,Apple,,-7410,cleared,True
+2025-01-07,Spending,Eating Out,DoorDash,,-80540,cleared,True
+2025-01-07,Bills,Online Tools,Zapier,,-31790,cleared,True
+2025-01-07,Spending,Transportation,Shell,,-27240,cleared,True
+2025-01-07,Bills,Streaming Services,Spotify,,-12710,cleared,True
+2025-01-07,Bills,Online Tools,Apple,,-9990,cleared,True
+2025-01-08,Bills,Transportation,EZ Pass,,-130000,cleared,True
+2025-01-08,Spending,Eating Out,DoorDash,,-125100,cleared,True
+2025-01-08,Spending,Transportation,Metropolis,,-48200,cleared,True
+2025-01-08,Bills,Therapy,BetterHelp,,-15000,cleared,True
+2025-01-08,Bills,Online Tools,Dropbox,,-11990,cleared,True
+2025-01-09,Spending,Groceries,Tatte Bakery,,-56880,cleared,True
+2025-01-09,Ally Spending,Online Tools,Amazon,,-1050,cleared,True
+2025-01-10,Bills,Credit Cards,Chase Credit Card - Moser Joseph R,,-502000,cleared,True
+2025-01-10,Bills,Electric/Gas,PECO Energy Company,,-163410,cleared,True
+2025-01-10,Spending,Transportation,Metropolis,,-46200,cleared,True
+2025-01-10,Spending,Eating Out,DoorDash,,-29890,cleared,True
+2025-01-10,Spending,Groceries,Billy Hicks G Washington Dc,,-22600,cleared,True
+2025-01-10,Spending,Inflow: Ready to Assign,Overdraft Transfer From Credit or Line,,65720,cleared,True
+2025-01-13,Bills,Clothing,Vuori,,-428240,cleared,True
+2025-01-13,Bills,Auto Insurance,GEICO Auto Insurance,,-153970,cleared,True
+2025-01-13,Bills,Electronics,Amazon Return,,-75590,cleared,True
+2025-01-13,Bills,Medical,CVS Pharmacy,,-72510,cleared,True
+2025-01-13,Spending,Eating Out,DoorDash,,-71830,cleared,True
+2025-01-13,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2025-01-13,Spending,Eating Out,DoorDash,,-61760,cleared,True
+2025-01-13,Spending,Transportation,Metropolis,,-46200,cleared,True
+2025-01-13,Spending,Eating Out,DoorDash,,-39790,cleared,True
+2025-01-13,Bills,Transportation,Wawa,,-37430,cleared,True
+2025-01-13,Spending,Groceries,Second Pizza Washington Dc,,-32380,cleared,True
+2025-01-13,Spending,Groceries,Call Your Moth,,-22070,cleared,True
+2025-01-13,Bills,Online Tools,Apple,,-21190,cleared,True
+2025-01-13,Bills,Household Goods,Amazon,,-21140,cleared,True
+2025-01-13,Spending,Groceries,Call Your Moth,,-21070,cleared,True
+2025-01-13,Bills,Online Tools,Apple,,-16950,cleared,True
+2025-01-13,Spending,Online Tools,Amazon Prime,,-15890,cleared,True
+2025-01-13,Bills,Online Tools,Uxfolio,,-15000,cleared,True
+2025-01-13,Spending,Groceries,Billy Hicks G Washington Dc,,-14000,cleared,True
+2025-01-13,Bills,Online Tools,Apple,,-11120,cleared,True
+2025-01-13,Bills,Online Tools,Apple,,-10590,cleared,True
+2025-01-13,Spending,Eating Out,DoorDash,,-9990,cleared,True
+2025-01-13,Bills,Online Tools,PayPal,,-9990,cleared,True
+2025-01-13,Spending,Gifts,FedEx Office,,-810,cleared,True
+2025-01-13,Spending,Inflow: Ready to Assign,Overdraft Transfer From Credit or Line,,180890,cleared,True
+2025-01-13,Ally Spending,Inflow: Ready to Assign,Veeva Systems I Direct Deposit,,345130,cleared,True
+2025-01-14,Bills,Credit Cards,Chase Credit Card - Moser Joseph R,,-282000,cleared,True
+2025-01-14,Bills,Internet,Verizon,,-89990,cleared,True
+2025-01-14,Bills,Sewer,Valley Forge Sewer Authority Recurring,,-85000,cleared,True
+2025-01-14,Spending,Groceries,Starbucks,,-18580,cleared,True
+2025-01-14,Bills,Household Goods,Amazon Return,,-16220,cleared,True
+2025-01-15,Bills,Uncategorized,Transfer : Spending,,-1500000,cleared,True
+2025-01-15,Spending,Uncategorized,Transfer : Bills,,1500000,cleared,True
+2025-01-15,Bills,Inflow: Ready to Assign,Veeva Systems I Direct Deposit W B Moser Joseph,,5000000,cleared,True
+2025-01-16,Bills,Credit Cards,Wells Fargo Credit Card,,-188000,cleared,True
+2025-01-16,Bills,Exterminator,Cooper Pest So,,-52290,cleared,True
+2025-01-16,Bills,Travel,American Airlines,,-20000,cleared,True
+2025-01-16,Bills,Personal Care,Transfer to Venmo,,-20000,cleared,True
+2025-01-16,Bills,Online Tools,Apple,,-10590,cleared,True
+2025-01-16,Spending,Fees,Monthly Service Fee,,-10000,cleared,True
+2025-01-16,Savings,Fees,Monthly Service Fee,,-5000,cleared,True
+2025-01-17,Spending,Personal Care,Recurring Payment Love Salon Corpora Salo Pa,,-82280,cleared,True
+2025-01-17,Spending,Groceries,Instacart,,-65440,cleared,True
+2025-01-17,Spending,Eating Out,DoorDash,,-63360,cleared,True
+2025-01-17,Bills,Online Tools,OpenAI,,-21200,cleared,True
+2025-01-20,Ally Spending,Electronics,Amazon,,-37090,cleared,True
+2025-01-21,Spending,Groceries,Instacart,,-80260,cleared,True
+2025-01-21,Spending,Eating Out,Blue Ridge Grill,,-63800,cleared,True
+2025-01-21,Ally Spending,Electronics,Amazon,,-57360,cleared,True
+2025-01-21,Spending,Eating Out,DoorDash,,-56640,cleared,True
+2025-01-21,Spending,Eating Out,DoorDash,,-43840,cleared,True
+2025-01-21,Spending,Eating Out,DoorDash,,-43310,cleared,True
+2025-01-21,Spending,Transportation,Sunoco,,-41620,cleared,True
+2025-01-21,Spending,Groceries,Nudy's Cafe,,-39170,cleared,True
+2025-01-21,Spending,Medical,CVS Pharmacy,,-37320,cleared,True
+2025-01-21,Spending,Transportation,Wawa,,-32040,cleared,True
+2025-01-21,Spending,Transportation,Shell,,-27210,cleared,True
+2025-01-21,Spending,Eating Out,DoorDash,,-25800,cleared,True
+2025-01-21,Spending,Groceries,Starbucks,,-25000,cleared,True
+2025-01-21,Bills,Online Tools,PayPal Purchase,,-15890,cleared,True
+2025-01-21,Spending,Adventure,Bestlocker Pu Scooterbu Fl,,-15000,cleared,True
+2025-01-21,Bills,Online Tools,Apple,,-13770,cleared,True
+2025-01-21,Spending,Groceries,Burger King,,-13650,cleared,True
+2025-01-21,Bills,Online Tools,Apple,,-12700,cleared,True
+2025-01-21,Spending,Groceries,Cafe Con Bagel,,-5370,cleared,True
+2025-01-21,Spending,Groceries,Sunoco,,-2990,cleared,True
+2025-01-21,Spending,Groceries,Instacart,,-2060,cleared,True
+2025-01-21,Ally Spending,Inflow: Ready to Assign,Interest Paid,,20,cleared,True
+2025-01-21,Ally Savings,Inflow: Ready to Assign,Interest Paid,,40,cleared,True
+2025-01-21,Ally Spending,Fees,ATM Fee Reimbursement,,3500,cleared,True
+2025-01-22,Bills,Mobile Phone,AT&T,,-171930,cleared,True
+2025-01-22,Spending,Medical,Target,,-64810,cleared,True
+2025-01-22,Spending,Gifts,Amazon,,-30590,cleared,True
+2025-01-22,Bills,Therapy,BetterHelp,,-15000,cleared,True
+2025-01-22,Bills,Online Tools,Apple,,-9990,cleared,True
+2025-01-23,Bills,Online Tools,Atlantic.net,,-44620,cleared,True
+2025-01-23,Spending,Eating Out,DoorDash,,-35640,cleared,True
+2025-01-23,Spending,Groceries,Hudson News,,-29920,cleared,True
+2025-01-24,Bills,Credit Cards,Amazon Store Card,,-110000,cleared,True
+2025-01-24,Bills,Travel,Japan Post Bank,,-65630,cleared,True
+2025-01-24,Bills,Household Goods,Amazon Return,,-39350,cleared,True
+2025-01-24,Spending,Household Goods,Amazon,,-38000,cleared,True
+2025-01-24,Spending,Household Goods,Amazon,,-37110,cleared,True
+2025-01-24,Bills,Household Goods,Amazon Return,,-24590,cleared,True
+2025-01-24,Bills,Streaming Services,Netflix,,-24370,cleared,True
+2025-01-24,Bills,Therapy,BetterHelp,,-15000,cleared,True
+2025-01-24,Bills,Fees,ATM Fee,,-5000,cleared,True
+2025-01-27,Bills,Travel,Intl Hotel Sardonyx Tok Tokyo,,-369900,cleared,True
+2025-01-27,Bills,Travel,Apple,,-51910,cleared,True
+2025-01-27,Bills,Travel,Apple,,-42390,cleared,True
+2025-01-27,Bills,Streaming Services,Hulu,,-28610,cleared,True
+2025-01-27,Spending,Travel,Intl Precious Deli Toky Tokyo,,-26220,cleared,True
+2025-01-27,Spending,Travel,Intl Tokyo Solamachi Sumidaku,,-19270,cleared,True
+2025-01-27,Bills,Travel,International Purchase Transaction Fee,,-11090,cleared,True
+2025-01-27,Bills,Online Tools,Evernote,,-10600,cleared,True
+2025-01-27,Spending,Travel,Intl Jr East Sibuyaku,,-6420,cleared,True
+2025-01-27,Spending,Travel,Intl Asakusa Mille Mele Tokyo,,-3210,cleared,True
+2025-01-27,Spending,Travel,International Purchase Transaction Fee,,-780,cleared,True
+2025-01-27,Spending,Travel,International Purchase Transaction Fee,,-570,cleared,True
+2025-01-27,Spending,Travel,ビックカメラ,,-500,cleared,True
+2025-01-27,Spending,Travel,International Purchase Transaction Fee,,-190,cleared,True
+2025-01-27,Spending,Travel,International Purchase Transaction Fee,,-90,cleared,True
+2025-01-27,Spending,Travel,International Purchase Transaction Fee,,-10,cleared,True
+2025-01-28,Bills,Water,Pennsylvania Ame Payment Joseph R Moser,,-39450,cleared,True
+2025-01-28,Bills,Inflow: Ready to Assign,Veeva Systems in Direct Pay Joe Moser,,75000,cleared,True
+2025-01-28,Bills,Inflow: Ready to Assign,Veeva Systems in Direct Pay Joe Moser,,212000,cleared,True
+2025-01-29,Spending,Eating Out,DoorDash,,-77170,cleared,True
+2025-01-29,Spending,Travel,Intl Hachimantai Shimok,,-15180,cleared,True
+2025-01-29,Spending,Streaming Services,Kindle Unlimited,,-12710,cleared,True
+2025-01-29,Bills,Streaming Services,Peacock Premium,,-8470,cleared,True
+2025-01-29,Spending,Travel,International Purchase Transaction Fee,,-450,cleared,True
+2025-01-29,Ally Spending,Inflow: Ready to Assign,Veeva Systems I Direct Deposit,,778420,cleared,True
+2025-01-30,Bills,Home Cleaning,The Cleaning Authority,,-196100,cleared,True
+2025-01-30,Bills,Travel,ATM Withdrawal,,-195060,cleared,True
+2025-01-30,Bills,Online Tools,Apple,,-115540,cleared,True
+2025-01-30,Bills,Fees,ATM Fee,,-5000,cleared,True
+2025-01-31,Spending,Travel,Intl Tazawako Lake Reso Senbokusi,,-40790,cleared,True
+2025-01-31,Bills,Therapy,BetterHelp,,-15000,cleared,True
+2025-01-31,Bills,Home Cleaning,The Cleaning Authority,,-10000,cleared,True
+2025-01-31,Spending,Travel,International Purchase Transaction Fee,,-1220,cleared,True
+2025-01-31,Bills,Inflow: Ready to Assign,Veeva Systems I Direct Deposit W B Moser Joseph,,5000000,cleared,True
+2025-02-03,Bills,Mortgage,PennyMac,,-4018550,cleared,True
+2025-02-03,Bills,Uncategorized,Transfer : Spending,,-1500000,cleared,True
+2025-02-03,Bills,Gym Membership,Recurring Payment Reach Climbing Reachclimbing Pa,,-95000,cleared,True
+2025-02-03,Bills,Travel,Intl Semionsen Iwate,,-60750,cleared,True
+2025-02-03,Bills,Travel,Intl Isomarushinjiyukus Tokyo,,-54600,cleared,True
+2025-02-03,Spending,Travel,Intl Geto Kitakami,,-40970,cleared,True
+2025-02-03,Bills,Travel,Intl Geto Kitakami,,-33790,cleared,True
+2025-02-03,Spending,Travel,Intl Geto Kitakami,,-30540,cleared,True
+2025-02-03,Spending,Travel,Intl Geto Kitakami,,-23740,cleared,True
+2025-02-03,Spending,Travel,Intl Geto Kitakami,,-20480,cleared,True
+2025-02-03,Spending,Travel,Intl Tazawako Lake Reso Senbokusi,,-18330,cleared,True
+2025-02-03,Spending,Travel,Intl Jr East Sibuyaku,,-17820,cleared,True
+2025-02-03,Spending,Travel,Intl Geto Kitakami,,-12340,cleared,True
+2025-02-03,Spending,Travel,Intl Geto Kitakami,,-11370,cleared,True
+2025-02-03,Bills,Online Tools,Apple Credit Card,,-10590,cleared,True
+2025-02-03,Spending,Travel,Intl Geto Kitakami,,-10070,cleared,True
+2025-02-03,Spending,Travel,Intl Tazawako Snow Reso,,-9390,cleared,True
+2025-02-03,Spending,Travel,Intl Geto Kitakami,,-5200,cleared,True
+2025-02-03,Bills,Travel,International Purchase Transaction Fee,,-1820,cleared,True
+2025-02-03,Bills,Travel,International Purchase Transaction Fee,,-1630,cleared,True
+2025-02-03,Spending,Travel,International Purchase Transaction Fee,,-1220,cleared,True
+2025-02-03,Bills,Travel,International Purchase Transaction Fee,,-1010,cleared,True
+2025-02-03,Spending,Travel,International Purchase Transaction Fee,,-910,cleared,True
+2025-02-03,Spending,Travel,International Purchase Transaction Fee,,-710,cleared,True
+2025-02-03,Spending,Travel,International Purchase Transaction Fee,,-610,cleared,True
+2025-02-03,Spending,Travel,International Purchase Transaction Fee,,-540,cleared,True
+2025-02-03,Spending,Travel,International Purchase Transaction Fee,,-530,cleared,True
+2025-02-03,Spending,Travel,International Purchase Transaction Fee,,-370,cleared,True
+2025-02-03,Spending,Travel,International Purchase Transaction Fee,,-340,cleared,True
+2025-02-03,Spending,Travel,International Purchase Transaction Fee,,-300,cleared,True
+2025-02-03,Spending,Travel,International Purchase Transaction Fee,,-280,cleared,True
+2025-02-03,Spending,Travel,International Purchase Transaction Fee,,-150,cleared,True
+2025-02-03,Spending,Uncategorized,Transfer : Bills,,1500000,cleared,True
+2025-02-04,Bills,Travel,Burger King,,-15070,cleared,True
+2025-02-04,Bills,Travel,Suica,,-6500,cleared,True
+2025-02-04,Spending,Travel,Suica,,-6500,cleared,True
+2025-02-04,Bills,Travel,International Purchase Transaction Fee,,-450,cleared,True
+2025-02-04,Bills,Travel,International Purchase Transaction Fee,,-190,cleared,True
+2025-02-04,Spending,Travel,International Purchase Transaction Fee,,-190,cleared,True
+2025-02-05,Bills,Personal Loan,"Upgrade, Inc.",,-237250,cleared,True
+2025-02-05,Spending,Transportation,Wawa,,-28290,cleared,True
+2025-02-05,Bills,Travel,Intl Shibuya Parco Ku,,-25050,cleared,True
+2025-02-05,Spending,Travel,In-Flight Wi-Fi,,-21340,cleared,True
+2025-02-05,Spending,Travel,Intl Hotel Gracery Shin Sinjiyukuku,,-14290,cleared,True
+2025-02-05,Spending,Travel,Intl Shibuya Parco Ku,,-6500,cleared,True
+2025-02-05,Bills,Travel,Intl Rameniyasa Kabukic Shinjukuku,,-3900,cleared,True
+2025-02-05,Bills,Travel,International Purchase Transaction Fee,,-750,cleared,True
+2025-02-05,Spending,Travel,International Purchase Transaction Fee,,-640,cleared,True
+2025-02-05,Spending,Travel,International Purchase Transaction Fee,,-420,cleared,True
+2025-02-05,Spending,Travel,International Purchase Transaction Fee,,-190,cleared,True
+2025-02-05,Bills,Travel,International Purchase Transaction Fee,,-110,cleared,True
+2025-02-06,Spending,Groceries,Instacart,,-106740,cleared,True
+2025-02-06,Bills,Credit Cards,Best Buy Credit Card,,-96000,cleared,True
+2025-02-06,Spending,Groceries,Instacart,,-76490,cleared,True
+2025-02-06,Bills,Gifts,Amazon,,-42800,cleared,True
+2025-02-06,Spending,Eating Out,DoorDash,,-28780,cleared,True
+2025-02-06,Bills,Travel,Intl Burger Fed Yyz Mississauga Can,,-18770,cleared,True
+2025-02-06,Bills,Online Tools,Apple,,-15890,cleared,True
+2025-02-06,Bills,Online Tools,Apple,,-7410,cleared,True
+2025-02-06,Bills,Travel,International Purchase Transaction Fee,,-560,cleared,True
+2025-02-07,Ally Spending,Eating Out,El Vez South 13th Street,,-114790,cleared,True
+2025-02-07,Spending,Eating Out,DoorDash,,-40290,cleared,True
+2025-02-07,Bills,Fees,Overdraft Fee,,-35000,cleared,True
+2025-02-07,Bills,Online Tools,Zapier,,-31790,cleared,True
+2025-02-07,Spending,Groceries,Nudy's Cafe,,-20280,cleared,True
+2025-02-07,Bills,Streaming Services,Spotify,,-12710,cleared,True
+2025-02-07,Bills,Online Tools,Apple,,-9990,cleared,True
+2025-02-07,Spending,Travel,Suica,,-6490,cleared,True
+2025-02-07,Spending,Travel,International Purchase Transaction Fee,,-190,cleared,True
+2025-02-10,Spending,Groceries,Instacart,,-214410,cleared,True
+2025-02-10,Bills,Eating Out,Uber Eats,,-69880,cleared,True
+2025-02-10,Spending,Eating Out,DoorDash,,-68440,cleared,True
+2025-02-10,Spending,Entertainment,Ensemble,,-61600,cleared,True
+2025-02-10,Bills,Online Tools,Apple,,-51930,cleared,True
+2025-02-10,Spending,Personal Care,Recurring Payment Love Salon Corpora Salo Pa,,-42000,cleared,True
+2025-02-10,Spending,Transportation,Wawa,,-38900,cleared,True
+2025-02-10,Spending,Household Goods,Amazon,,-37080,cleared,True
+2025-02-10,Bills,Fees,Overdraft Fee,,-35000,cleared,True
+2025-02-10,Spending,Transportation,Sunoco,,-34880,cleared,True
+2025-02-10,Spending,Household Goods,Amazon,,-33250,cleared,True
+2025-02-10,Spending,Transportation,Metropolis,,-24100,cleared,True
+2025-02-10,Spending,Household Goods,Amazon,,-20130,cleared,True
+2025-02-10,Spending,Groceries,Spreadbagelry King,,-19970,cleared,True
+2025-02-10,Spending,Groceries,Wawa,,-18470,cleared,True
+2025-02-10,Bills,Online Tools,Apple,,-16950,cleared,True
+2025-02-10,Spending,Electronics,Amazon,,-16940,cleared,True
+2025-02-10,Spending,Household Goods,Amazon,,-13350,cleared,True
+2025-02-10,Spending,Household Goods,Amazon,,-12390,cleared,True
+2025-02-10,Bills,Eating Out,Uber Eats,,-12090,cleared,True
+2025-02-10,Bills,Online Tools,Dropbox,,-11990,cleared,True
+2025-02-10,Spending,Entertainment,Amazon,,-1050,cleared,True
+2025-02-10,Spending,Transportation,ParkMobile,,-900,cleared,True
+2025-02-10,Spending,Transportation,ParkMobile,,-650,cleared,True
+2025-02-11,Spending,Medical,1-800 CONTACTS,,-214970,cleared,True
+2025-02-11,Spending,Eating Out,DoorDash,,-152060,cleared,True
+2025-02-11,Bills,Fees,Overdraft Fee,,-35000,cleared,True
+2025-02-11,Bills,Fees,Overdraft Fee,,-35000,cleared,True
+2025-02-11,Bills,Fees,Overdraft Fee,,-35000,cleared,True
+2025-02-11,Spending,Household Goods,Amazon Return,,-31410,cleared,True
+2025-02-11,Spending,Transportation,Metropolis,,-24100,cleared,True
+2025-02-12,Bills,Online Tools,Apple,,-21190,cleared,True
+2025-02-12,Spending,Online Tools,Amazon Prime,,-15890,cleared,True
+2025-02-12,Bills,Online Tools,Apple,,-10590,cleared,True
+2025-02-12,Spending,Eating Out,DoorDash,,-9990,cleared,True
+2025-02-12,Ally Spending,Inflow: Ready to Assign,Veeva Systems I Direct Deposit,,459120,cleared,True
+2025-02-13,Bills,Internet,Verizon Paymentrec Urring Joe Moser,,-89990,cleared,True
+2025-02-13,Spending,Transportation,Metropolis,,-46200,cleared,True
+2025-02-13,Bills,Transportation,Wawa,,-39160,cleared,True
+2025-02-13,Bills,Online Tools,Uxfolio,,-15000,cleared,True
+2025-02-13,Spending,Eating Out,DoorDash,,-14280,cleared,True
+2025-02-13,Spending,Groceries,Wawa,,-2120,cleared,True
+2025-02-14,Bills,Credit Cards,Chase Credit Card,,-558000,cleared,True
+2025-02-14,Bills,Credit Cards,Chase Credit Card - Moser Joseph R,,-284000,cleared,True
+2025-02-14,Bills,Electric/Gas,PECO Energy Company,,-241730,cleared,True
+2025-02-14,Ally Spending,Eating Out,Lark Righters Ferry Bala,,-121280,cleared,True
+2025-02-14,Spending,Eating Out,DoorDash,,-49630,cleared,True
+2025-02-14,Bills,Therapy,BetterHelp,,-15000,cleared,True
+2025-02-14,Spending,Inflow: Ready to Assign,Overdraft Transfer From Credit or Line,,25000,cleared,True
+2025-02-14,Bills,Inflow: Ready to Assign,Veeva Systems I Direct Deposit W B Moser Joseph,,5000000,cleared,True
+2025-02-18,Bills,Uncategorized,Transfer : Spending,,-1500000,cleared,True
+2025-02-18,Bills,Credit Cards,Wells Fargo Credit Card,,-207000,cleared,True
+2025-02-18,Bills,Auto Insurance,GEICO Auto Insurance,,-153990,cleared,True
+2025-02-18,Bills,Transportation,EZ Pass,,-130000,cleared,True
+2025-02-18,Spending,Eating Out,DoorDash,,-128770,cleared,True
+2025-02-18,Bills,Eating Out,DoorDash,,-66150,cleared,True
+2025-02-18,Bills,Therapy,BetterHelp,,-65000,cleared,True
+2025-02-18,Spending,Groceries,Instacart,,-61650,cleared,True
+2025-02-18,Bills,Exterminator,Cooper Pest So,,-52290,cleared,True
+2025-02-18,Bills,Furnishing,PayPal Purchase,,-50080,cleared,True
+2025-02-18,Spending,Disputed,Recurring Payment River Club Riverclub Dc,,-50000,cleared,True
+2025-02-18,Spending,Transportation,Metropolis,,-46200,cleared,True
+2025-02-18,Bills,Furnishing,PayPal Purchase,,-43720,cleared,True
+2025-02-18,Spending,Eating Out,DoorDash,,-40290,cleared,True
+2025-02-18,Bills,Furnishing,PayPal Purchase,,-37450,cleared,True
+2025-02-18,Bills,Groceries,Cafe Con Bagel,,-32340,cleared,True
+2025-02-18,Bills,Transportation,Wawa,,-31790,cleared,True
+2025-02-18,Bills,Groceries,McDonald's,,-22740,cleared,True
+2025-02-18,Spending,Household Goods,Amazon Return,,-22250,cleared,True
+2025-02-18,Bills,Online Tools,OpenAI,,-21200,cleared,True
+2025-02-18,Spending,Groceries,Nudy's Cafe,,-21150,cleared,True
+2025-02-18,Spending,Groceries,Sunoco,,-17490,cleared,True
+2025-02-18,Bills,Groceries,Wawa,,-14250,cleared,True
+2025-02-18,Spending,Fees,Monthly Service Fee,,-10000,cleared,True
+2025-02-18,Bills,Online Tools,PayPal,,-9990,cleared,True
+2025-02-18,Spending,Groceries,Butterscotch P,,-9120,cleared,True
+2025-02-18,Spending,Groceries,Sunoco,,-2120,cleared,True
+2025-02-18,Spending,Uncategorized,Transfer : Bills,,1500000,cleared,True
+2025-02-19,Bills,Taxes,TurboTax,,-82680,cleared,True
+2025-02-19,Spending,Eating Out,DoorDash,,-40290,cleared,True
+2025-02-19,Spending,Groceries,Starbucks,,-25000,cleared,True
+2025-02-20,Bills,Business Expenses,Amtrak,,-151000,cleared,True
+2025-02-20,Spending,Groceries,Instacart,,-66230,cleared,True
+2025-02-20,Spending,Groceries,Instacart,,-61130,cleared,True
+2025-02-20,Bills,Online Tools,PayPal Purchase,,-15890,cleared,True
+2025-02-20,Spending,Groceries,Instacart,,-5430,cleared,True
+2025-02-20,Bills,Inflow: Ready to Assign,Intuit,,3599500,cleared,True
+2025-02-21,Spending,Household Goods,Amazon Return,,-22250,cleared,True
+2025-02-21,Spending,Household Goods,Amazon Return,,-16230,cleared,True
+2025-02-21,Spending,Household Goods,Amazon Return,,-11740,cleared,True
+2025-02-21,Ally Savings,Inflow: Ready to Assign,Interest Paid,,40,cleared,True
+2025-02-21,Ally Spending,Inflow: Ready to Assign,Interest Paid,,70,cleared,True
+2025-02-21,Bills,Inflow: Ready to Assign,,,5459000,uncleared,True
+2025-02-24,Spending,Groceries,Wine and Spirits,,-169580,cleared,True
+2025-02-24,Bills,Mobile Phone,AT&T,,-160940,cleared,True
+2025-02-24,Spending,Groceries,Instacart,,-94600,cleared,True
+2025-02-24,Spending,Auto Maintenance,Spa Car Wash & Det Berwyn Pa,,-75240,cleared,True
+2025-02-24,Spending,Eating Out,DoorDash,,-65060,cleared,True
+2025-02-24,Bills,Online Tools,Atlantic.net,,-42280,cleared,True
+2025-02-24,Spending,Groceries,Wawa,,-41910,cleared,True
+2025-02-24,Spending,Household Goods,Amazon,,-40810,cleared,True
+2025-02-24,Spending,Eating Out,DoorDash,,-38930,cleared,True
+2025-02-24,Spending,Household Goods,Amazon,,-38500,cleared,True
+2025-02-24,Spending,Groceries,Instacart,,-28260,cleared,True
+2025-02-24,Spending,Groceries,Giant,,-27980,cleared,True
+2025-02-24,Bills,Streaming Services,Netflix,,-26490,cleared,True
+2025-02-24,Spending,Groceries,Starbucks,,-25000,cleared,True
+2025-02-24,Bills,Online Tools,Apple,,-23290,cleared,True
+2025-02-24,Spending,Groceries,Nudy's Cafe,,-21150,cleared,True
+2025-02-24,Spending,Eating Out,DoorDash,,-18960,cleared,True
+2025-02-24,Spending,Household Goods,Amazon Return,,-10220,cleared,True
+2025-02-24,Spending,Electronics,Amazon,,-7620,cleared,True
+2025-02-25,Bills,Credit Cards,Amazon Store Card,,-107000,cleared,True
+2025-02-25,Spending,Household Goods,Amazon Return,,-56430,cleared,True
+2025-02-25,Bills,Online Tools,Apple,,-51910,cleared,True
+2025-02-25,Spending,Furnishing,Amazon Return,,-43620,cleared,True
+2025-02-25,Spending,Furnishing,Amazon,,-32980,cleared,True
+2025-02-25,Bills,Groceries,Instacart,,-27060,cleared,True
+2025-02-25,Ally Spending,Household Goods,Amazon,,-19080,cleared,True
+2025-02-25,Spending,Groceries,Amazon,,-13880,cleared,True
+2025-02-25,Spending,Household Goods,Amazon Return,,-13740,cleared,True
+2025-02-25,Bills,Household Goods,Duane Reade,,-3580,cleared,True
+2025-02-26,Bills,Streaming Services,Hulu,,-28610,cleared,True
+2025-02-26,Bills,Credit Cards,TJX Rewards Credit Card,,-27000,cleared,True
+2025-02-26,Bills,Gifts,Amazon,,-26490,cleared,True
+2025-02-26,Bills,Groceries,Bluestone Lane,,-8040,cleared,True
+2025-02-26,Ally Spending,Inflow: Ready to Assign,Veeva Systems I Direct Deposit,,459140,cleared,True
+2025-02-27,Bills,Home Cleaning,The Cleaning Authority,,-196100,cleared,True
+2025-02-27,Bills,Eating Out,DoorDash,,-74670,cleared,True
+2025-02-27,Bills,Eating Out,Jacob's Pickles,,-39950,cleared,True
+2025-02-27,Bills,Online Tools,Evernote,,-10600,cleared,True
+2025-02-27,Bills,Business Expenses,SEPTA,,-2000,cleared,True
+2025-02-28,Ally Spending,Furnishing,Marshalls,,-189680,cleared,True
+2025-02-28,Bills,Eating Out,Sedona Taphouse,,-62400,cleared,True
+2025-02-28,Bills,Eating Out,Malgudi Cafe Exton Pa,,-60350,cleared,True
+2025-02-28,Bills,Eating Out,DoorDash,,-40290,cleared,True
+2025-02-28,Bills,Water,Pennsylvania Ame Payment Joseph R Moser,,-30060,cleared,True
+2025-02-28,Bills,Groceries,Chocolate Therapy,,-24960,cleared,True
+2025-02-28,Ally Spending,Streaming Services,Kindle Unlimited,,-12710,cleared,True
+2025-02-28,Bills,Home Cleaning,The Cleaning Authority,,-10000,cleared,True
+2025-02-28,Bills,Streaming Services,Peacock Premium,,-8470,cleared,True
+2025-02-28,Bills,Inflow: Ready to Assign,Veeva Systems I Direct Deposit W B Moser Joseph,,5000000,cleared,True
+2025-03-02,Ally Spending,Fitness,Rock N Roll Events West Martin Lu,,-179000,cleared,True
+2025-03-03,Bills,Mortgage,PennyMac,,-4018550,cleared,True
+2025-03-03,Bills,Uncategorized,Transfer : Spending,,-1500000,cleared,True
+2025-03-03,Spending,Eating Out,Lupo Verde,,-186800,cleared,True
+2025-03-03,Bills,Trash Service,Whitetail Disposal,,-105000,cleared,True
+2025-03-03,Bills,Gym Membership,Recurring Payment Reach Climbing Reachclimbing Pa,,-95000,cleared,True
+2025-03-03,Bills,Home Improvement,The Home Depot,,-90040,cleared,True
+2025-03-03,Ally Spending,Electronics,Amazon,,-74190,cleared,True
+2025-03-03,Bills,Eating Out,DoorDash,,-58350,cleared,True
+2025-03-03,Bills,Eating Out,DoorDash,,-55610,cleared,True
+2025-03-03,Spending,Transportation,Metropolis,,-46200,cleared,True
+2025-03-03,Spending,Groceries,Blue Bottle Coffee,,-43560,cleared,True
+2025-03-03,Bills,Online Tools,Apple,,-42390,cleared,True
+2025-03-03,Spending,Transportation,Sunoco,,-41740,cleared,True
+2025-03-03,Spending,Transportation,Wawa,,-35500,cleared,True
+2025-03-03,Spending,Groceries,Call Your Moth,,-29540,cleared,True
+2025-03-03,Spending,Transportation,Metropolis,,-12990,cleared,True
+2025-03-03,Bills,Online Tools,Apple Credit Card,,-10590,cleared,True
+2025-03-03,Spending,Groceries,Shell,,-4410,cleared,True
+2025-03-03,Spending,Groceries,Wawa,,-2890,cleared,True
+2025-03-03,Spending,Uncategorized,Transfer : Bills,,1500000,cleared,True
+2025-03-04,Spending,Eating Out,DoorDash,,-44180,cleared,True
+2025-03-05,Bills,Personal Loan,"Upgrade, Inc.",,-237250,cleared,True
+2025-03-05,Spending,Groceries,Instacart,,-62110,cleared,True
+2025-03-05,Spending,Eating Out,DoorDash,,-47890,cleared,True
+2025-03-05,Bills,Credit Cards,Chase Credit Card - Moser Joseph R,,-40000,cleared,True
+2025-03-05,Spending,Groceries,Amazon,,-39990,cleared,True
+2025-03-05,Spending,Eating Out,DoorDash,,-29460,cleared,True
+2025-03-06,Spending,Fitness,Amazon,,-169950,cleared,True
+2025-03-06,Bills,Credit Cards,Best Buy Credit Card,,-127000,cleared,True
+2025-03-06,Spending,Eating Out,DoorDash,,-70850,cleared,True
+2025-03-06,Spending,Groceries,Starbucks,,-25000,cleared,True
+2025-03-07,Spending,Groceries,Amazon Return,,-51640,cleared,True
+2025-03-07,Bills,Online Tools,Apple,,-49680,cleared,True
+2025-03-07,Bills,Online Tools,Zapier,,-31790,cleared,True
+2025-03-07,Bills,Streaming Services,PayPal Purchase,,-12710,cleared,True
+2025-03-07,Bills,Online Tools,Apple,,-9990,cleared,True
+2025-03-10,Bills,Credit Cards,Chase Credit Card - Moser Joseph R,,-555000,cleared,True
+2025-03-10,Ally Spending,Adventure,Venmo,,-350000,cleared,True
+2025-03-10,Spending,Eating Out,Yellow Geor Washington Dc,,-115010,cleared,True
+2025-03-10,Spending,Eating Out,DoorDash,,-64360,cleared,True
+2025-03-10,Spending,Personal Care,Recurring Payment Love Salon Corpora Salo Pa,,-42000,cleared,True
+2025-03-10,Spending,Groceries,Instacart,,-39840,cleared,True
+2025-03-10,Spending,Transportation,Wawa,,-34240,cleared,True
+2025-03-10,Spending,Groceries,Starbucks,,-25000,cleared,True
+2025-03-10,Spending,Transportation,Metropolis,,-24100,cleared,True
+2025-03-10,Spending,Groceries,Wawa,,-23120,cleared,True
+2025-03-10,Spending,Groceries,Amazon Return,,-21470,cleared,True
+2025-03-10,Spending,Personal Care,Meettippy,,-21080,cleared,True
+2025-03-10,Spending,Groceries,Instacart,,-20160,cleared,True
+2025-03-10,Bills,Online Tools,Dropbox,,-11990,cleared,True
+2025-03-10,Spending,Groceries,Inti Coffee,,-7000,cleared,True
+2025-03-10,Spending,Streaming Services,Amazon,,-1050,cleared,True
+2025-03-11,Ally Spending,Business Expenses,Fox & Brazen ! Unc 177 Bridge Street,,-290440,cleared,True
+2025-03-11,Bills,Online Tools,Apple,,-112340,cleared,True
+2025-03-11,Spending,Eating Out,DoorDash,,-88330,cleared,True
+2025-03-11,Bills,Eating Out,Brgrill.com,,-45380,cleared,True
+2025-03-11,Spending,Groceries,Mezeh,,-29750,cleared,True
+2025-03-11,Bills,Groceries,Dog Tag Bakery,,-10920,cleared,True
+2025-03-12,Bills,Auto Insurance,GEICO Auto Insurance,,-153850,cleared,True
+2025-03-12,Bills,Transportation,EZ Pass,,-130000,cleared,True
+2025-03-12,Bills,Groceries,Tatte Bakery,,-47300,cleared,True
+2025-03-12,Bills,Groceries,Shell,,-26090,cleared,True
+2025-03-12,Bills,Online Tools,Apple,,-10590,cleared,True
+2025-03-12,Bills,Eating Out,DoorDash,,-9990,cleared,True
+2025-03-12,Ally Spending,Inflow: Ready to Assign,Veeva Systems I Direct Deposit,,459130,cleared,True
+2025-03-13,Bills,Internet,Verizon,,-94990,cleared,True
+2025-03-13,Bills,Eating Out,DoorDash,,-40800,cleared,True
+2025-03-13,Bills,Transportation,Turkey Hill,,-40300,cleared,True
+2025-03-13,Bills,Groceries,Sweetgreen,,-40100,cleared,True
+2025-03-13,Bills,Online Tools,Amazon Prime,,-15890,cleared,True
+2025-03-13,Bills,Online Tools,Uxfolio,,-15000,cleared,True
+2025-03-13,Bills,Groceries,Turkey Hill,,-9030,cleared,True
+2025-03-14,Bills,Credit Cards,Chase Credit Card - Moser Joseph R,,-279000,cleared,True
+2025-03-14,Bills,Eating Out,DoorDash,,-91950,cleared,True
+2025-03-14,Bills,Groceries,Wawa,,-16440,cleared,True
+2025-03-14,Bills,Groceries,Wawa,,-6240,cleared,True
+2025-03-14,Bills,Inflow: Ready to Assign,Veeva Systems I Direct Deposit W B Moser Joseph,,5000000,cleared,True
+2025-03-17,Bills,Uncategorized,Transfer : Spending,,-1500000,cleared,True
+2025-03-17,Bills,Credit Cards,Wells Fargo Credit Card,,-209000,cleared,True
+2025-03-17,Bills,Electric/Gas,PECO Energy Company,,-203480,cleared,True
+2025-03-17,Bills,Eating Out,DoorDash,,-156790,cleared,True
+2025-03-17,Bills,Uncategorized,Competitor Group E Tampa Fl,,-125880,cleared,False
+2025-03-17,Spending,Transportation,Metropolis,,-94100,cleared,True
+2025-03-17,Bills,Eating Out,DoorDash,,-90180,cleared,True
+2025-03-17,Bills,Eating Out,Blue Ridge Grill,,-66410,cleared,True
+2025-03-17,Spending,Groceries,Instacart,,-62460,cleared,True
+2025-03-17,Spending,Transportation,Metropolis,,-46200,cleared,True
+2025-03-17,Bills,Online Tools,Apple,,-31780,cleared,True
+2025-03-17,Bills,Groceries,Harris Teeter,,-28280,cleared,True
+2025-03-17,Bills,Online Tools,OpenAI,,-21200,cleared,True
+2025-03-17,Bills,Online Tools,NameCheap,,-17160,cleared,True
+2025-03-17,Bills,Uncategorized,New Yo Washington Dc,,-17000,cleared,False
+2025-03-17,Spending,Transportation,Metropolis,,-12990,cleared,True
+2025-03-17,Spending,Fees,Monthly Service Fee,,-10000,cleared,True
+2025-03-17,Bills,Online Tools,PayPal,,-5930,cleared,True
+2025-03-17,Spending,Transportation,SmartTrip,,-5000,cleared,True
+2025-03-17,Spending,Uncategorized,Transfer : Bills,,1500000,cleared,True
+2025-03-18,Spending,Uncategorized,Himalayan Wild Yak,,-61430,cleared,False
+2025-03-18,Bills,Exterminator,Cooper Pest So,,-52290,cleared,False
+2025-03-18,Spending,Groceries,Shell,,-25320,cleared,False
+2025-03-18,Bills,Inflow: Ready to Assign,Veeva Systems in Direct Pay Joe Moser,,75000,cleared,False
+2025-03-18,Bills,Inflow: Ready to Assign,Veeva Systems in Direct Pay Joe Moser,,75000,cleared,False
+2025-03-18,Bills,Inflow: Ready to Assign,Veeva Systems in Direct Pay Joe Moser,,153000,cleared,False
+2025-03-19,Bills,Business Expenses,Amtrak,,-150000,cleared,False
+2025-03-19,Spending,Groceries,Tatte Bakery,,-54380,cleared,False
+2025-03-19,Spending,Uncategorized,Fillingco.com,,-49500,cleared,False
+2025-03-19,Spending,Uncategorized,Billy Hicks Ge Washington Dc,,-22440,cleared,False
+2025-03-19,Spending,Groceries,Instacart,,-11280,cleared,False
+2025-03-20,Spending,Groceries,Wawa,,-37460,cleared,False
+2025-03-20,Bills,Streaming Services,PayPal Purchase,,-15890,cleared,False
+2025-03-20,Spending,Uncategorized,Billy Hicks Ge Washington Dc,,-13200,cleared,False
+2025-03-20,Bills,Online Tools,PayPal,,-9990,cleared,False
+2025-03-20,Spending,Groceries,Shell,,-6050,cleared,False
+2025-03-21,Spending,Groceries,Instacart,,-130230,cleared,False
+2025-03-21,Spending,Groceries,Instacart,,-74650,cleared,False
+2025-03-21,Spending,Eating Out,Lock Mont Clare Pa,,-74360,cleared,False
+2025-03-21,Spending,Groceries,Butterscotch P,,-35180,cleared,False
+2025-03-21,Ally Savings,Inflow: Ready to Assign,Interest Paid,,30,cleared,False
+2025-03-21,Ally Spending,Inflow: Ready to Assign,Interest Paid,,80,cleared,False
+2025-03-23,Ally Spending,Sports Gear,REI,,-97520,cleared,False

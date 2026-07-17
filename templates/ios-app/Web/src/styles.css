@@ -1,0 +1,1032 @@
+/* Light is the default/fallback palette; the dark palette is applied when the system
+   prefers dark. JS (applyTheme) also sets these vars inline from the server theme, picking
+   the same scheme — so pre-JS paint (lock screen) and the live app agree. */
+:root {
+  --c-bg: #f4f6fb;
+  --c-bgAccent: #e6ecf8;
+  --c-cardBg: #ffffff;
+  --c-textPrimary: #131722;
+  --c-textSecondary: #5a6478;
+  --c-accent: #2f6fed;
+  --c-up: #1a9d57;
+  --c-down: #d23b3b;
+  --c-divider: #e3e8f1;
+  --c-appbarBg: rgba(244, 246, 251, 0.92);
+  --c-cardBorder: rgba(20, 30, 60, 0.08);
+  --c-overlay: rgba(20, 30, 60, 0.05);
+  --c-overlayActive: rgba(20, 30, 60, 0.10);
+  --c-mapBg: #e6ecf8;
+  --c-onAccent: #ffffff;
+  --spacing: 12px;
+  --radius: 20px;
+  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  /* Reading serif for long-form docs. `ui-serif` resolves to Apple's New York on iOS/macOS
+     Safari (designed to pair with San Francisco); the rest are graceful cross-platform fallbacks. */
+  --font-serif: ui-serif, "New York", "Iowan Old Style", Charter, Georgia, Cambria, "Times New Roman", serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-bg: #0b1020;
+    --c-bgAccent: #16204a;
+    --c-cardBg: #161c2e;
+    --c-textPrimary: #f2f5ff;
+    --c-textSecondary: #9aa4c4;
+    --c-accent: #6ea8fe;
+    --c-up: #43d18a;
+    --c-down: #ff6b6b;
+    --c-divider: #2a3350;
+    --c-appbarBg: rgba(11, 16, 32, 0.92);
+    --c-cardBorder: rgba(255, 255, 255, 0.06);
+    --c-overlay: rgba(255, 255, 255, 0.06);
+    --c-overlayActive: rgba(255, 255, 255, 0.12);
+    --c-mapBg: #0e1424;
+    --c-onAccent: #04122e;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-family);
+  background:
+    radial-gradient(120% 80% at 50% -10%, var(--c-bgAccent) 0%, var(--c-bg) 55%) fixed,
+    var(--c-bg);
+  color: var(--c-textPrimary);
+  -webkit-font-smoothing: antialiased;
+  /* Lock the page: only the content area scrolls, never the whole shell/nav. */
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation; /* no double-tap zoom */
+}
+
+#app {
+  height: 100%;
+}
+
+.screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* The app bar consumes the top safe area; the scroll just needs the bottom inset
+     now that there's no tab bar, plus a little breathing room past the last card. */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+
+.card {
+  background: var(--c-cardBg);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--c-cardBorder);
+}
+
+.divider {
+  height: 1px;
+  background: var(--c-divider);
+  margin: 4px 0;
+  width: 100%;
+}
+
+.text {
+  line-height: 1.25;
+}
+
+.image {
+  line-height: 1;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.button {
+  appearance: none;
+  border: none;
+  background: var(--c-accent);
+  color: var(--c-onAccent);
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 14px;
+  font-size: 15px;
+}
+/* Submit-in-progress / result states (e.g. the repos "Ship" bar). */
+.button.is-working { opacity: 0.85; }
+.button.is-done { background: var(--c-up); }
+.button.is-failed { background: var(--c-down); }
+.button .spinner {
+  display: inline-block;
+  width: 12px; height: 12px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: button-spin 0.7s linear infinite;
+}
+@keyframes button-spin { to { transform: rotate(360deg); } }
+
+.chart-wrap {
+  width: 100%;
+}
+
+/* Brief self-dismissing toast (e.g. an iOS-only feature tapped on the web). */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+  transform: translate(-50%, 12px);
+  max-width: min(92vw, 30rem);
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: var(--c-cardBg);
+  color: var(--c-textPrimary);
+  border: 1px solid var(--c-cardBorder);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.28);
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 1000;
+}
+.toast-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* Run-history bar chart (Logs): one bar per iteration, height ∝ processing time. */
+.barchart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  width: 100%;
+}
+.barchart-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.barchart-track {
+  width: 100%;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.barchart-bar {
+  width: 100%;
+  max-width: 34px;
+  min-height: 3px;
+  border-radius: 5px 5px 2px 2px;
+  transition: height 0.2s ease;
+}
+.barchart-label {
+  font-size: 10px;
+  line-height: 1.1;
+  color: var(--c-textSecondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.map {
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--c-mapBg);
+}
+.map-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--c-textSecondary);
+  font-size: 14px;
+}
+.map .leaflet-container {
+  background: var(--c-mapBg);
+}
+
+/* Collapsible section */
+.disclosure {
+  width: 100%;
+}
+.disclosure-summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 2px;
+  color: var(--c-textSecondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+.disclosure-summary::-webkit-details-marker {
+  display: none;
+}
+.disclosure-summary::before {
+  content: "›";
+  display: inline-block;
+  font-size: 15px;
+  transition: transform 0.15s ease;
+}
+.disclosure[open] > .disclosure-summary::before {
+  transform: rotate(90deg);
+}
+.disclosure-body {
+  padding-top: 6px;
+}
+
+/* Google-Maps-style timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+.tl-entry {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+.tl-entry:active {
+  opacity: 0.6;
+}
+.tl-rail {
+  position: relative;
+  width: 32px;
+  flex: 0 0 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* dot vertically centered in the entry */
+}
+.tl-rail::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--c-divider);
+  transform: translateX(-50%);
+}
+/* Connect dot centers: trim the line above the first and below the last. */
+.tl-entry:first-child .tl-rail::before {
+  top: 50%;
+}
+.tl-entry:last-child .tl-rail::before {
+  bottom: 50%;
+}
+.tl-dot {
+  position: relative;
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  box-shadow: 0 0 0 4px var(--c-cardBg);
+}
+/* Moves/charges: bare icon (no filled circle) so stops read as the hierarchy. */
+.tl-dot.tl-bare {
+  width: 22px;
+  height: 22px;
+  font-size: 13px;
+  background: transparent;
+  filter: saturate(0.9);
+}
+.tl-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* label vertically centered in the entry */
+}
+/* Stops get a light translucent box for separation. */
+.tl-boxed {
+  background: var(--c-overlay);
+  border: 1px solid var(--c-cardBorder);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.tl-entry:last-child .tl-body {
+  padding-bottom: 0;
+}
+.tl-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--c-textPrimary);
+}
+.tl-meta {
+  font-size: 12.5px;
+  color: var(--c-textSecondary);
+  margin-top: 2px;
+}
+.tl-maps {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 16px;
+  color: var(--c-accent);
+  background: rgba(110, 168, 254, 0.12);
+}
+.tl-maps:active {
+  opacity: 0.6;
+}
+/* Label-this-place button (stops) — sits beside the Maps link. */
+.tl-label {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 34px;
+  height: 34px;
+  margin-left: 4px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  color: var(--c-accent);
+  background: rgba(255, 209, 102, 0.14);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.tl-label:active {
+  opacity: 0.6;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.table th,
+.table td {
+  text-align: left;
+  padding: 8px 10px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--c-divider);
+}
+.table th {
+  color: var(--c-textSecondary);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  position: sticky;
+  top: 0;
+  background: var(--c-cardBg);
+}
+.table td {
+  color: var(--c-textPrimary);
+}
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+.table-error {
+  color: var(--c-down);
+  font-size: 13px;
+  padding: 8px 2px;
+}
+
+/* Editable form fields */
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--c-divider);
+}
+.field:last-child {
+  border-bottom: none;
+}
+.field-label {
+  color: var(--c-textSecondary);
+  font-size: 14px;
+}
+.field-input {
+  flex: 0 1 55%;
+  min-width: 0;
+  background: var(--c-overlay);
+  border: 1px solid var(--c-divider);
+  color: var(--c-textPrimary);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 15px;
+  font-family: inherit;
+}
+.field-input:focus {
+  outline: none;
+  border-color: var(--c-accent);
+}
+/* Boolean fields render as an iOS-style switch. */
+.field-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 0 0 auto;
+  position: relative;
+  width: 46px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--c-divider);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  touch-action: manipulation;
+}
+.field-toggle::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.field-toggle:checked {
+  background: var(--c-up);
+}
+.field-toggle:checked::after {
+  transform: translateX(18px);
+}
+
+/* Top app bar (hamburger + page title) */
+.appbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
+  background: var(--c-appbarBg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--c-divider);
+  z-index: 30;
+}
+.appbar-menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  color: var(--c-textPrimary);
+  cursor: pointer;
+  border-radius: 10px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.appbar-menu:active {
+  background: var(--c-overlayActive);
+}
+.appbar-menu svg {
+  display: block;
+  pointer-events: none;
+}
+.appbar-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--c-textPrimary);
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.appbar-spacer {
+  flex: 1 1 auto;
+}
+/* Persistent freshness + offline status, shown identically on every page. */
+.appbar-offline {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--c-down);
+  border: 1px solid var(--c-down);
+}
+/* Release-channel badge (the "next" app) — a fixed purple so it reads the same in both
+   themes and can't be confused with data-driven badges. Stable renders no chip at all. */
+.appbar-channel {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #fff;
+  background: #7c5cff;
+  flex: none;
+}
+.appbar-status {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  padding: 4px 4px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--c-textSecondary);
+  cursor: pointer;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+.appbar-status.stale {
+  color: var(--c-down);
+}
+.appbar-refresh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  color: var(--c-textSecondary);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.appbar-refresh:active {
+  background: var(--c-overlayActive);
+}
+/* "Keep offline" pin: accent color when this page is pinned for offline caching. */
+.appbar-pin.pinned {
+  color: var(--c-accent, #6ea8fe);
+}
+body.refreshing .appbar-refresh svg {
+  animation: appbar-spin 0.8s linear infinite;
+}
+@keyframes appbar-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Slide-out drawer + backdrop */
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 40;
+}
+.app-shell.nav-open .scrim {
+  opacity: 1;
+  pointer-events: auto;
+}
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* Match the shell's visual-viewport height (not bottom:0) so the lower nav items —
+     Config especially — sit inside the interactive area on iOS standalone, not in the
+     dead band below it. */
+  height: 100%;
+  height: var(--app-height, 100%);
+  width: min(80vw, 300px);
+  padding: calc(12px + env(safe-area-inset-top)) 10px calc(12px + env(safe-area-inset-bottom));
+  background: var(--c-cardBg, #161c2e);
+  border-right: 1px solid var(--c-divider);
+  /* Whole drawer scrolls — keeps every nav item reachable/clickable regardless of
+     count. (A flex column + inner-scroll combo could clip items on some engines.)
+     touch-action/overscroll let iOS scroll WITHIN the drawer even though <body> is
+     scroll-locked, so the lower items (Config, BQ Tables…) stay reachable. */
+  overflow-y: auto;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  transform: translateX(-100%);
+  transition: transform 0.22s ease;
+  z-index: 50;
+  -webkit-overflow-scrolling: touch;
+}
+/* Hard-refresh footer flows after the list (scrolls into view); not pinned. */
+.drawer-footer {
+  margin-top: 16px;
+  padding-top: 8px;
+  border-top: 1px solid var(--c-divider);
+}
+.drawer-hard-refresh {
+  color: var(--c-textSecondary);
+}
+.drawer-hard-refresh.disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.drawer-build {
+  padding: 6px 12px 2px;
+  font-size: 11px;
+  color: var(--c-textSecondary);
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+.drawer-build-date {
+  padding: 0 12px 2px;
+  font-size: 11px;
+  color: var(--c-textSecondary);
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+}
+/* Offline-cache (prefetch) status under its button. */
+.drawer-prefetch {
+  color: var(--c-textSecondary);
+}
+.drawer-prefetch-status {
+  padding: 0 12px 8px 44px;
+  margin-top: -2px;
+  font-size: 11px;
+  color: var(--c-textSecondary);
+  opacity: 0.8;
+  font-variant-numeric: tabular-nums;
+}
+.app-shell.nav-open .drawer {
+  transform: none;
+}
+.drawer-head {
+  padding: 6px 12px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-textSecondary);
+}
+.drawer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.drawer-section {
+  margin-top: 10px;
+}
+.drawer-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--c-textSecondary);
+}
+.drawer-section .drawer-item {
+  padding-left: 22px;
+}
+.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  color: var(--c-textPrimary);
+  font-size: 15px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.drawer-item * {
+  pointer-events: none;
+}
+.drawer-item:active {
+  background: var(--c-overlay);
+}
+.drawer-item.active {
+  background: rgba(110, 168, 254, 0.16);
+  color: var(--c-accent);
+}
+.drawer-icon {
+  line-height: 0;
+  color: inherit;
+}
+.drawer-icon svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+.app-shell {
+  /* Fill the screen exactly. Pin top/left/right and drive HEIGHT from JS
+     (window.innerHeight via --app-height, set in main.ts). On iOS standalone PWAs
+     `inset:0`/`bottom:0` resolves against a layout viewport that can be TALLER than the
+     actual interactive area, leaving a dead, non-interactive band at the bottom (and the
+     lowest nav item not taking taps). The visual-viewport height fixes that. `height:100%`
+     is the pre-JS / non-iOS fallback. */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  height: var(--app-height, 100%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.app-shell .screen-host {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.placeholder {
+  min-height: 4px;
+  color: var(--c-textSecondary);
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 100%;
+  padding: 32px;
+}
+.message-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+.message-detail {
+  color: var(--c-textSecondary);
+  font-size: 15px;
+}
+
+body.refreshing .scroll {
+  opacity: 0.98;
+}
+
+/* Passcode lock screen */
+.lock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-height: 100%;
+  padding: 32px 24px calc(32px + env(safe-area-inset-bottom));
+}
+.lock-icon {
+  font-size: 30px;
+  opacity: 0.85;
+}
+.lock-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--c-textPrimary);
+}
+.lock-dots {
+  display: flex;
+  gap: 18px;
+  margin: 4px 0 12px;
+}
+.lock-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--c-textSecondary);
+  background: transparent;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.lock-dot.filled {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+}
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 76px);
+  gap: 18px;
+}
+.key {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 1px solid var(--c-divider);
+  background: var(--c-overlay);
+  color: var(--c-textPrimary);
+  font-size: 28px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.key:active {
+  background: var(--c-overlayActive);
+}
+.key-blank {
+  border: none;
+  background: none;
+  visibility: hidden;
+}
+.key-action {
+  font-size: 22px;
+  border: none;
+  background: none;
+  color: var(--c-textSecondary);
+}
+.lock.shake .lock-dots {
+  animation: lock-shake 0.4s ease;
+}
+@keyframes lock-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-10px); }
+  40% { transform: translateX(10px); }
+  60% { transform: translateX(-7px); }
+  80% { transform: translateX(7px); }
+}
+
+/* Monospace log/output block (code component) with a copy-to-clipboard link */
+.code-wrap {
+  position: relative;
+  width: 100%;
+}
+.code-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--c-divider);
+  background: rgba(11, 15, 28, 0.78);
+  color: var(--c-textSecondary);
+  cursor: pointer;
+  opacity: 0.85;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.code-copy:active {
+  opacity: 1;
+}
+.code-copy.copied {
+  color: var(--c-up);
+  border-color: var(--c-up);
+}
+.code {
+  margin: 4px 0 0;
+  padding: 10px 12px;
+  background: #0b0f1c;
+  border: 1px solid var(--c-divider);
+  border-radius: 12px;
+  color: #cdd6f4;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* Rendered Markdown (docs viewer) */
+.markdown {
+  /* Long-form docs read best in a serif at a comfortable measure. */
+  width: 100%;
+  max-width: 42rem;            /* ~66ch reading measure; centers in wide viewports */
+  margin-inline: auto;
+  color: var(--c-textPrimary);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.72;
+  letter-spacing: 0.006em;
+  overflow-wrap: anywhere;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+}
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4 {
+  font-family: var(--font-serif);
+  color: var(--c-textPrimary);
+  line-height: 1.25;
+  letter-spacing: -0.01em;     /* tighten display sizes */
+  margin: 1.4em 0 0.5em;
+}
+.markdown h1 { font-size: 30px; font-weight: 700; }
+.markdown h2 { font-size: 24px; font-weight: 700; }
+.markdown h3 { font-size: 20px; font-weight: 600; }
+.markdown h4 { font-size: 18px; font-weight: 600; }
+.markdown p { margin: 0.75em 0; }
+.markdown ul,
+.markdown ol { margin: 8px 0; padding-left: 22px; }
+.markdown li { margin: 3px 0; }
+.markdown a { color: var(--c-accent); }
+.markdown code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  background: var(--c-overlay);
+  padding: 1px 5px;
+  border-radius: 6px;
+}
+.markdown pre.md-code {
+  background: #0b0f1c;
+  border: 1px solid var(--c-divider);
+  border-radius: 12px;
+  padding: 12px;
+  overflow-x: auto;
+}
+.markdown pre.md-code code {
+  background: none;
+  padding: 0;
+  color: #cdd6f4;
+}
+.markdown blockquote {
+  margin: 1em 0;
+  padding: 2px 16px;
+  border-left: 3px solid var(--c-accent);
+  color: var(--c-textSecondary);
+  font-style: italic;
+}
+.markdown hr {
+  border: none;
+  border-top: 1px solid var(--c-divider);
+  margin: 16px 0;
+}

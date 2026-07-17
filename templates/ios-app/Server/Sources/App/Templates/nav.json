@@ -1,0 +1,28 @@
+[
+  {
+    "title": "Home",
+    "icon": "house.fill",
+    "path": "/__APP_NAME_LOWER__"
+  },
+  {
+    "title": "System",
+    "icon": "wrench.and.screwdriver.fill",
+    "children": [
+      {
+        "title": "Deploy",
+        "icon": "arrow.triangle.2.circlepath",
+        "path": "/screen/deploy"
+      },
+      {
+        "title": "Preferences",
+        "icon": "slider.horizontal.3",
+        "path": "/screen/config"
+      },
+      {
+        "title": "Secrets & Keys",
+        "icon": "key.fill",
+        "path": "/screen/settings"
+      }
+    ]
+  }
+]

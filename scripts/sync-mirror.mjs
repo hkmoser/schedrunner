@@ -39,10 +39,16 @@ for (const r of repos) {
 const status = sh("git", ["status", "--porcelain", "mirror"]);
 if (status) {
   // Rebase onto any remote advances before committing, so our push is always
-  // fast-forward. If a concurrent merge snuck in between fetch and push,
-  // --ff-only aborts cleanly — the next sync retries from scratch.
+  // fast-forward. Stash any untracked/unstaged files (e.g. node_modules from
+  // a fresh npm install) so the rebase isn't blocked, then restore them.
   run("git", ["fetch", "origin", "main"]);
-  run("git", ["rebase", "origin/main"]);
+  const dirty = sh("git", ["status", "--porcelain"]);
+  if (dirty) run("git", ["stash", "--include-untracked"]);
+  try {
+    run("git", ["rebase", "origin/main"]);
+  } finally {
+    if (dirty) run("git", ["stash", "pop"]);
+  }
   run("git", ["add", "mirror"]);
   run("git", ["-c", "user.email=schedrunner@local", "-c", "user.name=schedrunner",
               "commit", "-m", "chore(mirror): sync ecosystem source [skip ci]"]);

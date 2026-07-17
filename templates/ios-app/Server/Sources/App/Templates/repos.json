@@ -1,0 +1,120 @@
+{
+  "type": "screen",
+  "style": { "background": "$bg" },
+  "children": [
+    {
+      "type": "scroll",
+      "children": [
+        {
+          "type": "vstack",
+          "style": { "spacing": 16, "padding": 16 },
+          "children": [
+            {
+              "type": "hstack",
+              "style": { "align": "center" },
+              "children": [
+                { "type": "text", "binding": "repos.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                { "type": "spacer" },
+                { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+              ]
+            },
+            { "type": "text", "binding": "repos.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+            {
+              "type": "vstack",
+              "props": { "repeat": "repos.repos" },
+              "style": { "spacing": 12 },
+              "children": [
+                {
+                  "type": "card",
+                  "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 14 },
+                  "children": [
+                    {
+                      "type": "hstack",
+                      "style": { "align": "center", "spacing": 8 },
+                      "children": [
+                        { "type": "text", "binding": "item.name", "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+                        { "type": "spacer" },
+                        { "type": "badge", "binding": "item.branch", "style": { "color": "$accent" } }
+                      ]
+                    },
+                    {
+                      "type": "hstack",
+                      "style": { "align": "center", "spacing": 8, "wrap": true },
+                      "children": [
+                        { "type": "badge", "binding": "item.gitFormatted", "style": { "color": "item.gitDirection" } },
+                        { "type": "badge", "binding": "item.deployFormatted", "style": { "color": "item.deployDirection" } },
+                        { "type": "badge", "binding": "item.ciFormatted", "style": { "color": "item.ciDirection" } }
+                      ]
+                    },
+                    { "type": "text", "binding": "item.lastFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                    {
+                      "type": "vstack",
+                      "props": { "repeat": "item.shipItems" },
+                      "style": { "spacing": 6 },
+                      "children": [
+                        {
+                          "type": "vstack",
+                          "style": { "spacing": 6, "background": "$bg", "cornerRadius": 10, "padding": 10 },
+                          "children": [
+                            {
+                              "type": "hstack",
+                              "style": { "align": "center", "spacing": 10 },
+                              "children": [
+                                {
+                                  "type": "vstack",
+                                  "style": { "spacing": 2 },
+                                  "children": [
+                                    { "type": "text", "binding": "item.labelFormatted", "style": { "font": "subhead", "weight": "semibold", "color": "$textPrimary" } },
+                                    { "type": "text", "binding": "item.metaFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                                  ]
+                                },
+                                { "type": "spacer" },
+                                { "type": "button", "props": { "text": "Ship" }, "action": { "type": "submit", "urlBinding": "item.shipPostHref" } }
+                              ]
+                            },
+                            { "type": "text", "binding": "item.behindNote", "style": { "font": "caption", "color": "$down" } },
+                            {
+                              "type": "vstack",
+                              "props": { "repeat": "item.rebaseActions" },
+                              "style": { "spacing": 4 },
+                              "children": [
+                                {
+                                  "type": "hstack",
+                                  "style": { "align": "center", "spacing": 8 },
+                                  "children": [
+                                    { "type": "spacer" },
+                                    { "type": "button", "props": { "text": "Rebase & ship" }, "action": { "type": "submit", "urlBinding": "item.postHref" } }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "disclosure",
+                      "binding": "item.commitsLabel",
+                      "props": { "fallback": "Recent commits", "open": false },
+                      "children": [
+                        {
+                          "type": "vstack",
+                          "props": { "repeat": "item.commits" },
+                          "style": { "spacing": 6 },
+                          "children": [
+                            { "type": "text", "binding": "item.msgFormatted", "style": { "font": "caption", "color": "$textPrimary" } },
+                            { "type": "text", "binding": "item.metaFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

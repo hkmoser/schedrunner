@@ -1,0 +1,47 @@
+// Single source of truth for native iOS build identifiers.
+// Edit these before building on the Mac mini (after Apple Developer enrollment).
+
+// Your Apple Developer Team ID (10 chars). Find it at developer.apple.com/account.
+DEVELOPMENT_TEAM = ABCDE12345
+
+// Reverse-DNS bundle identifier for the app.
+PRODUCT_BUNDLE_IDENTIFIER = __BUNDLE_ID__
+
+// App Group identifier reserved for a (future) widget/extension that shares the manifest
+// cache. Disabled for now: App Groups can't be self-provisioned by automatic CLI signing,
+// and CacheStore falls back to the app's own container without it. Re-register the App Group
+// and re-add the entitlement in project.yml when a widget/extension actually ships.
+// APP_GROUP_ID = group.__BUNDLE_ID__
+
+// The Tailscale MagicDNS host serving /__APP_NAME_LOWER__ (no scheme). Must match Deploy/.env TS_HOST.
+// This is a PLACEHOLDER — the real value comes from Config.local.xcconfig (below), generated
+// from Deploy/.env by `make ios-generate` / `make ios-deploy`, so GUI and CLI builds agree.
+DASHBOARD_HOST = macmini.example.ts.net
+
+// HTTPS port the app talks to. 443 = the stable channel (default); a NEXT-channel build gets
+// 8443 via Config.local.xcconfig (gen_ios_config derives it from the checkout's channel).
+DASHBOARD_PORT = 443
+
+// Home-screen display name. The next channel overrides this to "__APP_NAME__ Next" via
+// Config.local.xcconfig so both apps are distinguishable when installed side by side.
+DASHBOARD_APP_NAME = __APP_NAME__
+
+// Deployment target.
+IPHONEOS_DEPLOYMENT_TARGET = 18.0
+
+// Visible app version (CFBundleShortVersionString). Default 0.1.0; the real value is
+// 0.1.<git commit count>, written into Config.local.xcconfig by gen_ios_config so the version
+// shown in the app increments every deploy. Defined here (xcconfig), NOT in project.yml
+// settings, so the generated override wins.
+MARKETING_VERSION = 0.1.0
+
+// Build number (CFBundleVersion). Default 1; the real value is the git commit count, written
+// into Config.local.xcconfig by gen_ios_config so it auto-increments and the in-app updater
+// reliably detects new builds. Defined here (xcconfig), NOT in project.yml settings, so the
+// generated override wins.
+CURRENT_PROJECT_VERSION = 1
+
+// Local overrides (DASHBOARD_HOST + DEVELOPMENT_TEAM from Deploy/.env), git-ignored and
+// auto-generated. Optional include (`?`) so a fresh clone with no .env still builds. Placed
+// last so its assignments win over the placeholders above.
+#include? "Config.local.xcconfig"

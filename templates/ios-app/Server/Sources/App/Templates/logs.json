@@ -1,0 +1,63 @@
+{
+  "type": "screen",
+  "style": { "background": "$bg" },
+  "children": [
+    {
+      "type": "scroll",
+      "children": [
+        {
+          "type": "vstack",
+          "style": { "spacing": 16, "padding": 16 },
+          "children": [
+            {
+              "type": "hstack",
+              "style": { "align": "center" },
+              "children": [
+                { "type": "text", "binding": "logs.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                { "type": "spacer" },
+                { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+              ]
+            },
+            { "type": "text", "binding": "logs.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+            {
+              "type": "hstack",
+              "props": { "repeat": "logs.statusFilters" },
+              "style": { "spacing": 8, "wrap": true },
+              "children": [
+                { "type": "badge", "binding": "item.labelFormatted", "style": { "color": "item.color" }, "action": { "type": "navigate", "urlBinding": "item.navHref" } }
+              ]
+            },
+            { "type": "text", "binding": "logs.emptyFormatted", "style": { "font": "subhead", "color": "$textSecondary", "align": "center" } },
+            {
+              "type": "vstack",
+              "props": { "repeat": "logs.files" },
+              "style": { "spacing": 14 },
+              "children": [
+                {
+                  "type": "card",
+                  "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 14 },
+                  "children": [
+                    {
+                      "type": "hstack",
+                      "style": { "align": "center", "spacing": 8 },
+                      "children": [
+                        { "type": "text", "binding": "item.name", "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+                        { "type": "badge", "binding": "item.statusFormatted", "style": { "color": "item.statusColor" } },
+                        { "type": "spacer" },
+                        { "type": "text", "binding": "item.metaFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                        { "type": "badge", "props": { "text": "24h" }, "style": { "color": "$accent" }, "action": { "type": "navigate", "urlBinding": "item.detailHref" } }
+                      ]
+                    },
+                    { "type": "barChart", "binding": "item.runChart.bars", "style": { "height": 64 } },
+                    { "type": "text", "binding": "item.runChart.captionFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                    { "type": "code", "binding": "item.tail" }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

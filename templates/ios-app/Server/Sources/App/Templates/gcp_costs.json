@@ -1,0 +1,97 @@
+{
+  "type": "screen",
+  "style": { "background": "$bg" },
+  "children": [
+    {
+      "type": "scroll",
+      "children": [
+        {
+          "type": "vstack",
+          "style": { "spacing": 16, "padding": 16 },
+          "children": [
+            {
+              "type": "hstack",
+              "style": { "align": "center" },
+              "children": [
+                { "type": "text", "binding": "gcpCosts.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                { "type": "spacer" },
+                { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+              ]
+            },
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+              "children": [
+                {
+                  "type": "hstack",
+                  "style": { "align": "center" },
+                  "children": [
+                    {
+                      "type": "vstack",
+                      "style": { "spacing": 2 },
+                      "children": [
+                        { "type": "text", "binding": "gcpCosts.monthFormatted", "style": { "font": "subhead", "color": "$textSecondary" } },
+                        { "type": "text", "binding": "gcpCosts.totalFormatted", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                        { "type": "text", "binding": "gcpCosts.mtdLabelFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                      ]
+                    },
+                    { "type": "spacer" },
+                    { "type": "badge", "binding": "gcpCosts.changeFormatted", "style": { "color": "gcpCosts.changeDirection" } }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+              "children": [
+                { "type": "text", "props": { "text": "12-month trend" }, "style": { "font": "subhead", "color": "$textSecondary" } },
+                { "type": "lineChart", "binding": "gcpCosts.series", "style": { "height": 160 } },
+                {
+                  "type": "hstack",
+                  "style": { "align": "center" },
+                  "children": [
+                    { "type": "text", "binding": "gcpCosts.firstLabelFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                    { "type": "spacer" },
+                    { "type": "text", "binding": "gcpCosts.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                    { "type": "spacer" },
+                    { "type": "text", "binding": "gcpCosts.lastLabelFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+              "children": [
+                { "type": "text", "props": { "text": "This month by service" }, "style": { "font": "subhead", "color": "$textSecondary" } },
+                { "type": "divider", "style": { "color": "$divider" } },
+                {
+                  "type": "vstack",
+                  "props": { "repeat": "gcpCosts.services" },
+                  "style": { "spacing": 14 },
+                  "children": [
+                    {
+                      "type": "hstack",
+                      "style": { "align": "center" },
+                      "children": [
+                        { "type": "text", "binding": "item.name", "style": { "font": "body", "weight": "semibold", "color": "$textPrimary" } },
+                        { "type": "spacer" },
+                        { "type": "text", "binding": "item.pctFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                        { "type": "text", "binding": "item.costFormatted", "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary", "width": 80, "align": "trailing" } }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text", "binding": "gcpCosts.emptyFormatted",
+              "style": { "font": "callout", "color": "$textSecondary", "padding": 8 }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

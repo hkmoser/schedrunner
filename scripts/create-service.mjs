@@ -9,7 +9,7 @@ import { parse, stringify } from "yaml";
 const TEMPLATES = {
   collector: "template-data-collector",
   mcp: "template-mcp-connector",
-  // ios: "template-ios-app",   // added later
+  ios: "template-ios-app",
 };
 
 const { values } = parseArgs({ options: {
@@ -20,7 +20,7 @@ const owner = values.owner ?? process.env.REPO_OWNER;
 const token = process.env.GITHUB_TOKEN;
 
 if (!name || !type || !TEMPLATES[type]) {
-  console.error("usage: --name <name> --type <collector|mcp>"); process.exit(1);
+  console.error("usage: --name <name> --type <collector|mcp|ios>"); process.exit(1);
 }
 if (!token || !owner) { console.error("GITHUB_TOKEN + REPO_OWNER (or --owner) required"); process.exit(1); }
 

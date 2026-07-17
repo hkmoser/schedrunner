@@ -1,0 +1,61 @@
+{
+  "type": "screen",
+  "style": { "background": "$bg" },
+  "children": [
+    {
+      "type": "scroll",
+      "children": [
+        {
+          "type": "vstack",
+          "style": { "spacing": 12, "padding": 16 },
+          "children": [
+            {
+              "type": "hstack",
+              "style": { "align": "center" },
+              "children": [
+                { "type": "text", "binding": "reposShip.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                { "type": "spacer" },
+                { "type": "text", "props": { "text": "Repos" }, "style": { "font": "caption", "weight": "semibold", "color": "$accent" }, "action": { "type": "navigate", "urlBinding": "reposShip.backHref" } }
+              ]
+            },
+            { "type": "text", "binding": "reposShip.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+            { "type": "text", "binding": "reposShip.summaryFormatted", "style": { "font": "body", "color": "$textPrimary" } },
+            { "type": "text", "binding": "reposShip.warnFormatted", "style": { "font": "caption", "color": "$down" } },
+            { "type": "text", "binding": "reposShip.statusFormatted", "style": { "font": "headline", "weight": "semibold", "color": "reposShip.statusDirection" } },
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+              "children": [
+                {
+                  "type": "vstack",
+                  "props": { "repeat": "reposShip.fields" },
+                  "children": [
+                    { "type": "field", "binding": "item" }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": { "text": "Ship it — merge & delete branch" },
+              "action": { "type": "submit", "url": "/repos_pr" }
+            },
+            { "type": "text", "binding": "reposShip.behindNote", "style": { "font": "caption", "color": "$down" } },
+            {
+              "type": "vstack",
+              "props": { "repeat": "reposShip.rebaseActions" },
+              "style": { "spacing": 6 },
+              "children": [
+                {
+                  "type": "button",
+                  "props": { "text": "Rebase & ship" },
+                  "action": { "type": "submit", "urlBinding": "item.postHref" }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

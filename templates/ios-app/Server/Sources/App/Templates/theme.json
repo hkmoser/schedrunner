@@ -1,0 +1,41 @@
+{
+  "colors": {
+    "bg": "#f4f6fb",
+    "bgAccent": "#e6ecf8",
+    "cardBg": "#ffffff",
+    "textPrimary": "#131722",
+    "textSecondary": "#5a6478",
+    "accent": "#2f6fed",
+    "up": "#1a9d57",
+    "down": "#d23b3b",
+    "divider": "#e3e8f1",
+    "appbarBg": "rgba(244, 246, 251, 0.92)",
+    "cardBorder": "rgba(20, 30, 60, 0.08)",
+    "overlay": "rgba(20, 30, 60, 0.05)",
+    "overlayActive": "rgba(20, 30, 60, 0.10)",
+    "mapBg": "#e6ecf8",
+    "onAccent": "#ffffff"
+  },
+  "dark": {
+    "bg": "#0b1020",
+    "bgAccent": "#16204a",
+    "cardBg": "#161c2e",
+    "textPrimary": "#f2f5ff",
+    "textSecondary": "#9aa4c4",
+    "accent": "#6ea8fe",
+    "up": "#43d18a",
+    "down": "#ff6b6b",
+    "divider": "#2a3350",
+    "appbarBg": "rgba(11, 16, 32, 0.92)",
+    "cardBorder": "rgba(255, 255, 255, 0.06)",
+    "overlay": "rgba(255, 255, 255, 0.06)",
+    "overlayActive": "rgba(255, 255, 255, 0.12)",
+    "mapBg": "#0e1424",
+    "onAccent": "#04122e"
+  },
+  "fonts": {
+    "family": "-apple-system, system-ui, sans-serif"
+  },
+  "spacing": 12,
+  "radius": 20
+}

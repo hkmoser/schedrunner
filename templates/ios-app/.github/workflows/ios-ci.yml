@@ -1,0 +1,49 @@
+name: iOS CI
+
+# Compiles the native app + widget extension so a Swift error in App/ or Widget/ fails the PR
+# check instead of only surfacing on the Mac at `make ios-deploy` time (the recurring "it didn't
+# take effect" trap). Compile only — no signing, no simulator boot.
+#
+# COST: this is the expensive job — macOS runners bill at a 10× minute multiplier — so it runs
+# on PULL REQUESTS ONLY (no push-to-main run). That loses nothing: by the time a PR merges this
+# exact tree already passed here, and the Mac mini compiles the real signed build at deploy time
+# with its failure surfaced on the in-app Deploy page. To make it free entirely, register a
+# self-hosted runner on the Mac mini and switch runs-on to [self-hosted, macOS]
+# (see Deploy/RUNBOOK.md § "CI minutes").
+
+on:
+  pull_request:
+    paths:
+      - "App/**"
+      - "Widget/**"
+      - "project.yml"
+      - "Config.xcconfig"
+      - ".github/workflows/ios-ci.yml"
+
+# A newer push to the same PR supersedes the running build — don't pay 10× for both.
+concurrency:
+  group: ios-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select latest Xcode (needs the iOS 18 SDK for the 18.0 deployment target)
+        run: sudo xcode-select -s /Applications/Xcode.app && xcodebuild -version
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate the Xcode project
+        run: xcodegen generate
+      - name: Build app + widget (no signing — compile check only)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project __APP_NAME__.xcodeproj \
+            -scheme __APP_NAME__ \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build

@@ -1,0 +1,55 @@
+{
+  "type": "screen",
+  "style": { "background": "$bg" },
+  "children": [
+    {
+      "type": "scroll",
+      "children": [
+        {
+          "type": "vstack",
+          "style": { "spacing": 12, "padding": 16 },
+          "children": [
+            {
+              "type": "hstack",
+              "style": { "align": "center", "spacing": 8 },
+              "children": [
+                { "type": "text", "binding": "logfile.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                { "type": "badge", "binding": "logfile.statusFormatted", "style": { "color": "logfile.statusColor" } },
+                { "type": "spacer" },
+                { "type": "text", "props": { "text": "Logs" }, "style": { "font": "caption", "weight": "semibold", "color": "$accent" }, "action": { "type": "navigate", "urlBinding": "logfile.backHref" } }
+              ]
+            },
+            { "type": "text", "binding": "logfile.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 14 },
+              "children": [
+                { "type": "text", "props": { "text": "Run history" }, "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+                { "type": "barChart", "binding": "logfile.runChart.bars", "style": { "height": 120 } },
+                { "type": "text", "binding": "logfile.runChart.captionFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                { "type": "text", "binding": "logfile.runChart.emptyFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+              ]
+            },
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 14 },
+              "children": [
+                { "type": "text", "binding": "logfile.anomalyCountFormatted", "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+                {
+                  "type": "vstack",
+                  "props": { "repeat": "logfile.anomalies" },
+                  "style": { "spacing": 6 },
+                  "children": [
+                    { "type": "code", "binding": "item.lineFormatted", "style": { "color": "item.color" } }
+                  ]
+                }
+              ]
+            },
+            { "type": "text", "props": { "text": "Recent log" }, "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+            { "type": "code", "binding": "logfile.code" }
+          ]
+        }
+      ]
+    }
+  ]
+}

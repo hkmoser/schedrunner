@@ -29,7 +29,7 @@ fi
 # exists; --omit=dev skips devDependencies not needed at runtime.
 if [[ -f package.json ]]; then
   echo "auto-deploy: installing Node dependencies"
-  npm install --omit=dev --no-audit --no-fund --prefer-offline 2>&1 | sed 's/^/auto-deploy: /'
+  npm install --no-audit --no-fund --prefer-offline 2>&1 | sed 's/^/auto-deploy: /'
 fi
 
 echo "auto-deploy: LaunchAgent plist changed (or not installed) — reloading"

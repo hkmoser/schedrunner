@@ -1,0 +1,50 @@
+# Node / web
+Web/node_modules/
+Web/dist/
+Web/dev-dist/
+
+# Python (BigQuery sidecar)
+bq_sidecar/.venv/
+__pycache__/
+*.pyc
+# Generated PNG icons (rasterized from favicon.svg at build via `npm run gen:icons`)
+Web/public/icons/icon-192.png
+Web/public/icons/icon-512.png
+Web/public/icons/apple-touch-icon.png
+
+# Swift / Vapor
+Server/.build/
+Server/.swiftpm/
+*.xcodeproj
+!project.yml
+
+# Secrets & local config
+Deploy/.env
+.env
+
+# Tailscale cert material (never commit)
+*.crt
+*.key
+*.ts.net.crt
+*.ts.net.key
+
+# Native iOS local build overrides (real host/team from .env; never commit)
+Config.local.xcconfig
+
+# macOS
+.DS_Store
+
+# Xcode user data
+xcuserdata/
+DerivedData/
+
+# Native iOS build artifacts (archive/IPA/manifest) + recorded device UDID
+/build/
+Deploy/.device_udid
+
+# Playwright (browser e2e — artifacts only; specs/config are committed)
+Web/test-results/
+Web/playwright-report/
+Web/blob-report/
+Web/.playwright/
+Deploy/.channel

@@ -1,0 +1,6 @@
+# How schedrunner handles this repo. type: app = build target, not a cron service.
+# schedrunner does not run the server — the app's own .auto-deploy hook does that
+# (git pull -> Deploy/auto_deploy.sh). schedrunner triggers that via auto-deploy.sh.
+type: app
+runtime: swift
+deploy: "bash Deploy/auto_deploy.sh"

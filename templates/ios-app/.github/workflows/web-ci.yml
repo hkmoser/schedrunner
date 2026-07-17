@@ -1,0 +1,51 @@
+name: Web CI
+
+# COST: Linux (1× minutes, near-free) — the only guard needed is the path filter on push so
+# docs/Deploy-only merges skip it, and cancel-in-progress so superseded runs stop billing.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Web/**"
+      - "Shared/**"
+      - ".github/workflows/web-ci.yml"
+  pull_request:
+    paths:
+      - "Web/**"
+      - "Shared/**"
+      - ".github/workflows/web-ci.yml"
+
+concurrency:
+  group: web-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: Web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: Web/package-lock.json
+      - run: npm ci
+      # Fast suites: typecheck + schema contract + jsdom render + regression invariants.
+      - run: npm test
+      # Real-browser e2e (iPhone viewport): passcode, no-dead-space, nav reachability/clickability.
+      # The iPhone 13 device profile runs on WebKit (the iOS Safari engine), so install
+      # WebKit — not Chromium — or browserType.launch can't find an executable.
+      - run: npx playwright install --with-deps webkit
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: Web/playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore

@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-18T14:00:00Z",
+  "theme": {
+    "colors": { "bg": "#0b1020", "bgAccent": "#16204a", "cardBg": "#161c2e", "textPrimary": "#f2f5ff", "textSecondary": "#9aa4c4", "accent": "#6ea8fe", "up": "#43d18a", "down": "#ff6b6b", "divider": "#2a3350" },
+    "fonts": { "family": "-apple-system, system-ui, sans-serif" }, "spacing": 12, "radius": 20
+  },
+  "nav": [
+    { "title": "Home", "icon": "house.fill", "path": "/__APP_NAME_LOWER__" },
+    { "title": "System", "icon": "wrench.and.screwdriver.fill", "children": [
+      { "title": "Logs", "icon": "doc.text.fill", "path": "/screen/logs" },
+      { "title": "Repos", "icon": "chevron.left.forwardslash.chevron.right", "path": "/screen/repos" },
+      { "title": "Schedrunner", "icon": "timer", "path": "/screen/schedrunner" }
+    ] }
+  ],
+  "data": {
+    "meta": { "updatedAtFormatted": "Updated just now", "stale": false },
+    "schedrunner": {
+      "title": "Schedrunner",
+      "subtitleFormatted": "updated 3m ago · ~/Dropbox/Source/schedrunner",
+      "statusFormatted": "1 failing",
+      "statusDirection": "down",
+      "countsFormatted": "3 jobs · 2 ok · 1 failed",
+      "jobs": [
+        { "name": "balances-push", "statusFormatted": "failed", "direction": "down", "lastFormatted": "ran 20m ago", "nextFormatted": "next in 39m", "metaFormatted": "*/30 * * * * · BigQuery 403" },
+        { "name": "afm-refresh", "statusFormatted": "ok", "direction": "up", "lastFormatted": "ran 5m ago", "nextFormatted": "", "metaFormatted": "5m" },
+        { "name": "nightly-sync", "statusFormatted": "ok", "direction": "up", "lastFormatted": "ran 2h ago", "nextFormatted": "next in 21h", "metaFormatted": "0 3 * * * · 12.4s" }
+      ],
+      "logLabel": "",
+      "logTail": "",
+      "rowCount": 3
+    }
+  },
+  "screen": {
+    "type": "screen", "style": { "background": "$bg" },
+    "children": [
+      { "type": "scroll", "children": [
+        { "type": "vstack", "style": { "spacing": 16, "padding": 16 }, "children": [
+          { "type": "hstack", "style": { "align": "center" }, "children": [
+            { "type": "text", "binding": "schedrunner.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+            { "type": "spacer" },
+            { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+          ] },
+          { "type": "card", "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 }, "children": [
+            { "type": "hstack", "style": { "align": "center", "spacing": 10 }, "children": [
+              { "type": "text", "props": { "text": "Status" }, "style": { "font": "subhead", "color": "$textSecondary" } },
+              { "type": "spacer" },
+              { "type": "badge", "binding": "schedrunner.statusFormatted", "style": { "color": "schedrunner.statusDirection" } }
+            ] },
+            { "type": "text", "binding": "schedrunner.countsFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+            { "type": "text", "binding": "schedrunner.subtitleFormatted", "style": { "font": "caption2", "color": "$textSecondary" } }
+          ] },
+          { "type": "vstack", "props": { "repeat": "schedrunner.jobs" }, "style": { "spacing": 12 }, "children": [
+            { "type": "card", "style": { "background": "$cardBg", "cornerRadius": 16, "padding": 14 }, "children": [
+              { "type": "hstack", "style": { "align": "center", "spacing": 8 }, "children": [
+                { "type": "text", "binding": "item.name", "style": { "font": "headline", "weight": "semibold", "color": "$textPrimary" } },
+                { "type": "spacer" },
+                { "type": "badge", "binding": "item.statusFormatted", "style": { "color": "item.direction" } }
+              ] },
+              { "type": "hstack", "style": { "align": "center", "spacing": 8 }, "children": [
+                { "type": "text", "binding": "item.lastFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                { "type": "spacer" },
+                { "type": "text", "binding": "item.nextFormatted", "style": { "font": "caption", "color": "$accent" } }
+              ] },
+              { "type": "text", "binding": "item.metaFormatted", "style": { "font": "caption2", "color": "$textSecondary" } }
+            ] }
+          ] },
+          { "type": "text", "binding": "schedrunner.logLabel", "style": { "font": "subhead", "weight": "semibold", "color": "$textPrimary" } },
+          { "type": "code", "binding": "schedrunner.logTail" }
+        ] }
+      ] }
+    ]
+  }
+}

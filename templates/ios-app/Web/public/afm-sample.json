@@ -1,0 +1,511 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-09T14:00:00Z",
+  "theme": {
+    "colors": {
+      "bg": "#0b1020",
+      "bgAccent": "#16204a",
+      "cardBg": "#161c2e",
+      "textPrimary": "#f2f5ff",
+      "textSecondary": "#9aa4c4",
+      "accent": "#6ea8fe",
+      "up": "#43d18a",
+      "down": "#ff6b6b",
+      "divider": "#2a3350"
+    },
+    "fonts": {
+      "family": "-apple-system, system-ui, sans-serif"
+    },
+    "spacing": 12,
+    "radius": 20
+  },
+  "nav": [
+    {
+      "title": "Home",
+      "icon": "house.fill",
+      "path": "/__APP_NAME_LOWER__"
+    },
+    {
+      "title": "Location",
+      "icon": "map.fill",
+      "children": [
+        {
+          "title": "Activity",
+          "icon": "map.fill",
+          "path": "/screen/afm"
+        },
+        {
+          "title": "48h Transactions",
+          "icon": "clock.arrow.circlepath",
+          "path": "/screen/afm48"
+        }
+      ]
+    },
+    {
+      "title": "Money",
+      "icon": "dollarsign.circle.fill",
+      "children": [
+        {
+          "title": "Balances",
+          "icon": "dollarsign.circle.fill",
+          "path": "/screen/balances"
+        },
+        {
+          "title": "YNAB",
+          "icon": "creditcard.fill",
+          "path": "/screen/ynab"
+        }
+      ]
+    },
+    {
+      "title": "Smart Home",
+      "icon": "house.circle.fill",
+      "path": "/screen/smarthome"
+    },
+    {
+      "title": "Config",
+      "icon": "slider.horizontal.3",
+      "path": "/screen/config"
+    }
+  ],
+  "data": {
+    "meta": {
+      "updatedAtFormatted": "Updated just now",
+      "stale": false
+    },
+    "bq": {
+      "title": "Activity \u00b7 Today",
+      "subtitleFormatted": "iPhone 16 \u00b7 35 min moving \u00b7 3h 25m stopped \u00b7 2:00 PM",
+      "device": "iPhone 16",
+      "rangeFormatted": "Today",
+      "currentState": {
+        "statusFormatted": "Stopped",
+        "placeFormatted": "Bound Brook, NJ",
+        "metaFormatted": "battery 82% \u00b7 seen 2m ago",
+        "icon": "mappin.circle.fill",
+        "color": "#9aa4c4",
+        "mapsUrl": "https://maps.apple.com/?ll=40.5354,-74.4957&q=Bound%20Brook%2C%20NJ"
+      },
+      "ranges": [
+        {
+          "key": "today",
+          "label": "Today",
+          "labelFormatted": "Today",
+          "active": true,
+          "color": "$accent",
+          "navHref": "/screen/afm?range=today"
+        },
+        {
+          "key": "yesterday",
+          "label": "Yesterday",
+          "labelFormatted": "Yesterday",
+          "active": false,
+          "color": "$textSecondary",
+          "navHref": "/screen/afm?range=yesterday"
+        },
+        {
+          "key": "week",
+          "label": "This week",
+          "labelFormatted": "This week",
+          "active": false,
+          "color": "$textSecondary",
+          "navHref": "/screen/afm?range=week"
+        }
+      ],
+      "map": {
+        "center": {
+          "lat": 40.5354,
+          "lon": -74.4957
+        },
+        "focus": 1,
+        "segments": [
+          {
+            "index": 0,
+            "category": "Stopped",
+            "color": "#9aa4c4",
+            "points": [
+              [
+                40.4862,
+                -74.4518
+              ]
+            ],
+            "center": {
+              "lat": 40.4862,
+              "lon": -74.4518
+            },
+            "durationMin": 175
+          },
+          {
+            "index": 1,
+            "category": "Moving",
+            "color": "#6ea8fe",
+            "points": [
+              [
+                40.4862,
+                -74.4518
+              ],
+              [
+                40.51,
+                -74.47
+              ],
+              [
+                40.5354,
+                -74.4957
+              ]
+            ],
+            "center": {
+              "lat": 40.5354,
+              "lon": -74.4957
+            }
+          },
+          {
+            "index": 2,
+            "category": "Stopped",
+            "color": "#9aa4c4",
+            "points": [
+              [
+                40.5354,
+                -74.4957
+              ]
+            ],
+            "center": {
+              "lat": 40.5354,
+              "lon": -74.4957
+            },
+            "durationMin": 30
+          }
+        ]
+      },
+      "segments": [
+        {
+          "category": "Charge",
+          "mode": "Started charging",
+          "place": "",
+          "icon": "bolt.fill",
+          "categoryColor": "#ffd166",
+          "timeFormatted": "1:35 PM",
+          "durationFormatted": "",
+          "durationMin": 0
+        },
+        {
+          "index": 2,
+          "place": "Bound Brook, NJ",
+          "category": "Stopped",
+          "mode": "Stopped",
+          "icon": "mappin.circle.fill",
+          "categoryColor": "#9aa4c4",
+          "known": false,
+          "timeFormatted": "1:30\u20132:00 PM",
+          "durationFormatted": "30 min",
+          "durationMin": 30,
+          "distanceFormatted": "",
+          "mapsUrl": "https://maps.apple.com/?ll=40.5354,-74.4957&q=Bound%20Brook%2C%20NJ",
+          "labelHref": "/screen/afm_label?lat=40.535400&lon=-74.495700&place=Bound%20Brook%2C%20NJ",
+          "lat": 40.5354,
+          "lon": -74.4957
+        },
+        {
+          "index": 1,
+          "place": "to Bound Brook, NJ",
+          "category": "Moving",
+          "mode": "Driving",
+          "icon": "car.fill",
+          "categoryColor": "#6ea8fe",
+          "timeFormatted": "1:05\u20131:30 PM",
+          "durationFormatted": "25 min",
+          "durationMin": 25,
+          "distanceFormatted": "4.2 mi",
+          "lat": 40.5354,
+          "lon": -74.4957
+        },
+        {
+          "index": 0,
+          "place": "Home",
+          "category": "Stopped",
+          "mode": "Stopped",
+          "icon": "star.fill",
+          "categoryColor": "#ffd166",
+          "known": true,
+          "timeFormatted": "10:10 AM\u20131:05 PM",
+          "durationFormatted": "2h 55m",
+          "durationMin": 175,
+          "distanceFormatted": "",
+          "mapsUrl": "https://maps.apple.com/?ll=40.4862,-74.4518&q=Home",
+          "labelHref": "/screen/afm_label?lat=40.486200&lon=-74.451800&place=Home",
+          "lat": 40.4862,
+          "lon": -74.4518
+        }
+      ],
+      "widgetDisabled": {
+        "key": "activity_widget_disabled",
+        "value": "false",
+        "type": "bool",
+        "label": "Disable Activity widget (show Home Lights)"
+      },
+      "widgetDisabledStateFormatted": "Widget shows your real activity."
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": {
+      "background": "$bg"
+    },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": {
+              "spacing": 12,
+              "padding": 16
+            },
+            "children": [
+              {
+                "type": "hstack",
+                "style": {
+                  "align": "center"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "binding": "bq.title",
+                    "style": {
+                      "font": "largeTitle",
+                      "weight": "bold",
+                      "color": "$textPrimary"
+                    }
+                  },
+                  {
+                    "type": "spacer"
+                  },
+                  {
+                    "type": "text",
+                    "binding": "meta.updatedAtFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    },
+                    "action": {
+                      "type": "refresh"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "bq.subtitleFormatted",
+                "style": {
+                  "font": "caption",
+                  "color": "$textSecondary"
+                }
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 20,
+                  "padding": 16
+                },
+                "action": {
+                  "type": "openURL",
+                  "urlBinding": "bq.currentState.mapsUrl"
+                },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "style": {
+                      "align": "center",
+                      "spacing": 14
+                    },
+                    "children": [
+                      {
+                        "type": "image",
+                        "binding": "bq.currentState.icon",
+                        "style": {
+                          "font": "largeTitle",
+                          "color": "bq.currentState.color"
+                        }
+                      },
+                      {
+                        "type": "vstack",
+                        "style": {
+                          "spacing": 2
+                        },
+                        "children": [
+                          {
+                            "type": "text",
+                            "binding": "bq.currentState.statusFormatted",
+                            "style": {
+                              "font": "title3",
+                              "weight": "bold",
+                              "color": "$textPrimary"
+                            }
+                          },
+                          {
+                            "type": "text",
+                            "binding": "bq.currentState.placeFormatted",
+                            "style": {
+                              "font": "subhead",
+                              "color": "$textSecondary"
+                            }
+                          },
+                          {
+                            "type": "text",
+                            "binding": "bq.currentState.metaFormatted",
+                            "style": {
+                              "font": "caption",
+                              "color": "$textSecondary"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "hstack",
+                "props": {
+                  "repeat": "bq.ranges"
+                },
+                "style": {
+                  "spacing": 8,
+                  "wrap": true
+                },
+                "children": [
+                  {
+                    "type": "badge",
+                    "binding": "item.labelFormatted",
+                    "style": {
+                      "color": "item.color"
+                    },
+                    "action": {
+                      "type": "navigate",
+                      "urlBinding": "item.navHref"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 20,
+                  "padding": 8
+                },
+                "children": [
+                  {
+                    "type": "map",
+                    "binding": "bq.map",
+                    "props": {
+                      "mapId": "activity"
+                    },
+                    "style": {
+                      "height": 260
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "button",
+                "props": {
+                  "text": "Live Activity",
+                  "icon": "livephoto"
+                },
+                "action": {
+                  "type": "liveActivity"
+                }
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 20,
+                  "padding": 16
+                },
+                "children": [
+                  {
+                    "type": "field",
+                    "binding": "bq.widgetDisabled"
+                  },
+                  {
+                    "type": "text",
+                    "binding": "bq.widgetDisabledStateFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    }
+                  },
+                  {
+                    "type": "hstack",
+                    "style": {
+                      "align": "center"
+                    },
+                    "children": [
+                      {
+                        "type": "spacer"
+                      },
+                      {
+                        "type": "button",
+                        "props": {
+                          "text": "Apply"
+                        },
+                        "action": {
+                          "type": "submit",
+                          "url": "/config"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "hstack",
+                "style": {
+                  "align": "center"
+                },
+                "children": [
+                  {
+                    "type": "spacer"
+                  },
+                  {
+                    "type": "button",
+                    "props": {
+                      "text": "Show full day"
+                    },
+                    "action": {
+                      "type": "focus",
+                      "key": "activity",
+                      "value": -1
+                    }
+                  },
+                  {
+                    "type": "spacer"
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 20,
+                  "padding": 16
+                },
+                "children": [
+                  {
+                    "type": "timeline",
+                    "binding": "bq.segments",
+                    "props": {
+                      "mapId": "activity"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "theme": {
+    "colors": {
+      "bg": "#0b1020",
+      "bgAccent": "#16204a",
+      "cardBg": "#161c2e",
+      "textPrimary": "#f2f5ff",
+      "textSecondary": "#9aa4c4",
+      "accent": "#6ea8fe",
+      "up": "#43d18a",
+      "down": "#ff6b6b",
+      "divider": "#2a3350"
+    },
+    "fonts": {
+      "family": "-apple-system, system-ui, sans-serif"
+    },
+    "spacing": 12,
+    "radius": 20
+  },
+  "data": {
+    "meta": {
+      "updatedAtFormatted": "Updated just now",
+      "stale": false
+    },
+    "shlog": {
+      "title": "Smart Home Log",
+      "subtitleFormatted": "6 state changes \u00b7 last 24h",
+      "events": [
+        {
+          "timeFormatted": "3:11 PM",
+          "icon": "figure.walk.motion",
+          "color": "#ff6b6b",
+          "lineFormatted": "Front Door Camera \u00b7 Camera motion detected"
+        },
+        {
+          "timeFormatted": "3:04 PM",
+          "icon": "lightbulb.fill",
+          "color": "#ffd166",
+          "lineFormatted": "Kitchen \u00b7 Turned on"
+        },
+        {
+          "timeFormatted": "2:57 PM",
+          "icon": "sensor.fill",
+          "color": "#43d18a",
+          "lineFormatted": "Back Door \u00b7 Opened"
+        },
+        {
+          "timeFormatted": "2:40 PM",
+          "icon": "lightbulb.fill",
+          "color": "#ffd166",
+          "lineFormatted": "Kitchen \u00b7 Turned off"
+        },
+        {
+          "timeFormatted": "1:22 PM",
+          "icon": "lock.fill",
+          "color": "#f4a259",
+          "lineFormatted": "Front Lock \u00b7 Unlocked"
+        },
+        {
+          "timeFormatted": "12:05 PM",
+          "icon": "sensor.fill",
+          "color": "#43d18a",
+          "lineFormatted": "Hallway Motion \u00b7 Motion cleared"
+        }
+      ],
+      "rowCount": 6,
+      "emptyFormatted": ""
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": {
+      "background": "$bg"
+    },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": {
+              "spacing": 12,
+              "padding": 16
+            },
+            "children": [
+              {
+                "type": "hstack",
+                "style": {
+                  "align": "center"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "binding": "shlog.title",
+                    "style": {
+                      "font": "largeTitle",
+                      "weight": "bold",
+                      "color": "$textPrimary"
+                    }
+                  },
+                  {
+                    "type": "spacer"
+                  },
+                  {
+                    "type": "text",
+                    "binding": "meta.updatedAtFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    },
+                    "action": {
+                      "type": "refresh"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "shlog.subtitleFormatted",
+                "style": {
+                  "font": "caption",
+                  "color": "$textSecondary"
+                }
+              },
+              {
+                "type": "text",
+                "binding": "shlog.emptyFormatted",
+                "style": {
+                  "font": "subhead",
+                  "color": "$textSecondary",
+                  "align": "center"
+                }
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 16,
+                  "padding": 8
+                },
+                "children": [
+                  {
+                    "type": "vstack",
+                    "props": {
+                      "repeat": "shlog.events"
+                    },
+                    "style": {
+                      "spacing": 2
+                    },
+                    "children": [
+                      {
+                        "type": "hstack",
+                        "style": {
+                          "align": "center",
+                          "spacing": 10,
+                          "padding": 6
+                        },
+                        "children": [
+                          {
+                            "type": "text",
+                            "binding": "item.timeFormatted",
+                            "style": {
+                              "font": "caption",
+                              "weight": "semibold",
+                              "color": "$textSecondary",
+                              "width": 96
+                            }
+                          },
+                          {
+                            "type": "image",
+                            "binding": "item.icon",
+                            "style": {
+                              "font": "body",
+                              "color": "item.color"
+                            }
+                          },
+                          {
+                            "type": "text",
+                            "binding": "item.lineFormatted",
+                            "style": {
+                              "font": "subhead",
+                              "color": "$textPrimary"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

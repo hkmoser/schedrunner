@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-09T14:00:00Z",
+  "theme": {
+    "colors": {
+      "bg": "#0b1020",
+      "bgAccent": "#16204a",
+      "cardBg": "#161c2e",
+      "textPrimary": "#f2f5ff",
+      "textSecondary": "#9aa4c4",
+      "accent": "#6ea8fe",
+      "up": "#43d18a",
+      "down": "#ff6b6b",
+      "divider": "#2a3350"
+    },
+    "fonts": { "family": "-apple-system, system-ui, sans-serif" },
+    "spacing": 12,
+    "radius": 20
+  },
+  "data": {
+    "meta": { "updatedAtFormatted": "Updated just now", "stale": false },
+    "bq": {
+      "title": "Top CA Baby Names",
+      "subtitleFormatted": "bigquery-public-data · 10 rows · as of 2:00 PM",
+      "columns": ["name", "total"],
+      "rows": [
+        ["Mary", 391927],
+        ["Patricia", 247752],
+        ["Jennifer", 244715],
+        ["Elizabeth", 230521],
+        ["Linda", 221835],
+        ["Maria", 215993],
+        ["Barbara", 211902],
+        ["Susan", 205492],
+        ["Margaret", 191316],
+        ["Nancy", 184007]
+      ]
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": { "background": "$bg" },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": { "spacing": 12, "padding": 16 },
+            "children": [
+              {
+                "type": "hstack",
+                "style": { "align": "center", "spacing": 10 },
+                "children": [
+                  { "type": "text", "props": { "text": "‹ Back" }, "style": { "font": "headline", "weight": "semibold", "color": "$accent" }, "action": { "type": "navigate", "url": "back" } },
+                  { "type": "spacer" },
+                  { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+                ]
+              },
+              { "type": "text", "binding": "bq.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+              { "type": "text", "binding": "bq.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+              {
+                "type": "card",
+                "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 12 },
+                "children": [
+                  { "type": "table", "binding": "bq" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

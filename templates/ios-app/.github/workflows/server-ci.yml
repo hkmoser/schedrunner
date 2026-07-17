@@ -1,0 +1,49 @@
+name: Server CI
+
+# Compiles the Vapor server so a build-breaking change fails the PR check instead of
+# silently shipping (the server build runs on the Mac mini at deploy time, which has no
+# pre-merge gate — a Swift compile error there just leaves the OLD binary running, so server
+# changes "don't take effect"). This catches that before merge. Build only (no `swift test` —
+# the server tests need the Mac mini's data sources).
+#
+# COST: runs on LINUX (1× billed minutes) in the official Swift container, not macOS (10×) —
+# the server is pure Vapor + swift-crypto, both fully cross-platform, and the Mac mini does
+# its own local build at deploy time anyway, so a Linux compile check is an equivalent gate
+# at a tenth of the price. Push runs are path-filtered so docs/Deploy-only merges skip it.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Server/**"
+      - ".github/workflows/server-ci.yml"
+  pull_request:
+    paths:
+      - "Server/**"
+      - ".github/workflows/server-ci.yml"
+
+# A newer push to the same ref supersedes the running build — don't pay for both.
+concurrency:
+  group: server-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: swift:6.0-noble
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: Server
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift version
+        run: swift --version
+      - name: Cache SwiftPM build
+        uses: actions/cache@v4
+        with:
+          path: Server/.build
+          key: spm-linux-${{ hashFiles('Server/Package.resolved', 'Server/Package.swift') }}
+          restore-keys: spm-linux-
+      - name: Build server (also compiles tests so they can't rot)
+        run: swift build --build-tests

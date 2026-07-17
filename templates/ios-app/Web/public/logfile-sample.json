@@ -1,0 +1,263 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-20T14:00:00Z",
+  "theme": {
+    "colors": {
+      "bg": "#0b1020",
+      "bgAccent": "#16204a",
+      "cardBg": "#161c2e",
+      "textPrimary": "#f2f5ff",
+      "textSecondary": "#9aa4c4",
+      "accent": "#6ea8fe",
+      "up": "#43d18a",
+      "down": "#ff6b6b",
+      "divider": "#2a3350"
+    },
+    "fonts": {
+      "family": "-apple-system, system-ui, sans-serif"
+    },
+    "spacing": 12,
+    "radius": 20
+  },
+  "nav": [
+    {
+      "title": "Home",
+      "icon": "house.fill",
+      "path": "/__APP_NAME_LOWER__"
+    },
+    {
+      "title": "System",
+      "icon": "wrench.and.screwdriver.fill",
+      "children": [
+        {
+          "title": "Logs",
+          "icon": "doc.text.fill",
+          "path": "/screen/logs"
+        }
+      ]
+    }
+  ],
+  "data": {
+    "meta": {
+      "updatedAtFormatted": "Updated just now",
+      "stale": false
+    },
+    "logfile": {
+      "title": "errors.err",
+      "subtitleFormatted": "812 B \u00b7 2h ago \u00b7 last 24h \u00b7 142 lines",
+      "statusFormatted": "Failed",
+      "statusColor": "down",
+      "anomalyCountFormatted": "2 anomalies flagged",
+      "anomalies": [
+        {
+          "lineFormatted": "2026-06-20 11:14:02 ConnectionError: hue_collector refused",
+          "color": "down"
+        },
+        {
+          "lineFormatted": "2026-06-20 11:14:18 WARNING retrying in 15s",
+          "color": "#ffd166"
+        }
+      ],
+      "code": "2026-06-20 11:13:55 hue_collector starting\n2026-06-20 11:14:02 ConnectionError: hue_collector refused\n2026-06-20 11:14:18 WARNING retrying in 15s\n2026-06-20 11:14:33 recovered",
+      "backHref": "/screen/logs",
+      "rowCount": 2,
+      "runChart": {
+        "bars": [
+          {
+            "heightPct": 100.0,
+            "color": "$up",
+            "outcome": "ok",
+            "labelFormatted": "1m02s",
+            "captionFormatted": "09:00"
+          },
+          {
+            "heightPct": 45.0,
+            "color": "$up",
+            "outcome": "ok",
+            "labelFormatted": "28s",
+            "captionFormatted": "12:00"
+          },
+          {
+            "heightPct": 22.0,
+            "color": "$down",
+            "outcome": "fail",
+            "labelFormatted": "14s",
+            "captionFormatted": "15:00"
+          }
+        ],
+        "hasData": true,
+        "captionFormatted": "3 runs \u00b7 2 ok \u00b7 1 failed \u00b7 avg 34s",
+        "emptyFormatted": ""
+      }
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": {
+      "background": "$bg"
+    },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": {
+              "spacing": 12,
+              "padding": 16
+            },
+            "children": [
+              {
+                "type": "hstack",
+                "style": {
+                  "align": "center",
+                  "spacing": 8
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "binding": "logfile.title",
+                    "style": {
+                      "font": "largeTitle",
+                      "weight": "bold",
+                      "color": "$textPrimary"
+                    }
+                  },
+                  {
+                    "type": "badge",
+                    "binding": "logfile.statusFormatted",
+                    "style": {
+                      "color": "logfile.statusColor"
+                    }
+                  },
+                  {
+                    "type": "spacer"
+                  },
+                  {
+                    "type": "text",
+                    "props": {
+                      "text": "Logs"
+                    },
+                    "style": {
+                      "font": "caption",
+                      "weight": "semibold",
+                      "color": "$accent"
+                    },
+                    "action": {
+                      "type": "navigate",
+                      "urlBinding": "logfile.backHref"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "logfile.subtitleFormatted",
+                "style": {
+                  "font": "caption",
+                  "color": "$textSecondary"
+                }
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 16,
+                  "padding": 14
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "props": {
+                      "text": "Run history"
+                    },
+                    "style": {
+                      "font": "headline",
+                      "weight": "semibold",
+                      "color": "$textPrimary"
+                    }
+                  },
+                  {
+                    "type": "barChart",
+                    "binding": "logfile.runChart.bars",
+                    "style": {
+                      "height": 120
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "binding": "logfile.runChart.captionFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "binding": "logfile.runChart.emptyFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 16,
+                  "padding": 14
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "binding": "logfile.anomalyCountFormatted",
+                    "style": {
+                      "font": "headline",
+                      "weight": "semibold",
+                      "color": "$textPrimary"
+                    }
+                  },
+                  {
+                    "type": "vstack",
+                    "props": {
+                      "repeat": "logfile.anomalies"
+                    },
+                    "style": {
+                      "spacing": 6
+                    },
+                    "children": [
+                      {
+                        "type": "code",
+                        "binding": "item.lineFormatted",
+                        "style": {
+                          "color": "item.color"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "props": {
+                  "text": "Recent log"
+                },
+                "style": {
+                  "font": "headline",
+                  "weight": "semibold",
+                  "color": "$textPrimary"
+                }
+              },
+              {
+                "type": "code",
+                "binding": "logfile.code"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

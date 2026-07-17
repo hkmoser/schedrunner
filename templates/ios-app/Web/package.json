@@ -1,0 +1,33 @@
+{
+  "name": "ios-shell-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Server-driven __APP_NAME_LOWER__ — web PWA renderer",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run gen:icons && tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173",
+    "gen:icons": "node scripts/gen-icons.mjs",
+    "typecheck": "tsc --noEmit",
+    "test:schema": "node scripts/validate-schema.mjs",
+    "test:render": "tsx scripts/render-smoke.test.mjs",
+    "test:regression": "tsx scripts/regression.test.mjs",
+    "test": "npm run typecheck && npm run test:schema && npm run test:render && npm run test:regression",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "jsdom": "^29.1.1",
+    "tsx": "^4.22.4",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2",
+    "vite-plugin-pwa": "^0.20.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

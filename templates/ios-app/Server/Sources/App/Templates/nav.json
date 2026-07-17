@@ -1,0 +1,132 @@
+[
+  {
+    "title": "Home",
+    "icon": "house.fill",
+    "path": "/__APP_NAME_LOWER__"
+  },
+  {
+    "title": "Finance",
+    "icon": "dollarsign.circle.fill",
+    "children": [
+      {
+        "title": "Balances",
+        "icon": "creditcard.fill",
+        "path": "/screen/balances"
+      },
+      {
+        "title": "Budget",
+        "icon": "chart.pie.fill",
+        "path": "/screen/budget"
+      },
+      {
+        "title": "GCP Costs",
+        "icon": "cloud.fill",
+        "path": "/screen/gcp_costs"
+      }
+    ]
+  },
+  {
+    "title": "Location",
+    "icon": "map.fill",
+    "children": [
+      {
+        "title": "Activity",
+        "icon": "location.fill",
+        "path": "/screen/afm"
+      },
+      {
+        "title": "Activity Log",
+        "icon": "list.bullet.rectangle",
+        "path": "/screen/afm_log"
+      },
+      {
+        "title": "Last 48h",
+        "icon": "clock.arrow.circlepath",
+        "path": "/screen/afm48"
+      },
+      {
+        "title": "Live Health",
+        "icon": "waveform.path.ecg",
+        "path": "/screen/afm_health"
+      }
+    ]
+  },
+  {
+    "title": "Smart Home",
+    "icon": "house.circle.fill",
+    "children": [
+      {
+        "title": "Overview",
+        "icon": "house.circle.fill",
+        "path": "/screen/smarthome"
+      },
+      {
+        "title": "Event Log",
+        "icon": "list.bullet.rectangle",
+        "path": "/screen/smarthome_log"
+      }
+    ]
+  },
+  {
+    "title": "Messages",
+    "icon": "message.fill",
+    "path": "/screen/messages"
+  },
+  {
+    "title": "System",
+    "icon": "wrench.and.screwdriver.fill",
+    "children": [
+      {
+        "title": "Logs",
+        "icon": "doc.text.fill",
+        "path": "/screen/logs"
+      },
+      {
+        "title": "Sched Logs",
+        "icon": "doc.text.magnifyingglass",
+        "path": "/screen/schedlogs"
+      },
+      {
+        "title": "Schedrunner",
+        "icon": "timer",
+        "path": "/screen/schedrunner"
+      },
+      {
+        "title": "Repos",
+        "icon": "chevron.left.forwardslash.chevron.right",
+        "path": "/screen/repos"
+      },
+      {
+        "title": "BQ Tables",
+        "icon": "tablecells",
+        "path": "/screen/bqtables"
+      },
+      {
+        "title": "Deploy",
+        "icon": "arrow.triangle.2.circlepath",
+        "path": "/screen/deploy"
+      }
+    ]
+  },
+  {
+    "title": "Docs",
+    "icon": "folder.fill",
+    "path": "/screen/docs"
+  },
+  {
+    "title": "Settings",
+    "icon": "gearshape.fill",
+    "children": [
+      {
+        "title": "Preferences",
+        "icon": "slider.horizontal.3",
+        "path": "/screen/config"
+      },
+      {
+        "title": "Secrets & Keys",
+        "icon": "key.fill",
+        "path": "/screen/settings"
+      }
+    ]
+  }
+]

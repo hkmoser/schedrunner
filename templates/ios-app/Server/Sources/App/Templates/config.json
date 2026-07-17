@@ -1,0 +1,174 @@
+{
+  "type": "screen",
+  "style": {
+    "background": "$bg"
+  },
+  "children": [
+    {
+      "type": "scroll",
+      "children": [
+        {
+          "type": "vstack",
+          "style": {
+            "spacing": 12,
+            "padding": 16
+          },
+          "children": [
+            {
+              "type": "hstack",
+              "style": {
+                "align": "center"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "binding": "config.title",
+                  "style": {
+                    "font": "largeTitle",
+                    "weight": "bold",
+                    "color": "$textPrimary"
+                  }
+                },
+                {
+                  "type": "spacer"
+                },
+                {
+                  "type": "text",
+                  "binding": "meta.updatedAtFormatted",
+                  "style": {
+                    "font": "caption",
+                    "color": "$textSecondary"
+                  },
+                  "action": {
+                    "type": "refresh"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "binding": "config.subtitleFormatted",
+              "style": {
+                "font": "caption",
+                "color": "$textSecondary"
+              }
+            },
+            {
+              "type": "vstack",
+              "props": {
+                "repeat": "config.groups"
+              },
+              "style": {
+                "spacing": 6
+              },
+              "children": [
+                {
+                  "type": "disclosure",
+                  "binding": "item.title",
+                  "children": [
+                    {
+                      "type": "card",
+                      "style": {
+                        "background": "$cardBg",
+                        "cornerRadius": 20,
+                        "padding": 16
+                      },
+                      "children": [
+                        {
+                          "type": "vstack",
+                          "props": {
+                            "repeat": "item.items"
+                          },
+                          "children": [
+                            {
+                              "type": "field",
+                              "binding": "item"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "card",
+              "style": {
+                "background": "$cardBg",
+                "cornerRadius": 20,
+                "padding": 16
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "props": {
+                    "text": "Add setting"
+                  },
+                  "style": {
+                    "font": "headline",
+                    "weight": "semibold",
+                    "color": "$textPrimary"
+                  }
+                },
+                {
+                  "type": "field",
+                  "props": {
+                    "field": "__new_key",
+                    "label": "Key",
+                    "fieldType": "string",
+                    "value": ""
+                  }
+                },
+                {
+                  "type": "field",
+                  "props": {
+                    "field": "__new_value",
+                    "label": "Value",
+                    "fieldType": "string",
+                    "value": ""
+                  }
+                },
+                {
+                  "type": "field",
+                  "props": {
+                    "field": "__new_type",
+                    "label": "Type",
+                    "fieldType": "enum",
+                    "value": "string",
+                    "options": [
+                      "string",
+                      "int",
+                      "float",
+                      "bool",
+                      "enum"
+                    ]
+                  }
+                },
+                {
+                  "type": "field",
+                  "props": {
+                    "field": "__new_category",
+                    "label": "Group",
+                    "fieldType": "string",
+                    "value": ""
+                  }
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "text": "Save changes"
+              },
+              "action": {
+                "type": "submit",
+                "url": "/config"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 1,
+  "theme": {
+    "colors": {
+      "bg": "#0b1020",
+      "bgAccent": "#16204a",
+      "cardBg": "#161c2e",
+      "textPrimary": "#f2f5ff",
+      "textSecondary": "#9aa4c4",
+      "accent": "#6ea8fe",
+      "up": "#43d18a",
+      "down": "#ff6b6b",
+      "divider": "#2a3350"
+    },
+    "fonts": {
+      "family": "-apple-system, system-ui, sans-serif"
+    },
+    "spacing": 12,
+    "radius": 20
+  },
+  "data": {
+    "meta": {
+      "updatedAtFormatted": "Updated just now",
+      "stale": false
+    },
+    "afmlog": {
+      "title": "Activity Log \u00b7 Today",
+      "subtitleFormatted": "iPhone 16 \u00b7 1h 12m moving \u00b7 5h 40m stopped \u00b7 3:14 PM",
+      "ranges": [
+        {
+          "key": "today",
+          "label": "Today",
+          "labelFormatted": "Today",
+          "active": true,
+          "color": "$accent",
+          "navHref": "/screen/afm_log?range=today"
+        },
+        {
+          "key": "yesterday",
+          "label": "Yesterday",
+          "labelFormatted": "Yesterday",
+          "active": false,
+          "color": "$textSecondary",
+          "navHref": "/screen/afm_log?range=yesterday"
+        },
+        {
+          "key": "week",
+          "label": "This week",
+          "labelFormatted": "This week",
+          "active": false,
+          "color": "$textSecondary",
+          "navHref": "/screen/afm_log?range=week"
+        }
+      ],
+      "events": [
+        {
+          "timeFormatted": "3:02 PM",
+          "icon": "star.fill",
+          "color": "#ffd166",
+          "lineFormatted": "Stopped \u00b7 Home \u00b7 42 min"
+        },
+        {
+          "timeFormatted": "2:38 PM",
+          "icon": "car.fill",
+          "color": "#6ea8fe",
+          "lineFormatted": "Driving \u00b7 to Downtown \u00b7 3.2 mi \u00b7 18m"
+        },
+        {
+          "timeFormatted": "1:15 PM",
+          "icon": "bolt.fill",
+          "color": "#ffd166",
+          "lineFormatted": "Started charging"
+        },
+        {
+          "timeFormatted": "12:20 PM",
+          "icon": "mappin.circle.fill",
+          "color": "#9aa4c4",
+          "lineFormatted": "Stopped \u00b7 39.9012, -75.5140 \u00b7 55 min"
+        }
+      ],
+      "rowCount": 4,
+      "emptyFormatted": ""
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": {
+      "background": "$bg"
+    },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": {
+              "spacing": 12,
+              "padding": 16
+            },
+            "children": [
+              {
+                "type": "hstack",
+                "style": {
+                  "align": "center"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "binding": "afmlog.title",
+                    "style": {
+                      "font": "largeTitle",
+                      "weight": "bold",
+                      "color": "$textPrimary"
+                    }
+                  },
+                  {
+                    "type": "spacer"
+                  },
+                  {
+                    "type": "text",
+                    "binding": "meta.updatedAtFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    },
+                    "action": {
+                      "type": "refresh"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "afmlog.subtitleFormatted",
+                "style": {
+                  "font": "caption",
+                  "color": "$textSecondary"
+                }
+              },
+              {
+                "type": "hstack",
+                "props": {
+                  "repeat": "afmlog.ranges"
+                },
+                "style": {
+                  "spacing": 8,
+                  "wrap": true
+                },
+                "children": [
+                  {
+                    "type": "badge",
+                    "binding": "item.labelFormatted",
+                    "style": {
+                      "color": "item.color"
+                    },
+                    "action": {
+                      "type": "navigate",
+                      "urlBinding": "item.navHref"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "afmlog.emptyFormatted",
+                "style": {
+                  "font": "subhead",
+                  "color": "$textSecondary",
+                  "align": "center"
+                }
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 16,
+                  "padding": 8
+                },
+                "children": [
+                  {
+                    "type": "vstack",
+                    "props": {
+                      "repeat": "afmlog.events"
+                    },
+                    "style": {
+                      "spacing": 2
+                    },
+                    "children": [
+                      {
+                        "type": "hstack",
+                        "style": {
+                          "align": "center",
+                          "spacing": 10,
+                          "padding": 6
+                        },
+                        "children": [
+                          {
+                            "type": "text",
+                            "binding": "item.timeFormatted",
+                            "style": {
+                              "font": "caption",
+                              "weight": "semibold",
+                              "color": "$textSecondary",
+                              "width": 96
+                            }
+                          },
+                          {
+                            "type": "image",
+                            "binding": "item.icon",
+                            "style": {
+                              "font": "body",
+                              "color": "item.color"
+                            }
+                          },
+                          {
+                            "type": "text",
+                            "binding": "item.lineFormatted",
+                            "style": {
+                              "font": "subhead",
+                              "color": "$textPrimary"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

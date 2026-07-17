@@ -1,0 +1,190 @@
+{
+  "type": "screen",
+  "style": {
+    "background": "$bg"
+  },
+  "children": [
+    {
+      "type": "scroll",
+      "children": [
+        {
+          "type": "vstack",
+          "style": {
+            "spacing": 12,
+            "padding": 16
+          },
+          "children": [
+            {
+              "type": "hstack",
+              "style": {
+                "align": "center"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "binding": "bq.title",
+                  "style": {
+                    "font": "largeTitle",
+                    "weight": "bold",
+                    "color": "$textPrimary"
+                  }
+                },
+                {
+                  "type": "spacer"
+                },
+                {
+                  "type": "text",
+                  "binding": "meta.updatedAtFormatted",
+                  "style": {
+                    "font": "caption",
+                    "color": "$textSecondary"
+                  },
+                  "action": {
+                    "type": "refresh"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "binding": "bq.subtitleFormatted",
+              "style": {
+                "font": "caption",
+                "color": "$textSecondary"
+              }
+            },
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+              "action": { "type": "openURL", "urlBinding": "bq.currentState.mapsUrl" },
+              "children": [
+                {
+                  "type": "hstack",
+                  "style": { "align": "center", "spacing": 14 },
+                  "children": [
+                    { "type": "image", "binding": "bq.currentState.icon", "style": { "font": "largeTitle", "color": "bq.currentState.color" } },
+                    {
+                      "type": "vstack",
+                      "style": { "spacing": 2 },
+                      "children": [
+                        { "type": "text", "binding": "bq.currentState.statusFormatted", "style": { "font": "title3", "weight": "bold", "color": "$textPrimary" } },
+                        { "type": "text", "binding": "bq.currentState.placeFormatted", "style": { "font": "subhead", "color": "$textSecondary" } },
+                        { "type": "text", "binding": "bq.currentState.metaFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "hstack",
+              "props": {
+                "repeat": "bq.ranges"
+              },
+              "style": {
+                "spacing": 8,
+                "wrap": true
+              },
+              "children": [
+                {
+                  "type": "badge",
+                  "binding": "item.labelFormatted",
+                  "style": {
+                    "color": "item.color"
+                  },
+                  "action": {
+                    "type": "navigate",
+                    "urlBinding": "item.navHref"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "card",
+              "style": {
+                "background": "$cardBg",
+                "cornerRadius": 20,
+                "padding": 8
+              },
+              "children": [
+                {
+                  "type": "map",
+                  "binding": "bq.map",
+                  "props": {
+                    "mapId": "activity"
+                  },
+                  "style": {
+                    "height": 260
+                  }
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": { "text": "Live Activity", "icon": "livephoto" },
+              "action": { "type": "liveActivity" }
+            },
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+              "children": [
+                { "type": "field", "binding": "bq.widgetDisabled" },
+                { "type": "text", "binding": "bq.widgetDisabledStateFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                {
+                  "type": "hstack",
+                  "style": { "align": "center" },
+                  "children": [
+                    { "type": "spacer" },
+                    { "type": "button", "props": { "text": "Apply" }, "action": { "type": "submit", "url": "/config" } }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "hstack",
+              "style": {
+                "align": "center"
+              },
+              "children": [
+                {
+                  "type": "spacer"
+                },
+                {
+                  "type": "button",
+                  "props": {
+                    "text": "Show full day"
+                  },
+                  "action": {
+                    "type": "focus",
+                    "key": "activity",
+                    "value": -1
+                  }
+                },
+                {
+                  "type": "spacer"
+                }
+              ]
+            },
+            {
+              "type": "card",
+              "style": {
+                "background": "$cardBg",
+                "cornerRadius": 20,
+                "padding": 16
+              },
+              "children": [
+                {
+                  "type": "timeline",
+                  "binding": "bq.segments",
+                  "props": {
+                    "mapId": "activity"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

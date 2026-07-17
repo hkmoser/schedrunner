@@ -1,0 +1,349 @@
+{
+  "schemaVersion": 1,
+  "theme": {
+    "colors": {
+      "bg": "#0b1020",
+      "bgAccent": "#16204a",
+      "cardBg": "#161c2e",
+      "textPrimary": "#f2f5ff",
+      "textSecondary": "#9aa4c4",
+      "accent": "#6ea8fe",
+      "up": "#43d18a",
+      "down": "#ff6b6b",
+      "divider": "#2a3350"
+    },
+    "fonts": {
+      "family": "-apple-system, system-ui, sans-serif"
+    },
+    "spacing": 12,
+    "radius": 20
+  },
+  "data": {
+    "meta": {
+      "updatedAtFormatted": "Updated just now",
+      "stale": false
+    },
+    "afmhealth": {
+      "title": "Live Health",
+      "subtitleFormatted": "afm_live · afm_live.log · last 24h · updated 2m ago",
+      "statusFormatted": "Intermittent — 1/3 failed (33%)",
+      "statusColor": "#ffd166",
+      "summaryFormatted": "3 runs · 2 ok · 1 failed · 3 back-off phases",
+      "runChart": {
+        "bars": [
+          {
+            "heightPct": 24.0,
+            "color": "$up",
+            "outcome": "ok",
+            "labelFormatted": "4s",
+            "captionFormatted": "08:00"
+          },
+          {
+            "heightPct": 100.0,
+            "color": "$down",
+            "outcome": "fail",
+            "labelFormatted": "33s",
+            "captionFormatted": "08:05"
+          },
+          {
+            "heightPct": 18.0,
+            "color": "$up",
+            "outcome": "ok",
+            "labelFormatted": "2s",
+            "captionFormatted": "08:10"
+          }
+        ],
+        "hasData": true,
+        "captionFormatted": "3 runs · 2 ok · 1 failed · avg 13s",
+        "emptyFormatted": ""
+      },
+      "runs": [
+        {
+          "timeFormatted": "8:10:01 AM – 8:10:03 AM",
+          "outcomeFormatted": "OK",
+          "color": "up",
+          "metaFormatted": "2s · 2 lines",
+          "reasonFormatted": "",
+          "backoffLabel": "",
+          "backoffs": []
+        },
+        {
+          "timeFormatted": "8:05:01 AM – 8:05:34 AM",
+          "outcomeFormatted": "Failed",
+          "color": "down",
+          "metaFormatted": "33s · 3 back-offs · 30s · 5 lines",
+          "reasonFormatted": "2026-07-05 08:05:34 ERROR failed to refresh: timed out",
+          "backoffLabel": "3 back-off phases",
+          "backoffs": [
+            {
+              "lineFormatted": "· 2026-07-05 08:05:02 HTTP 429 too many requests"
+            },
+            {
+              "lineFormatted": "· 2026-07-05 08:05:02 backing off, retry in 30s"
+            },
+            {
+              "lineFormatted": "· 2026-07-05 08:05:33 retrying"
+            }
+          ]
+        },
+        {
+          "timeFormatted": "8:00:01 AM – 8:00:05 AM",
+          "outcomeFormatted": "OK",
+          "color": "up",
+          "metaFormatted": "4s · 3 lines",
+          "reasonFormatted": "",
+          "backoffLabel": "",
+          "backoffs": []
+        }
+      ],
+      "rowCount": 3,
+      "emptyFormatted": ""
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": {
+      "background": "$bg"
+    },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": {
+              "spacing": 12,
+              "padding": 16
+            },
+            "children": [
+              {
+                "type": "hstack",
+                "style": {
+                  "align": "center",
+                  "spacing": 8
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "binding": "afmhealth.title",
+                    "style": {
+                      "font": "largeTitle",
+                      "weight": "bold",
+                      "color": "$textPrimary"
+                    }
+                  },
+                  {
+                    "type": "spacer"
+                  },
+                  {
+                    "type": "text",
+                    "binding": "meta.updatedAtFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    },
+                    "action": {
+                      "type": "refresh"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "afmhealth.subtitleFormatted",
+                "style": {
+                  "font": "caption",
+                  "color": "$textSecondary"
+                }
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 16,
+                  "padding": 14
+                },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "style": {
+                      "align": "center",
+                      "spacing": 8
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "props": {
+                          "text": "Last 24h"
+                        },
+                        "style": {
+                          "font": "headline",
+                          "weight": "semibold",
+                          "color": "$textPrimary"
+                        }
+                      },
+                      {
+                        "type": "spacer"
+                      },
+                      {
+                        "type": "badge",
+                        "binding": "afmhealth.statusFormatted",
+                        "style": {
+                          "color": "afmhealth.statusColor"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "text",
+                    "binding": "afmhealth.summaryFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    }
+                  },
+                  {
+                    "type": "barChart",
+                    "binding": "afmhealth.runChart.bars",
+                    "style": {
+                      "height": 120
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "binding": "afmhealth.runChart.captionFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "props": {
+                  "text": "Run timeline (newest first)"
+                },
+                "style": {
+                  "font": "headline",
+                  "weight": "semibold",
+                  "color": "$textPrimary"
+                }
+              },
+              {
+                "type": "text",
+                "binding": "afmhealth.emptyFormatted",
+                "style": {
+                  "font": "subhead",
+                  "color": "$textSecondary",
+                  "align": "center"
+                }
+              },
+              {
+                "type": "vstack",
+                "props": {
+                  "repeat": "afmhealth.runs"
+                },
+                "style": {
+                  "spacing": 8
+                },
+                "children": [
+                  {
+                    "type": "card",
+                    "style": {
+                      "background": "$cardBg",
+                      "cornerRadius": 12,
+                      "padding": 12
+                    },
+                    "children": [
+                      {
+                        "type": "hstack",
+                        "style": {
+                          "align": "center",
+                          "spacing": 10
+                        },
+                        "children": [
+                          {
+                            "type": "vstack",
+                            "style": {
+                              "spacing": 2
+                            },
+                            "children": [
+                              {
+                                "type": "text",
+                                "binding": "item.timeFormatted",
+                                "style": {
+                                  "font": "subhead",
+                                  "weight": "semibold",
+                                  "color": "$textPrimary"
+                                }
+                              },
+                              {
+                                "type": "text",
+                                "binding": "item.metaFormatted",
+                                "style": {
+                                  "font": "caption",
+                                  "color": "$textSecondary"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "spacer"
+                          },
+                          {
+                            "type": "badge",
+                            "binding": "item.outcomeFormatted",
+                            "style": {
+                              "color": "item.color"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "binding": "item.reasonFormatted",
+                        "style": {
+                          "font": "caption",
+                          "color": "$down"
+                        }
+                      },
+                      {
+                        "type": "disclosure",
+                        "binding": "item.backoffLabel",
+                        "props": {
+                          "fallback": "",
+                          "open": false
+                        },
+                        "children": [
+                          {
+                            "type": "vstack",
+                            "props": {
+                              "repeat": "item.backoffs"
+                            },
+                            "style": {
+                              "spacing": 4
+                            },
+                            "children": [
+                              {
+                                "type": "code",
+                                "binding": "item.lineFormatted",
+                                "style": {
+                                  "color": "#ffd166"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,614 @@
+{
+  "type": "screen",
+  "style": {
+    "background": "$bg"
+  },
+  "children": [
+    {
+      "type": "scroll",
+      "children": [
+        {
+          "type": "vstack",
+          "style": {
+            "spacing": 16,
+            "padding": 16
+          },
+          "children": [
+            {
+              "type": "hstack",
+              "style": {
+                "align": "center"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "props": {
+                    "text": "__APP_NAME__"
+                  },
+                  "style": {
+                    "font": "largeTitle",
+                    "weight": "bold",
+                    "color": "$textPrimary"
+                  }
+                },
+                {
+                  "type": "spacer"
+                },
+                {
+                  "type": "text",
+                  "binding": "meta.updatedAtFormatted",
+                  "style": {
+                    "font": "caption",
+                    "color": "$textSecondary"
+                  },
+                  "action": {
+                    "type": "refresh"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "vstack",
+              "props": {
+                "repeat": "repoBanner.cards"
+              },
+              "children": [
+                {
+                  "type": "hstack",
+                  "style": {
+                    "align": "center",
+                    "spacing": 8,
+                    "background": "$accent",
+                    "cornerRadius": 12,
+                    "padding": 12
+                  },
+                  "action": {
+                    "type": "navigate",
+                    "urlBinding": "item.navHref"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "binding": "item.labelFormatted",
+                      "style": {
+                        "font": "subhead",
+                        "weight": "semibold",
+                        "color": "$onAccent"
+                      }
+                    },
+                    {
+                      "type": "spacer"
+                    },
+                    {
+                      "type": "text",
+                      "props": {
+                        "text": "Review →"
+                      },
+                      "style": {
+                        "font": "caption",
+                        "weight": "semibold",
+                        "color": "$onAccent"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "card",
+              "style": {
+                "background": "$cardBg",
+                "cornerRadius": 20,
+                "padding": 16
+              },
+              "children": [
+                {
+                  "type": "hstack",
+                  "style": {
+                    "align": "center",
+                    "spacing": 12
+                  },
+                  "children": [
+                    {
+                      "type": "image",
+                      "binding": "weather.icon",
+                      "style": {
+                        "font": "largeTitle",
+                        "color": "$accent"
+                      }
+                    },
+                    {
+                      "type": "vstack",
+                      "children": [
+                        {
+                          "type": "text",
+                          "binding": "weather.tempFormatted",
+                          "style": {
+                            "font": "largeTitle",
+                            "weight": "semibold",
+                            "color": "$textPrimary"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "binding": "weather.condition",
+                          "style": {
+                            "font": "subhead",
+                            "color": "$textSecondary"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "spacer"
+                    },
+                    {
+                      "type": "vstack",
+                      "style": {
+                        "align": "trailing"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "binding": "weather.locationName",
+                          "style": {
+                            "font": "headline",
+                            "color": "$textPrimary"
+                          }
+                        },
+                        {
+                          "type": "hstack",
+                          "style": {
+                            "spacing": 8
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "binding": "weather.hiFormatted",
+                              "style": {
+                                "font": "caption",
+                                "color": "$textSecondary"
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "binding": "weather.loFormatted",
+                              "style": {
+                                "font": "caption",
+                                "color": "$textSecondary"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "hstack",
+                  "style": {
+                    "spacing": 8,
+                    "align": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "badge",
+                      "props": { "text": "Home" },
+                      "style": { "color": "weather.homeColor" },
+                      "action": { "type": "setPref", "key": "weatherLoc", "value": "home" }
+                    },
+                    {
+                      "type": "badge",
+                      "props": { "text": "Current" },
+                      "style": { "color": "weather.currentColor" },
+                      "action": { "type": "setPref", "key": "weatherLoc", "value": "current" }
+                    },
+                    { "type": "spacer" }
+                  ]
+                },
+                {
+                  "type": "divider",
+                  "style": {
+                    "color": "$divider"
+                  }
+                },
+                {
+                  "type": "hstack",
+                  "id": "weather-hourly",
+                  "props": {
+                    "repeat": "weather.hourly"
+                  },
+                  "style": {
+                    "spacing": 14,
+                    "wrap": true
+                  },
+                  "children": [
+                    {
+                      "type": "vstack",
+                      "style": {
+                        "align": "center",
+                        "spacing": 4
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "binding": "item.timeFormatted",
+                          "style": {
+                            "font": "caption",
+                            "color": "$textSecondary"
+                          }
+                        },
+                        {
+                          "type": "image",
+                          "binding": "item.icon",
+                          "style": {
+                            "font": "body",
+                            "color": "$accent"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "binding": "item.tempFormatted",
+                          "style": {
+                            "font": "caption",
+                            "color": "$textPrimary"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "card",
+              "style": {
+                "background": "$cardBg",
+                "cornerRadius": 20,
+                "padding": 16
+              },
+              "children": [
+                {
+                  "type": "hstack",
+                  "style": {
+                    "align": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "props": {
+                        "text": "Markets"
+                      },
+                      "style": {
+                        "font": "headline",
+                        "weight": "semibold",
+                        "color": "$textPrimary"
+                      }
+                    },
+                    {
+                      "type": "spacer"
+                    },
+                    {
+                      "type": "text",
+                      "binding": "stocks.asOfFormatted",
+                      "style": {
+                        "font": "caption",
+                        "color": "$textSecondary"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "lineChart",
+                  "binding": "stocks.series",
+                  "style": {
+                    "height": 160
+                  }
+                },
+                {
+                  "type": "text",
+                  "binding": "stocks.timescaleFormatted",
+                  "style": {
+                    "font": "caption",
+                    "color": "$textSecondary",
+                    "align": "center"
+                  }
+                },
+                {
+                  "type": "hstack",
+                  "props": {
+                    "repeat": "stocks.series"
+                  },
+                  "style": {
+                    "spacing": 16
+                  },
+                  "children": [
+                    {
+                      "type": "vstack",
+                      "style": {
+                        "spacing": 2
+                      },
+                      "children": [
+                        {
+                          "type": "hstack",
+                          "style": {
+                            "align": "center",
+                            "spacing": 6
+                          },
+                          "children": [
+                            {
+                              "type": "badge",
+                              "binding": "item.symbol",
+                              "style": {
+                                "color": "item.color"
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "binding": "item.priceFormatted",
+                              "style": {
+                                "font": "subhead",
+                                "weight": "semibold",
+                                "color": "$textPrimary"
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "hstack",
+                          "style": {
+                            "align": "center",
+                            "spacing": 6
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "binding": "item.changePctFormatted",
+                              "style": {
+                                "font": "caption",
+                                "weight": "semibold",
+                                "color": "item.direction"
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "binding": "item.name",
+                              "style": {
+                                "font": "caption",
+                                "color": "$textSecondary"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "card",
+              "style": {
+                "background": "$cardBg",
+                "cornerRadius": 20,
+                "padding": 16
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "binding": "mortgage.label",
+                  "style": {
+                    "font": "subhead",
+                    "color": "$textSecondary"
+                  }
+                },
+                {
+                  "type": "hstack",
+                  "style": {
+                    "align": "center",
+                    "spacing": 10
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "binding": "mortgage.rateFormatted",
+                      "style": {
+                        "font": "largeTitle",
+                        "weight": "bold",
+                        "color": "$textPrimary"
+                      }
+                    },
+                    {
+                      "type": "badge",
+                      "binding": "mortgage.deltaFormatted",
+                      "style": {
+                        "color": "mortgage.direction"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "binding": "mortgage.asOfFormatted",
+                  "style": {
+                    "font": "caption",
+                    "color": "$textSecondary"
+                  }
+                },
+                {
+                  "type": "hstack",
+                  "style": {
+                    "align": "center",
+                    "spacing": 8
+                  },
+                  "children": [
+                    {
+                      "type": "badge",
+                      "binding": "mortgage.vsYoursFormatted",
+                      "style": {
+                        "color": "mortgage.vsYoursDirection"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "binding": "mortgage.refiHint",
+                      "style": {
+                        "font": "caption",
+                        "color": "$textSecondary"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "divider",
+                  "style": {
+                    "color": "$divider"
+                  }
+                },
+                {
+                  "type": "hstack",
+                  "style": {
+                    "align": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "vstack",
+                      "style": {
+                        "spacing": 2
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "binding": "mortgage.housing.label",
+                          "style": {
+                            "font": "caption",
+                            "color": "$textSecondary"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "binding": "mortgage.housing.valueFormatted",
+                          "style": {
+                            "font": "headline",
+                            "weight": "semibold",
+                            "color": "mortgage.housing.direction"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "spacer"
+                    },
+                    {
+                      "type": "vstack",
+                      "style": {
+                        "align": "trailing",
+                        "spacing": 2
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "binding": "mortgage.housing.levelFormatted",
+                          "style": {
+                            "font": "caption",
+                            "color": "$textSecondary"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "binding": "mortgage.housing.asOfFormatted",
+                          "style": {
+                            "font": "caption2",
+                            "color": "$textSecondary"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "card",
+              "style": {
+                "background": "$cardBg",
+                "cornerRadius": 20,
+                "padding": 16
+              },
+              "action": {
+                "type": "openURL",
+                "urlBinding": "property.url"
+              },
+              "children": [
+                {
+                  "type": "hstack",
+                  "style": {
+                    "align": "center"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "props": {
+                        "text": "Rental Property"
+                      },
+                      "style": {
+                        "font": "headline",
+                        "weight": "semibold",
+                        "color": "$textPrimary"
+                      }
+                    },
+                    {
+                      "type": "spacer"
+                    },
+                    {
+                      "type": "image",
+                      "props": {
+                        "name": "house.fill"
+                      },
+                      "style": {
+                        "color": "$accent"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "binding": "property.valueFormatted",
+                  "style": {
+                    "font": "largeTitle",
+                    "weight": "bold",
+                    "color": "$textPrimary"
+                  }
+                },
+                {
+                  "type": "text",
+                  "binding": "property.rentFormatted",
+                  "style": {
+                    "font": "subhead",
+                    "color": "$textSecondary"
+                  }
+                },
+                {
+                  "type": "text",
+                  "binding": "property.address",
+                  "style": {
+                    "font": "caption",
+                    "color": "$textSecondary"
+                  }
+                },
+                {
+                  "type": "text",
+                  "binding": "property.sourceFormatted",
+                  "style": {
+                    "font": "caption2",
+                    "color": "$accent"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

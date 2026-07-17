@@ -1,0 +1,86 @@
+{
+  "type": "screen",
+  "style": { "background": "$bg" },
+  "children": [
+    {
+      "type": "scroll",
+      "children": [
+        {
+          "type": "vstack",
+          "style": { "spacing": 16, "padding": 16 },
+          "children": [
+            {
+              "type": "hstack",
+              "style": { "align": "center" },
+              "children": [
+                { "type": "text", "binding": "budget.title", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                { "type": "spacer" },
+                { "type": "text", "binding": "meta.updatedAtFormatted", "style": { "font": "caption", "color": "$textSecondary" }, "action": { "type": "refresh" } }
+              ]
+            },
+            {
+              "type": "card",
+              "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+              "children": [
+                { "type": "text", "props": { "text": "Avg monthly spend" }, "style": { "font": "subhead", "color": "$textSecondary" } },
+                { "type": "text", "binding": "budget.totalAvgFormatted", "style": { "font": "largeTitle", "weight": "bold", "color": "$textPrimary" } },
+                { "type": "text", "binding": "budget.subtitleFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+              ]
+            },
+            {
+              "type": "text", "binding": "budget.emptyFormatted",
+              "style": { "font": "callout", "color": "$textSecondary", "padding": 8 }
+            },
+            {
+              "type": "vstack",
+              "props": { "repeat": "budget.buckets" },
+              "style": { "spacing": 16 },
+              "children": [
+                {
+                  "type": "card",
+                  "style": { "background": "$cardBg", "cornerRadius": 20, "padding": 16 },
+                  "children": [
+                    {
+                      "type": "hstack",
+                      "style": { "align": "center", "spacing": 8 },
+                      "children": [
+                        { "type": "text", "binding": "item.title", "style": { "font": "headline", "weight": "bold", "color": "$textPrimary" } },
+                        { "type": "spacer" },
+                        { "type": "text", "binding": "item.subtotalFormatted", "style": { "font": "headline", "weight": "bold", "color": "item.subtotalDirection" } }
+                      ]
+                    },
+                    { "type": "text", "binding": "item.countFormatted", "style": { "font": "caption", "color": "$textSecondary" } },
+                    { "type": "divider", "style": { "color": "$divider" } },
+                    {
+                      "type": "vstack",
+                      "props": { "repeat": "item.categories" },
+                      "style": { "spacing": 14 },
+                      "children": [
+                        {
+                          "type": "hstack",
+                          "style": { "align": "center" },
+                          "children": [
+                            {
+                              "type": "vstack",
+                              "style": { "spacing": 2 },
+                              "children": [
+                                { "type": "text", "binding": "item.name", "style": { "font": "body", "weight": "semibold", "color": "$textPrimary" } },
+                                { "type": "text", "binding": "item.rangeFormatted", "style": { "font": "caption", "color": "$textSecondary" } }
+                              ]
+                            },
+                            { "type": "spacer" },
+                            { "type": "text", "binding": "item.avgFormatted", "style": { "font": "headline", "weight": "semibold", "color": "item.direction" } }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

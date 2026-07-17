@@ -1,0 +1,465 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-18T14:00:00Z",
+  "theme": {
+    "colors": {
+      "bg": "#0b1020",
+      "bgAccent": "#16204a",
+      "cardBg": "#161c2e",
+      "textPrimary": "#f2f5ff",
+      "textSecondary": "#9aa4c4",
+      "accent": "#6ea8fe",
+      "up": "#43d18a",
+      "down": "#ff6b6b",
+      "divider": "#2a3350"
+    },
+    "fonts": {
+      "family": "-apple-system, system-ui, sans-serif"
+    },
+    "spacing": 12,
+    "radius": 20
+  },
+  "nav": [
+    {
+      "title": "Home",
+      "icon": "house.fill",
+      "path": "/__APP_NAME_LOWER__"
+    },
+    {
+      "title": "System",
+      "icon": "wrench.and.screwdriver.fill",
+      "children": [
+        {
+          "title": "Logs",
+          "icon": "doc.text.fill",
+          "path": "/screen/logs"
+        },
+        {
+          "title": "Repos",
+          "icon": "chevron.left.forwardslash.chevron.right",
+          "path": "/screen/repos"
+        }
+      ]
+    },
+    {
+      "title": "Docs",
+      "icon": "folder.fill",
+      "path": "/screen/docs"
+    }
+  ],
+  "data": {
+    "meta": {
+      "updatedAtFormatted": "Updated just now",
+      "stale": false
+    },
+    "repos": {
+      "title": "Repos",
+      "subtitleFormatted": "4 repos \u00b7 ~/Dropbox/Source",
+      "repos": [
+        {
+          "name": "iOS-Shell",
+          "branch": "main",
+          "gitFormatted": "clean",
+          "gitDirection": "up",
+          "deployFormatted": "in sync",
+          "deployDirection": "up",
+          "lastFormatted": "5m ago \u00b7 repos page",
+          "ciFormatted": "CI \u2713 \u00b7 6m ago",
+          "ciDirection": "up",
+          "commitsLabel": "5 recent commits",
+          "commits": [
+            {
+              "msgFormatted": "a1b2c3d repos page",
+              "metaFormatted": "joe \u00b7 5m ago"
+            },
+            {
+              "msgFormatted": "9f8e7d6 sort logs by status",
+              "metaFormatted": "joe \u00b7 1h ago"
+            },
+            {
+              "msgFormatted": "1122334 bq preview limit",
+              "metaFormatted": "joe \u00b7 3h ago"
+            }
+          ]
+        },
+        {
+          "name": "__APP_NAME_LOWER__",
+          "branch": "main",
+          "gitFormatted": "2 uncommitted",
+          "gitDirection": "down",
+          "deployFormatted": "uncommitted changes",
+          "deployDirection": "down",
+          "lastFormatted": "10m ago \u00b7 wip nav",
+          "ciFormatted": "CI \u2717 \u00b7 12m ago",
+          "ciDirection": "down",
+          "commitsLabel": "5 recent commits",
+          "commits": [
+            {
+              "msgFormatted": "deadbee wip nav",
+              "metaFormatted": "joe \u00b7 10m ago"
+            },
+            {
+              "msgFormatted": "cafef00 drawer tweaks",
+              "metaFormatted": "joe \u00b7 2h ago"
+            }
+          ],
+          "shipLabel": "2 to ship",
+          "shipItems": [
+            {
+              "number": 42,
+              "labelFormatted": "#42 \u00b7 wip nav",
+              "metaFormatted": "wip-nav \u2192 main",
+              "shipHref": "/screen/repos_ship?owner=hkmoser&name=__APP_NAME_LOWER__&branch=wip-nav&base=main&pr=42",
+              "shipPostHref": "/repos_pr?owner=hkmoser&name=__APP_NAME_LOWER__&branch=wip-nav&base=main&pr=42",
+              "behindNote": "\u21933 behind main \u2014 rebase recommended before shipping",
+              "rebaseActions": [
+                {
+                  "labelFormatted": "Rebase onto main & ship",
+                  "postHref": "/repos_pr?owner=hkmoser&name=__APP_NAME_LOWER__&branch=wip-nav&base=main&pr=42&rebase=1"
+                }
+              ]
+            },
+            {
+              "name": "quickfix",
+              "labelFormatted": "quickfix",
+              "metaFormatted": "\u21912 unmerged \u2192 main",
+              "shipHref": "/screen/repos_ship?owner=hkmoser&name=__APP_NAME_LOWER__&branch=quickfix&base=main&pr=",
+              "shipPostHref": "/repos_pr?owner=hkmoser&name=__APP_NAME_LOWER__&branch=quickfix&base=main&pr=",
+              "behindNote": "",
+              "rebaseActions": []
+            }
+          ]
+        },
+        {
+          "name": "schedrunner",
+          "branch": "main",
+          "gitFormatted": "clean",
+          "gitDirection": "up",
+          "deployFormatted": "in sync",
+          "deployDirection": "up",
+          "lastFormatted": "2h ago \u00b7 tidy scheduler config",
+          "commitsLabel": "5 recent commits",
+          "commits": [
+            {
+              "msgFormatted": "0ff1ce tidy scheduler config",
+              "metaFormatted": "joe \u00b7 2h ago"
+            }
+          ]
+        },
+        {
+          "name": "findmypy",
+          "branch": "main",
+          "gitFormatted": "\u21911",
+          "gitDirection": "down",
+          "deployFormatted": "1 undeployed commit",
+          "deployDirection": "down",
+          "lastFormatted": "1d ago \u00b7 add device",
+          "commitsLabel": "5 recent commits",
+          "commits": [
+            {
+              "msgFormatted": "5a5a5a5 add device",
+              "metaFormatted": "joe \u00b7 1d ago"
+            }
+          ]
+        }
+      ],
+      "rowCount": 4
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": {
+      "background": "$bg"
+    },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": {
+              "spacing": 16,
+              "padding": 16
+            },
+            "children": [
+              {
+                "type": "hstack",
+                "style": {
+                  "align": "center"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "binding": "repos.title",
+                    "style": {
+                      "font": "largeTitle",
+                      "weight": "bold",
+                      "color": "$textPrimary"
+                    }
+                  },
+                  {
+                    "type": "spacer"
+                  },
+                  {
+                    "type": "text",
+                    "binding": "meta.updatedAtFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    },
+                    "action": {
+                      "type": "refresh"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "repos.subtitleFormatted",
+                "style": {
+                  "font": "caption",
+                  "color": "$textSecondary"
+                }
+              },
+              {
+                "type": "vstack",
+                "props": {
+                  "repeat": "repos.repos"
+                },
+                "style": {
+                  "spacing": 12
+                },
+                "children": [
+                  {
+                    "type": "card",
+                    "style": {
+                      "background": "$cardBg",
+                      "cornerRadius": 16,
+                      "padding": 14
+                    },
+                    "children": [
+                      {
+                        "type": "hstack",
+                        "style": {
+                          "align": "center",
+                          "spacing": 8
+                        },
+                        "children": [
+                          {
+                            "type": "text",
+                            "binding": "item.name",
+                            "style": {
+                              "font": "headline",
+                              "weight": "semibold",
+                              "color": "$textPrimary"
+                            }
+                          },
+                          {
+                            "type": "spacer"
+                          },
+                          {
+                            "type": "badge",
+                            "binding": "item.branch",
+                            "style": {
+                              "color": "$accent"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "hstack",
+                        "style": {
+                          "align": "center",
+                          "spacing": 8,
+                          "wrap": true
+                        },
+                        "children": [
+                          {
+                            "type": "badge",
+                            "binding": "item.gitFormatted",
+                            "style": {
+                              "color": "item.gitDirection"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "binding": "item.deployFormatted",
+                            "style": {
+                              "color": "item.deployDirection"
+                            }
+                          },
+                          {
+                            "type": "badge",
+                            "binding": "item.ciFormatted",
+                            "style": {
+                              "color": "item.ciDirection"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "binding": "item.lastFormatted",
+                        "style": {
+                          "font": "caption",
+                          "color": "$textSecondary"
+                        }
+                      },
+                      {
+                        "type": "vstack",
+                        "props": {
+                          "repeat": "item.shipItems"
+                        },
+                        "style": {
+                          "spacing": 6
+                        },
+                        "children": [
+                          {
+                            "type": "vstack",
+                            "style": {
+                              "spacing": 6,
+                              "background": "$bg",
+                              "cornerRadius": 10,
+                              "padding": 10
+                            },
+                            "children": [
+                              {
+                                "type": "hstack",
+                                "style": {
+                                  "align": "center",
+                                  "spacing": 10
+                                },
+                                "children": [
+                                  {
+                                    "type": "vstack",
+                                    "style": {
+                                      "spacing": 2
+                                    },
+                                    "children": [
+                                      {
+                                        "type": "text",
+                                        "binding": "item.labelFormatted",
+                                        "style": {
+                                          "font": "subhead",
+                                          "weight": "semibold",
+                                          "color": "$textPrimary"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "binding": "item.metaFormatted",
+                                        "style": {
+                                          "font": "caption",
+                                          "color": "$textSecondary"
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "spacer"
+                                  },
+                                  {
+                                    "type": "button",
+                                    "props": {
+                                      "text": "Ship"
+                                    },
+                                    "action": {
+                                      "type": "submit",
+                                      "urlBinding": "item.shipPostHref"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "text",
+                                "binding": "item.behindNote",
+                                "style": {
+                                  "font": "caption",
+                                  "color": "$down"
+                                }
+                              },
+                              {
+                                "type": "vstack",
+                                "props": {
+                                  "repeat": "item.rebaseActions"
+                                },
+                                "style": {
+                                  "spacing": 4
+                                },
+                                "children": [
+                                  {
+                                    "type": "hstack",
+                                    "style": {
+                                      "align": "center",
+                                      "spacing": 8
+                                    },
+                                    "children": [
+                                      {
+                                        "type": "spacer"
+                                      },
+                                      {
+                                        "type": "button",
+                                        "props": {
+                                          "text": "Rebase & ship"
+                                        },
+                                        "action": {
+                                          "type": "submit",
+                                          "urlBinding": "item.postHref"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "disclosure",
+                        "binding": "item.commitsLabel",
+                        "props": {
+                          "fallback": "Recent commits",
+                          "open": false
+                        },
+                        "children": [
+                          {
+                            "type": "vstack",
+                            "props": {
+                              "repeat": "item.commits"
+                            },
+                            "style": {
+                              "spacing": 6
+                            },
+                            "children": [
+                              {
+                                "type": "text",
+                                "binding": "item.msgFormatted",
+                                "style": {
+                                  "font": "caption",
+                                  "color": "$textPrimary"
+                                }
+                              },
+                              {
+                                "type": "text",
+                                "binding": "item.metaFormatted",
+                                "style": {
+                                  "font": "caption",
+                                  "color": "$textSecondary"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

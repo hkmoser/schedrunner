@@ -90,6 +90,12 @@ while IFS= read -r repo; do
         fi
     fi
 
+    # Skip repos with no origin remote (misconfigured local checkout, etc.)
+    if ! git remote get-url origin >/dev/null 2>&1; then
+        echo "[$(ts)] $name: no origin remote, skipping"
+        continue
+    fi
+
     echo "[$(ts)] $name: fetching origin/$branch"
     git fetch origin "$branch" 2>&1 || { echo "[$(ts)] $name: fetch FAILED"; continue; }
 

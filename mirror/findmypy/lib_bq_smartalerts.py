@@ -40,6 +40,33 @@ _BATTERY_WARN_LEVELS = [0.50, 0.20, 0.10]
 # into the ongoing moving segment.
 _MIN_ARRIVAL_SECS = 720  # 12 minutes
 
+# Relocation is decided purely from coordinates vs the stop's anchor point, with an
+# accuracy-aware radius. A fix beyond the radius fires an OPTIMISTIC "Now at X" under
+# a tentative notification id immediately (no latency), but does NOT touch the
+# confirmed segment. If the device returns within the radius before _RELOC_CONFIRM_SECS
+# it was a blip: the tentative alert is recalled and the original segment's clock
+# stays continuous. If it stays away past the confirm window, the new stop is
+# committed (with duration counted from when the excursion began).
+_RELOC_CONFIRM_SECS = 600  # 10 minutes away before a relocation is committed
+
+# Stop radius floors (meters). Larger at a known/home anchor because home-area wifi
+# fixes routinely jump 100-200 m while reported accuracy stays optimistically small;
+# tight elsewhere so distinct city stops aren't merged. Actual radius is
+# max(reported_accuracy, floor). at_hm only SIZES this tolerance — it never names the
+# stop or decides the state.
+_STOP_RADIUS_HOME_M = 250
+_STOP_RADIUS_AWAY_M = 50
+
+# Debounce for battery charging-state transitions. Apple's batteryStatus flaps
+# (NotCharging<->Charging) and a single-tick level dip can look like an unplug.
+# Require the new state to persist this long before firing/committing it.
+_BAT_STATE_DEBOUNCE_SECS = 180  # 3 minutes (confirmed on the next normal cycle)
+
+# Hysteresis for low-battery warnings: a warned level re-arms only after the
+# battery climbs back more than this above it, so hovering at a threshold
+# (e.g. 49%<->51%) doesn't re-fire the same warning.
+_BATTERY_WARN_HYSTERESIS = 0.05
+
 # All mvmt_type values that mean "in motion". Anything not in this set is treated
 # as stationary. Add new values here if the BQ view introduces new movement codes.
 _MOVING_TYPES = {"Moving", "DR", "WK"}
@@ -175,11 +202,27 @@ def _osrm_driving(lat1: float, lon1: float, lat2: float, lon2: float,
     return drive_min, drive_mi
 
 
-def _battery_threshold_crossed(prev: float, curr: float) -> float | None:
-    for thr in sorted(_BATTERY_WARN_LEVELS, reverse=True):
-        if prev > thr >= curr:
-            return thr
-    return None
+def _battery_warn(curr: float, warned) -> tuple:
+    """Latching low-battery warning.
+
+    Fire a warning level once when the battery reaches it, and don't fire it
+    again until the battery has recovered more than _BATTERY_WARN_HYSTERESIS
+    above it. `warned` is the set of levels currently in the fired state.
+    Returns (level_to_fire_or_None, updated_warned_set).
+    """
+    warned = set(warned)
+    # Re-arm any level the battery has climbed back above (with hysteresis).
+    for L in _BATTERY_WARN_LEVELS:
+        if curr > L + _BATTERY_WARN_HYSTERESIS:
+            warned.discard(L)
+    # Fire the highest not-yet-warned level the battery is now at/below.
+    fire = None
+    for L in sorted(_BATTERY_WARN_LEVELS, reverse=True):
+        if curr <= L and L not in warned:
+            fire = L
+            warned.add(L)
+            break
+    return fire, warned
 
 
 def _derive_battery_state(bat_status: str, bat_level: float,
@@ -431,18 +474,7 @@ def _process_device(dev: str, row: dict, ds: dict, now: datetime.datetime,
         except (TypeError, ValueError, ZeroDivisionError):
             return None
 
-    def _at_same_stop() -> bool:
-        """True if current coordinates are within GPS-error tolerance of the stored stop."""
-        slat = ds.get("stop_lat")
-        slon = ds.get("stop_lon")
-        if not (curr_lat and curr_lon and slat and slon):
-            return True  # no reference — treat as same to avoid false positives
-        dist_m = _haversine_miles(curr_lat, curr_lon, float(slat), float(slon)) * 1609.34
-        sacc = float(ds.get("stop_accuracy") or 50)
-        # 100 m floor absorbs GPS directional noise when reported accuracy is optimistic.
-        return dist_m <= max(curr_accuracy, sacc, 100)
-
-    # Set to True when arrival confirmation or loc_changed fires this run,
+    # Set to True when an arrival/relocation notification fires this run,
     # so the ongoing ST block doesn't also fire and overwrite the arrival text.
     _st_just_fired = False
 
@@ -484,19 +516,13 @@ def _process_device(dev: str, row: dict, ds: dict, now: datetime.datetime,
                 ds["stop_lat"]      = curr_lat
                 ds["stop_lon"]      = curr_lon
                 ds["stop_accuracy"] = curr_accuracy
+                ds["anchor_at_hm"]  = curr_at_hm    # sizes the relocation radius only
             # else: threshold not met yet — do nothing, check again next run
 
     else:
         # ── Clean movement transitions ────────────────────────────────────────
 
         mvmt_changed = curr_mvmt != prev_mvmt
-        loc_changed  = (
-            not mvmt_changed
-            and not _is_moving(curr_mvmt)
-            and curr_lat and curr_lon
-            and ds.get("stop_lat")
-            and not _at_same_stop()
-        )
 
         if mvmt_changed:
             seg_elapsed = _elapsed(ds.get("mvmt_since"), now)
@@ -529,6 +555,9 @@ def _process_device(dev: str, row: dict, ds: dict, now: datetime.datetime,
                 ds.pop("stop_lat",      None)
                 ds.pop("stop_lon",      None)
                 ds.pop("stop_accuracy", None)
+                for _k in ("reloc_since", "reloc_lat", "reloc_lon",
+                           "reloc_label", "reloc_alerted"):
+                    ds.pop(_k, None)            # any tentative excursion is moot once moving
 
             else:
                 if _is_moving(prev_mvmt):
@@ -546,24 +575,74 @@ def _process_device(dev: str, row: dict, ds: dict, now: datetime.datetime,
                     # Carry forward the existing segment without re-debouncing.
                     ds["mvmt_type"] = curr_mvmt
 
-        elif loc_changed:
-            seg_elapsed = _elapsed(ds.get("mvmt_since"), now)
-            title = f"📍 Now at {curr_loc_label} · {dev}"
-            lines = []
-            if prev_loc_label and prev_loc_label != "unknown location":
-                lines.append(f"Was at {prev_loc_label} for {seg_elapsed}")
+        elif not _is_moving(curr_mvmt) and curr_lat and curr_lon and ds.get("stop_lat"):
+            # ── Coordinate-based relocation (optimistic fire + recall) ────────
+            # Decide purely from distance to the stop anchor, with an accuracy-aware
+            # radius (bigger at a home anchor). No POI/at_hm labels drive the state.
+            anchor_home = bool(ds.get("anchor_at_hm"))
+            radius = max(curr_accuracy,
+                         _STOP_RADIUS_HOME_M if anchor_home else _STOP_RADIUS_AWAY_M)
+            dist_m = _haversine_miles(curr_lat, curr_lon,
+                                      float(ds["stop_lat"]), float(ds["stop_lon"])) * 1609.34
             poi_addr = osm_addr or _norm(row.get("poi_address"))
-            if poi_addr and poi_addr != curr_loc_label:
-                lines.append(poi_addr)
-            lines.append(f"Battery {round(curr_bat_lvl * 100)}% · {curr_bat_stat}")
-            _push(dev, title, "\n".join(lines), config=config)
-            _st_just_fired      = True  # suppress same-run ongoing ST
-            ds["st_segment_id"] = f"smart-st-{dev}-{now.strftime('%Y%m%d%H%M')}"
-            ds["loc_label"]        = curr_loc_label
-            ds["stop_lat"]         = curr_lat
-            ds["stop_lon"]         = curr_lon
-            ds["stop_accuracy"]    = curr_accuracy
-            ds["mvmt_since"]       = now.isoformat()
+
+            if dist_m <= radius:
+                # At / returned to the anchor. If an excursion was in progress it
+                # never confirmed → BLIP: recall the tentative alert. The confirmed
+                # segment was never mutated, so its clock is unbroken.
+                if ds.get("reloc_since"):
+                    if ds.get("reloc_alerted"):
+                        cont = _elapsed(ds.get("mvmt_since"), now)
+                        _push(dev, f"↩︎ Still at {ds.get('loc_label')} · {dev}",
+                              f"'{ds.get('reloc_label')}' was GPS jitter\nHere {cont}",
+                              notification_id=f"smart-loc-tent-{dev}", config=config)
+                    for k in ("reloc_since", "reloc_lat", "reloc_lon",
+                              "reloc_label", "reloc_alerted"):
+                        ds.pop(k, None)
+            else:
+                # Beyond the radius → relocation candidate.
+                if not ds.get("reloc_since"):
+                    ds["reloc_since"] = now.isoformat()
+                ds["reloc_lat"], ds["reloc_lon"] = curr_lat, curr_lon
+                ds["reloc_label"] = curr_loc_label
+
+                # Optimistic fire: immediate tentative "Now at X" under a stable
+                # tentative id (updates in place, never stacks). Confirmed segment
+                # state is left untouched so a recall keeps the clock continuous.
+                seg_elapsed = _elapsed(ds.get("mvmt_since"), now)
+                tlines = []
+                if prev_loc_label and prev_loc_label != "unknown location":
+                    tlines.append(f"Was at {prev_loc_label} for {seg_elapsed}")
+                if poi_addr and poi_addr != curr_loc_label:
+                    tlines.append(poi_addr)
+                tlines.append(f"Battery {round(curr_bat_lvl * 100)}% · {curr_bat_stat}")
+                _push(dev, f"📍 Now at {curr_loc_label} · {dev}", "\n".join(tlines),
+                      notification_id=f"smart-loc-tent-{dev}", config=config)
+                ds["reloc_alerted"] = True
+                _st_just_fired = True  # don't also fire the anchor's ongoing-ST this run
+
+                # Confirm once the excursion has persisted long enough. Commit the new
+                # stop with duration counted from when the excursion BEGAN.
+                held = (now - datetime.datetime.fromisoformat(ds["reloc_since"])).total_seconds()
+                if held >= _RELOC_CONFIRM_SECS:
+                    new_seg = f"smart-st-{dev}-{now.strftime('%Y%m%d%H%M')}"
+                    clines = []
+                    if prev_loc_label and prev_loc_label != "unknown location":
+                        clines.append(f"Was at {prev_loc_label} for {seg_elapsed}")
+                    if poi_addr and poi_addr != curr_loc_label:
+                        clines.append(poi_addr)
+                    clines.append(f"Battery {round(curr_bat_lvl * 100)}% · {curr_bat_stat}")
+                    _push(dev, f"📍 Arrived {curr_loc_label} · {dev}", "\n".join(clines),
+                          notification_id=new_seg, config=config)
+                    ds["st_segment_id"] = new_seg
+                    ds["mvmt_since"]    = ds["reloc_since"]  # continuity from excursion start
+                    ds["loc_label"]     = curr_loc_label
+                    ds["stop_lat"], ds["stop_lon"] = curr_lat, curr_lon
+                    ds["stop_accuracy"] = curr_accuracy
+                    ds["anchor_at_hm"]  = curr_at_hm
+                    for k in ("reloc_since", "reloc_lat", "reloc_lon",
+                              "reloc_label", "reloc_alerted"):
+                        ds.pop(k, None)
 
     # ── Ongoing movement updates (every new data point while moving) ──────────
     # Runs regardless of pending state — covers the "resumed after brief stop" case.
@@ -599,25 +678,47 @@ def _process_device(dev: str, row: dict, ds: dict, now: datetime.datetime,
     if (st_seg_id
             and not _is_moving(curr_mvmt)
             and not ds.get("pending_arrival_since")
+            and not ds.get("reloc_since")   # tentative excursion in progress — keep anchor stable
             and not _st_just_fired):
         elapsed = _elapsed(ds.get("mvmt_since"), now)
-        home_tag = "🏠" if curr_at_hm else "📍"
-        title = f"{home_tag} {curr_loc_label} · {elapsed} · {dev}"
+        # Use the CONFIRMED anchor's label/home-flag (not the current fix), so a
+        # jittery cycle can't relabel the ongoing stop notification.
+        anchor_label = _norm(ds.get("loc_label")) or curr_loc_label
+        home_tag = "🏠" if ds.get("anchor_at_hm") else "📍"
+        title = f"{home_tag} {anchor_label} · {elapsed} · {dev}"
         lines = [f"For {elapsed}", f"Battery {round(curr_bat_lvl * 100)}% · {curr_bat_stat}"]
         _push(dev, title, "\n".join(lines), notification_id=st_seg_id, config=config)
-        # Advance reference point to prevent GPS drift accumulation over long stops.
-        ds["stop_lat"]      = curr_lat
-        ds["stop_lon"]      = curr_lon
-        ds["stop_accuracy"] = curr_accuracy
+        # NOTE: the anchor is intentionally NOT advanced to the current fix here.
+        # Re-anchoring would let GPS jitter drag the stop point and defeat the
+        # radius test. The anchor stays where the stop was confirmed.
 
     # ── Battery status transition (3-state model) ────────────────────────────
     # Derive a stable state from Apple's raw status + level trend to avoid
     # false 'Unplugged' alerts during throttled charging (NotCharging at high %).
 
     prev_battery_state = _norm(ds.get("battery_state"))
-    curr_battery_state = _derive_battery_state(
+    derived_state = _derive_battery_state(
         _norm(row.get("batteryStatus")), curr_bat_lvl, prev_bat_lvl, prev_battery_state
     )
+
+    # Debounce: only accept a state change once it has persisted for
+    # _BAT_STATE_DEBOUNCE_SECS, so a single-cycle NotCharging<->Charging flap (or a
+    # one-tick level dip that momentarily looks like an unplug) is absorbed.
+    curr_battery_state = prev_battery_state
+    if derived_state == prev_battery_state:
+        ds.pop("bat_state_pending", None)
+        ds.pop("bat_state_pending_since", None)
+    elif ds.get("bat_state_pending") == derived_state:
+        since = ds.get("bat_state_pending_since")
+        held = (now - datetime.datetime.fromisoformat(since)).total_seconds() if since else 0
+        if held >= _BAT_STATE_DEBOUNCE_SECS:
+            curr_battery_state = derived_state  # confirmed — fire below
+            ds.pop("bat_state_pending", None)
+            ds.pop("bat_state_pending_since", None)
+    else:
+        # New candidate state — start (or restart) the debounce timer.
+        ds["bat_state_pending"] = derived_state
+        ds["bat_state_pending_since"] = now.isoformat()
 
     if curr_battery_state != prev_battery_state and prev_battery_state:
         seg_elapsed = _elapsed(ds.get("bat_since"), now)
@@ -642,11 +743,16 @@ def _process_device(dev: str, row: dict, ds: dict, now: datetime.datetime,
     ds["battery_state"] = curr_battery_state
     ds["battery_stat"]  = curr_bat_stat  # keep raw value for changealerts compatibility
 
-    # ── Battery level threshold warnings ─────────────────────────────────────
-
-    thr = _battery_threshold_crossed(prev_bat_lvl, curr_bat_lvl)
-    if thr is not None:
-        _push(dev, f"⚠️ Battery {round(thr * 100)}% · {dev}",
+    # ── Battery level threshold warnings (latching) ──────────────────────────
+    # On first sight of this device, mark levels already at/below the current
+    # charge as warned so we don't retroactively fire a high warning for a level
+    # the battery was already under before we started watching.
+    if "bat_warned" not in ds:
+        ds["bat_warned"] = [L for L in _BATTERY_WARN_LEVELS if curr_bat_lvl <= L]
+    fire_lvl, new_warned = _battery_warn(curr_bat_lvl, ds.get("bat_warned", []))
+    ds["bat_warned"] = sorted(new_warned)
+    if fire_lvl is not None:
+        _push(dev, f"⚠️ Battery {round(fire_lvl * 100)}% · {dev}",
               f"Down to {round(curr_bat_lvl * 100)}%\n{curr_bat_stat}\nAt {curr_loc_label}",
               notification_id=f"smart-bat-lvl-{dev}", config=config)
 
@@ -658,6 +764,7 @@ def _process_device(dev: str, row: dict, ds: dict, now: datetime.datetime,
     ds.setdefault("stop_lat",      curr_lat)
     ds.setdefault("stop_lon",      curr_lon)
     ds.setdefault("stop_accuracy", curr_accuracy)
+    ds.setdefault("anchor_at_hm",  curr_at_hm)   # sizes the relocation radius only
     ds.setdefault("battery_state", curr_battery_state)
     ds.setdefault("battery_stat",  curr_bat_stat)
     ds.setdefault("bat_since",     now.isoformat())

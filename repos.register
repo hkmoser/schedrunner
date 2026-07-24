@@ -24,3 +24,4 @@
 ha-events|private|generic|Home Assistant events.|on
 md-halo|private|generic|Clean copy of iOS-shell.|on|iOS-shell
 boot-notify|private|python|Post-boot health check via Pushcut.|on
+cf-static-site|public|generic|Template for Cloudflare Workers static sites with multi-domain redirect.|off|cf-static-site

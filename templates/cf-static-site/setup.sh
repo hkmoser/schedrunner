@@ -7,11 +7,22 @@
 #   gcloud secrets create cloudflare-api-token --data-file=- <<< "tok_..."
 #   gcloud secrets create cloudflare-account-id --data-file=- <<< "abc123"
 #
-# For the API token, create a Custom Token with these permissions:
-#   Zone / Zone / Edit             (account-level — needed to create zones)
-#   Zone / Zone Settings / Edit    (account-level)
-#   Zone / Workers Routes / Edit   (account-level)
-#   Account / Workers Scripts / Edit
+# For the API token, create a Custom Token with these permissions
+# (use "All accounts" / "All zones" scope for each):
+#
+#   Account-level:
+#     Cloudflare Pages:Edit          — not needed, but harmless if present
+#     Workers Scripts:Edit           — deploy the Worker
+#     Account Settings:Read          — read account info (wrangler uses this)
+#
+#   Zone-level:
+#     Zone:Edit                      — create zones via API
+#     Zone Settings:Edit             — configure zone settings
+#     DNS:Edit                       — manage DNS records after zone creation
+#     Workers Routes:Edit            — bind custom domain routes to the Worker
+#
+# Minimal set that works: Zone:Edit + DNS:Edit + Workers Routes:Edit +
+#   Workers Scripts:Edit + Account Settings:Read
 #
 # Zone handling:
 #   - If a domain zone doesn't exist yet, setup.sh creates it via the CF API

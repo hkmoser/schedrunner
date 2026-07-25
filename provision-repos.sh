@@ -89,7 +89,14 @@ copy_template() {  # copy_template <name> <tmpl_key> <visibility> <autodeploy> <
 
   cd "$repo_dir" || { echo "[$(ts)] $rname: cannot cd to $repo_dir"; return 1; }
   git init -q
-  if [[ "$autod" == "off" ]]; then rm -f .auto-deploy; else : > .auto-deploy; fi
+  if [[ "$autod" == "off" ]]; then
+    rm -f .auto-deploy
+  elif [[ ! -s .auto-deploy ]]; then
+    # Template has no .auto-deploy or it's empty — write the pull-only flag.
+    # A non-empty .auto-deploy already in the template (e.g. ios-app's deploy
+    # hook) is preserved as-is — that hook IS the post-pull deploy step.
+    : > .auto-deploy
+  fi
   git add -A
   git diff --cached --quiet || git commit -qm "chore: init from schedrunner template/${TEMPLATE_DIRS[$tmpl_key]}"
 

@@ -71,6 +71,25 @@ assert_file "$src/mysite/.auto-deploy"      "template:site: .auto-deploy flag wr
 assert_file "$src/mysite/.git/HEAD"         "template:site: git repo initialized"
 assert_contains "$(cat "$log")" "repo create testuser/mysite" "template:site: gh repo create invoked"
 
+# --- template:ios preserves the non-empty .auto-deploy hook -----------------
+src="$(make_tmpdir)"; reg="$(make_tmpdir)/register"; log="$(make_tmpdir)/gh.log"
+printf 'myapp|private|generic|An iOS app.|on|template:ios\n' > "$reg"
+out="$(GH_STUB_LOG="$log" GH_STUB_EXISTING="" run_provision "$reg" "$src")"
+assert_contains "$out" "created from template 'ios'" "template:ios: reports creation"
+assert_file "$src/myapp/CLAUDE.md"          "template:ios: CLAUDE.md present"
+assert_file "$src/myapp/.auto-deploy"       "template:ios: .auto-deploy present"
+# The ios-app template has a non-empty .auto-deploy hook — must NOT be truncated
+auto_content="$(cat "$src/myapp/.auto-deploy" 2>/dev/null)"
+assert_contains "$auto_content" "Deploy/auto_deploy.sh" "template:ios: .auto-deploy hook preserved (not truncated)"
+
+# --- template:collector creates pull-only .auto-deploy ----------------------
+src="$(make_tmpdir)"; reg="$(make_tmpdir)/register"
+printf 'myjob|private|generic|A collector.|on|template:collector\n' > "$reg"
+run_provision "$reg" "$src" >/dev/null
+assert_file "$src/myjob/src/collect.js"   "template:collector: collect.js present"
+assert_file "$src/myjob/.auto-deploy"     "template:collector: .auto-deploy flag written"
+assert_eq "" "$(cat "$src/myjob/.auto-deploy")" "template:collector: .auto-deploy is empty (pull-only)"
+
 # --- template: unknown type is rejected -------------------------------------
 src="$(make_tmpdir)"; reg="$(make_tmpdir)/register"
 printf 'badtmpl|private|generic|x.|on|template:bogus\n' > "$reg"

@@ -101,7 +101,8 @@ in a fresh Claude Code session (phone included). With `autodeploy=on` (the
 default) the repo ships with a `.auto-deploy` flag, so schedrunner already keeps
 the Mac's clone in sync — no extra step. If they also want it to run on a
 *schedule*, point them at `scripts.conf` in the schedrunner repo (section 1 of
-CLAUDE.md); that's separate from auto-deploy.
+CLAUDE.md) — or use the `register.sh` helper which writes the entry for them.
+That's separate from auto-deploy.
 
 ## Notes
 

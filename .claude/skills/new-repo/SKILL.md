@@ -17,20 +17,33 @@ declarative manifest, not a queue you clean up.
 
 "create a new repo for X", "spin up a project called Y", "scaffold a repo", etc.
 
-Before collecting fields, check whether the new repo matches an existing template
-in `templates/`. If it does, tell the user and recommend copying the template
-instead of (or in addition to) adding a `repos.register` entry:
+### Does it match a template?
 
-| Template | Matches when… |
+Before collecting fields, check whether the new repo matches an existing template:
+
+| Type arg | Matches when… |
 |----------|---------------|
-| `templates/ios-app/` | iOS app + Vapor server + PWA (SDUI) |
-| `templates/mcp-connector/` | MCP tools on Cloudflare Workers (TypeScript) |
-| `templates/data-collector/` | Periodic fetch/store job (Node.js cron) |
-| `templates/cf-static-site/` | Static website + multi-domain redirect on Cloudflare Workers |
+| `ios` | iOS app + Vapor server + PWA (SDUI) |
+| `mcp` | MCP tools on Cloudflare Workers (TypeScript) |
+| `collector` | Periodic fetch/store job (Node.js cron) |
+| `site` | Static website + multi-domain redirect on Cloudflare Workers |
 
-Template repos don't necessarily need a `repos.register` entry — they're
-instantiated by copying the template directory. Only add a `repos.register`
-entry if the user wants `provision-repos.sh` to create the GitHub repo for them.
+**If it matches a template**, use `repos.register` with `source=template:<type>`.
+Collect `name`, `visibility`, `autodeploy`, and optionally `description` as
+normal — skip the `type` question (ignored when source is set). Write the register
+entry with the `template:` source and proceed to Step 3. Example line:
+
+```
+my-site|private|generic|My new site.|on|template:site
+```
+
+Once the PR merges, `provision-repos.sh` copies the template, creates the GitHub
+repo, and pushes automatically. Note: `ios` and `site` repos need a one-time
+`setup.sh` run on the Mac after the repo is created — mention this to the user
+and point them at the template's CLAUDE.md for the exact command.
+
+**If it does NOT match a template**, continue with Steps 1–4 below for a plain
+scaffold.
 
 ## Step 1 — Ask the setup questions
 
@@ -87,8 +100,8 @@ creates `<owner>/<name>` with starter files and pushes it; then they can open it
 in a fresh Claude Code session (phone included). With `autodeploy=on` (the
 default) the repo ships with a `.auto-deploy` flag, so schedrunner already keeps
 the Mac's clone in sync — no extra step. If they also want it to run on a
-*schedule*, point them at schedrunner's `register.sh` (see the repo CLAUDE.md);
-that's separate from auto-deploy.
+*schedule*, point them at `scripts.conf` in the schedrunner repo (section 1 of
+CLAUDE.md); that's separate from auto-deploy.
 
 ## Notes
 

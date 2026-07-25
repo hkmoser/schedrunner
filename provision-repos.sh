@@ -18,18 +18,29 @@
 #   type:       generic (default) | python | node   (controls .gitignore)
 #   autodeploy: on (default) | off  — when on, an empty .auto-deploy flag is
 #               committed so schedrunner keeps the repo in sync on the Mac
-#   source:     optional. When set (a repo name or owner/repo), the new repo is
-#               a CLEAN COPY of that repo's current snapshot (no fork link, no
-#               history) instead of a fresh scaffold. type is ignored for copies.
+#   source:     optional. Two forms:
+#     template:<type>   — copy from schedrunner's templates/ dir (collector,
+#                         mcp, ios, site). type field is ignored.
+#     <name|owner/repo> — clean copy of an existing GitHub repo's snapshot
+#                         (no fork link, no history). type is ignored.
 
 set -uo pipefail
 export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REGISTER="${SCHEDRUNNER_REGISTER:-$SCRIPT_DIR/repos.register}"
-TEMPLATES="$SCRIPT_DIR/.claude/skills/new-repo/templates"
+SCAFFOLD_TEMPLATES="$SCRIPT_DIR/.claude/skills/new-repo/templates"
+REPO_TEMPLATES="$SCRIPT_DIR/templates"
 SOURCE_DIR="${SCHEDRUNNER_SOURCE_DIR:-$HOME/Dropbox/Source}"
 LOCK="/tmp/provision-repos.lock"
+
+# Maps source:template:<key> to the templates/ subdirectory name
+declare -A TEMPLATE_DIRS=(
+  [collector]="data-collector"
+  [mcp]="mcp-connector"
+  [ios]="ios-app"
+  [site]="cf-static-site"
+)
 
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 
@@ -56,6 +67,38 @@ str_replace() {  # str_replace <haystack> <needle> <replacement> — literal, po
     hay="${hay#*"$needle"}"
   done
   printf '%s' "$out$hay"
+}
+
+copy_template() {  # copy_template <name> <tmpl_key> <visibility> <autodeploy> <description>
+  local rname="$1" tmpl_key="$2" rvis="$3" autod="$4" rdesc="$5"
+
+  local tmpl_subdir="${TEMPLATE_DIRS[$tmpl_key]:-}"
+  if [[ -z "$tmpl_subdir" ]]; then
+    echo "[$(ts)] $rname: unknown template key '$tmpl_key' — valid keys: ${!TEMPLATE_DIRS[*]}"
+    return 1
+  fi
+  local tmpl_dir="$REPO_TEMPLATES/$tmpl_subdir"
+  if [[ ! -d "$tmpl_dir" ]]; then
+    echo "[$(ts)] $rname: template dir not found: $tmpl_dir"
+    return 1
+  fi
+
+  local repo_dir="$SOURCE_DIR/$rname"
+  rm -rf "$repo_dir"; mkdir -p "$repo_dir"
+  cp -R "$tmpl_dir/." "$repo_dir/"
+
+  cd "$repo_dir" || { echo "[$(ts)] $rname: cannot cd to $repo_dir"; return 1; }
+  git init -q
+  if [[ "$autod" == "off" ]]; then rm -f .auto-deploy; else : > .auto-deploy; fi
+  git add -A
+  git diff --cached --quiet || git commit -qm "chore: init from schedrunner template/${TEMPLATE_DIRS[$tmpl_key]}"
+
+  if create_and_push "$rname" "$rvis" "$rdesc"; then
+    echo "[$(ts)] $rname: created from template '$tmpl_key' -> $OWNER/$rname"
+    return 0
+  fi
+  echo "[$(ts)] $rname: gh repo create FAILED"
+  return 1
 }
 
 render() {  # render <template> <name> <description> -> stdout
@@ -139,7 +182,15 @@ while IFS='|' read -r name visibility type description autodeploy source || [[ -
     continue
   fi
 
-  # Copy mode: duplicate an existing repo's snapshot instead of scaffolding.
+  # Template mode: copy from schedrunner's local templates/ directory.
+  if [[ "$source" == template:* ]]; then
+    tmpl_key="${source#template:}"
+    echo "[$(ts)] $name: provisioning from template '$tmpl_key' ($visibility, auto-deploy=$autodeploy)"
+    copy_template "$name" "$tmpl_key" "$visibility" "$autodeploy" "$description" && created=$((created + 1))
+    continue
+  fi
+
+  # Copy mode: duplicate an existing GitHub repo's snapshot instead of scaffolding.
   if [[ -n "$source" ]]; then
     echo "[$(ts)] $name: provisioning as copy of '$source' ($visibility, auto-deploy=$autodeploy)"
     copy_repo "$name" "$source" "$visibility" "$autodeploy" "$description" && created=$((created + 1))
@@ -153,8 +204,8 @@ while IFS='|' read -r name visibility type description autodeploy source || [[ -
 
   [[ -d .git ]] || git init -q
 
-  render "$TEMPLATES/CLAUDE.md.tmpl" "$name" "$description" > CLAUDE.md
-  render "$TEMPLATES/README.md.tmpl" "$name" "$description" > README.md
+  render "$SCAFFOLD_TEMPLATES/CLAUDE.md.tmpl" "$name" "$description" > CLAUDE.md
+  render "$SCAFFOLD_TEMPLATES/README.md.tmpl" "$name" "$description" > README.md
   write_gitignore "$type"
 
   # Turn on schedrunner auto-deploy for the new repo (empty flag = pull-only),

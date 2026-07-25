@@ -228,12 +228,16 @@ name|visibility|type|description|autodeploy|source
 
 - `visibility`: `private` (default) or `public`.
 - `type`: `generic` (default), `python`, or `node` — controls `.gitignore`.
+  Ignored when `source` is set.
 - `autodeploy`: `on` (default) or `off`. When on, the provisioner commits an
   empty `.auto-deploy` flag to the new repo so schedrunner keeps it in sync on
   the Mac (see section 2). Use `off` for a repo you intend to hand-edit locally.
-- `source` (optional): a repo (`name` or `owner/repo`) to **copy** rather than
-  scaffold. When set, the new repo is a clean copy of that repo's current
-  snapshot (no fork link, no history) and `type` is ignored.
+- `source` (optional): two forms:
+  - `template:<type>` — copy from `templates/` in this repo. Valid types:
+    `collector`, `mcp`, `ios`, `site`. Produces a fully wired starting point
+    instead of a bare scaffold.
+  - `<name>` or `<owner/repo>` — clean copy of an existing GitHub repo's
+    current snapshot (no fork link, no history).
 - `name` must match `^[A-Za-z0-9._-]+$`; `description` must not contain `|`.
 
 This exists because cloud/mobile Claude Code sessions generally can't create
@@ -248,7 +252,7 @@ branch**, a new entry is provisioned only once it reaches the default branch
 ## 4. Start from a template (`templates/`)
 
 The `templates/` directory contains ready-to-use repo scaffolds. When creating
-a new repo that matches one of these types, **copy the template rather than
+a new repo that matches one of these types, **use the template rather than
 scaffolding from scratch** — it provides a working starting point with the right
 file structure, `service.yaml`, CI configuration, and `CLAUDE.md` already wired.
 
@@ -268,39 +272,82 @@ file structure, `service.yaml`, CI configuration, and `CLAUDE.md` already wired.
 | `CLAUDE.md` | Agent guide: deploy flow, content editing, conventions |
 | `REPO.md` | Human-readable repo descriptor (fill in when instantiating) |
 | `service.yaml` | Tells schedrunner how to handle this repo (`type`, `runtime`, `deploy`/`run`/`schedule`) |
-| `managed-files.txt` | List of files schedrunner may update when syncing the template; agents must not hand-edit these |
+| `managed-files.txt` | Declares which files are "owned by the template" and should not be hand-edited in derived repos — edit them in `templates/<name>/` and propagate manually (see below) |
 
-Templates for repos that need a one-time token-substitution setup also include:
+Templates for repos that need a one-time setup step also include:
 
 | File | Purpose |
 |------|---------|
-| `setup.sh` | Substitutes template tokens (`__APP_NAME__`, etc.) and runs the initial deploy |
+| `setup.sh` | Runs the initial deploy; for ios-app it also substitutes tokens (`__APP_NAME__`, etc.) |
 
 ### How to instantiate a template
 
-```bash
-# From the schedrunner repo root:
-cp -r templates/<template-name>/. ~/Dropbox/Source/<new-repo-name>/
-cd ~/Dropbox/Source/<new-repo-name>/
+**From any session (cloud, mobile, Mac) — use `repos.register`:**
 
-# For templates with setup.sh:
-bash setup.sh <args...>
+Add a line to `repos.register` with `source=template:<type>`, commit on a branch,
+and open a PR. Once the PR merges, the Mac's next provisioning tick copies the
+template, creates the GitHub repo, and pushes — the same hands-off flow as any
+other `repos.register` entry.
 
-# Then create the repo and push:
-git init && git add -A
-git commit -m "chore: init from schedrunner template/<template-name>"
-gh repo create <owner>/<new-repo-name> --private --source=. --push
+```
+my-site|private|generic|My new static site.|on|template:site
+my-collector|private|generic|Pulls data from the API.|on|template:collector
 ```
 
-For repos that should auto-deploy, also add a `.auto-deploy` file (see section 2)
-and add an entry to `repos.register` if you want the Mac to provision it (section 3).
+The `/new-repo` skill handles this automatically — just describe what you want
+to build and it will detect the right template type and write the register entry.
+
+**For `ios` and `site` templates:** after the repo is created, run `setup.sh`
+inside the new repo on the Mac for the initial deploy:
+
+```bash
+cd ~/Dropbox/Source/<name>/
+bash setup.sh <args...>    # see the template's CLAUDE.md for exact args
+```
+
+**Manual Mac-only alternative (`create-service.mjs`):**
+
+```bash
+GITHUB_TOKEN=<token> REPO_OWNER=hkmoser \
+  node scripts/create-service.mjs --name my-new-repo --type <collector|mcp|ios|site>
+```
+
+Skips `repos.register` entirely — useful if you're already on the Mac and want
+the repo immediately without a PR cycle. Still updates `repos.yaml`.
+
+### How to modify a template
+
+Edit files directly in `templates/<name>/`. `managed-files.txt` lists the files
+that are "owned by the template" — changes to those files in the template are the
+source of truth and should be propagated to existing repos derived from it.
+
+There is no automated sync. To propagate a template change to an existing repo:
+
+```bash
+# From the schedrunner repo root, for each file listed in managed-files.txt:
+cp templates/<name>/<file> ~/Dropbox/Source/<derived-repo>/<file>
+cd ~/Dropbox/Source/<derived-repo>/
+git add <file> && git commit -m "chore: sync <file> from schedrunner template"
+git push
+```
+
+**When editing a file in a derived repo:** if the file appears in
+`managed-files.txt`, edit it in the template instead and propagate — a local edit
+will be confusing to future maintainers and will be overwritten if anyone syncs
+from the template again.
 
 ### How to add a new template
 
 1. Create `templates/<name>/` with at minimum `CLAUDE.md`, `REPO.md`,
    `service.yaml`, and `managed-files.txt`.
-2. Add it to the table above in this file.
-3. Update the `/new-repo` skill (`SKILL.md`) so agents know to offer it.
+   - `managed-files.txt` should list files that are generic/shared across all
+     repos of this type (CI configs, the worker script, etc.) — not files users
+     customize per-repo (schedules, domain names, env vars).
+2. Add it to the available templates table above in this file.
+3. Add the type to the `TEMPLATES` and `REPO_TYPE` maps in
+   `scripts/create-service.mjs`.
+4. Update the `/new-repo` skill (`SKILL.md`) template table so agents know to
+   offer it.
 
 ### `service.yaml` reference
 
@@ -343,7 +390,7 @@ security notes are in **`SECRETS.md`**.
 | Auto-pull + redeploy on every push           | Add a `.auto-deploy` file to the repo root                         |
 | Both                                          | Do both — they are independent                                    |
 | Create a brand-new repo                       | Add a line to `repos.register` (or use the `/new-repo` skill)      |
-| Start from a template                         | `cp -r templates/<name>/. ~/Dropbox/Source/<repo>/` (see section 4) |
+| Start from a template                         | `node scripts/create-service.mjs --name x --type <type>` (see section 4) |
 | Read a shared credential in a repo            | `source secrets.sh; get_secret <name>` (setup in `SECRETS.md`)     |
 | Inspect what happened                         | Read `log/<script-basename>.log` in the schedrunner repo           |
 | Install / uninstall the scheduler            | `cd loader && bash install.sh` (or `uninstall.sh`)                 |

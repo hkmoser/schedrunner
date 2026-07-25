@@ -2,7 +2,7 @@
 // Create a new repo from a local template and register it in repos.yaml.
 // Usage: GITHUB_TOKEN=... REPO_OWNER=... \
 //   node scripts/create-service.mjs --name my-thing --type collector [--dest ~/Dropbox/Source]
-import { readFile, writeFile, cp, readdir } from "node:fs/promises";
+import { readFile, writeFile, cp } from "node:fs/promises";
 import { execSync } from "node:child_process";
 import { parseArgs } from "node:util";
 import { parse, stringify } from "yaml";

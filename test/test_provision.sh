@@ -59,6 +59,25 @@ printf '# a comment\n\nokrepo|private|generic|Fine.|on\n' > "$reg"
 out="$(run_provision "$reg" "$src")"
 assert_contains "$out" "created and pushed to testuser/okrepo" "comments/blank: only the valid entry is provisioned"
 
+# --- template: source=template:<type> copies from templates/ ----------------
+src="$(make_tmpdir)"; reg="$(make_tmpdir)/register"; log="$(make_tmpdir)/gh.log"
+printf 'mysite|private|generic|A static site.|on|template:site\n' > "$reg"
+out="$(GH_STUB_LOG="$log" GH_STUB_EXISTING="" run_provision "$reg" "$src")"
+assert_contains "$out" "created from template 'site'" "template:site: reports creation"
+assert_file "$src/mysite/src/index.js"      "template:site: worker script present"
+assert_file "$src/mysite/wrangler.jsonc"    "template:site: wrangler config present"
+assert_file "$src/mysite/CLAUDE.md"         "template:site: CLAUDE.md present"
+assert_file "$src/mysite/.auto-deploy"      "template:site: .auto-deploy flag written"
+assert_file "$src/mysite/.git/HEAD"         "template:site: git repo initialized"
+assert_contains "$(cat "$log")" "repo create testuser/mysite" "template:site: gh repo create invoked"
+
+# --- template: unknown type is rejected -------------------------------------
+src="$(make_tmpdir)"; reg="$(make_tmpdir)/register"
+printf 'badtmpl|private|generic|x.|on|template:bogus\n' > "$reg"
+out="$(run_provision "$reg" "$src")"
+assert_contains "$out" "unknown template key 'bogus'" "template:bogus: rejected with message"
+assert_no_file "$src/badtmpl" "template:bogus: no dir created"
+
 # --- error: gh not authenticated aborts -------------------------------------
 src="$(make_tmpdir)"; reg="$(make_tmpdir)/register"
 printf 'whatever|private|generic|x.|on\n' > "$reg"

@@ -65,7 +65,7 @@ out="$(SCHEDRUNNER_SECRETS_CONF=/nonexistent SCHEDRUNNER_GCP_SA_KEY="$d/key.json
        SCHEDRUNNER_GCLOUD_CONFIG="$d/gcloud" GCLOUD_STUB_DIR="$d/store" \
        bash "$REPO_ROOT/secrets.sh" get whatever 2>&1)"; rc=$?
 assert_status 1 "$rc" "missing project: exit 1"
-assert_contains "$out" "SCHEDRUNNER_GCP_PROJECT is not set" "missing project: explains why"
+assert_contains "$out" "no GCP project set" "missing project: explains why"
 
 # --- error: missing service-account key -------------------------------------
 d="$(new_env)"
@@ -73,7 +73,7 @@ out="$(SCHEDRUNNER_SECRETS_CONF=/nonexistent SCHEDRUNNER_GCP_PROJECT=test-projec
        SCHEDRUNNER_GCP_SA_KEY="$d/does-not-exist.json" SCHEDRUNNER_GCLOUD_CONFIG="$d/gcloud" \
        bash "$REPO_ROOT/secrets.sh" get whatever 2>&1)"; rc=$?
 assert_status 1 "$rc" "missing key file: exit 1"
-assert_contains "$out" "service-account key not found" "missing key file: explains why"
+assert_contains "$out" "could not read secret 'whatever'" "missing key file: explains why (falls through to interactive, secret access fails)"
 
 # --- error: secret does not exist -------------------------------------------
 d="$(new_env)"

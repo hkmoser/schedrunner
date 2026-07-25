@@ -27,3 +27,4 @@
 ha-events|private|generic|Home Assistant events.|on
 md-halo|private|generic|Clean copy of iOS-shell.|on|iOS-shell
 boot-notify|private|python|Post-boot health check via Pushcut.|on
+com-pendandski|private|generic|Pendandski static site.|on|template:site

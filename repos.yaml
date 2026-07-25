@@ -37,8 +37,4 @@ repos:
     mirror: true
 
   # native iOS apps are type: app (schedrunner builds them, never runs them).
-  # Add these later, after the mirror is populated:
-  # - name: <ios-app>
-  #   type: app
-  #   remote: <its remote>
-  #   mirror: true
+  # New iOS apps created from template-ios-app go here with mirror: true.

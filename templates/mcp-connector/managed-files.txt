@@ -1,5 +1,6 @@
 .github/workflows/ci.yml
 .gitignore
 tsconfig.json
+wrangler.toml
 CLAUDE.md
 managed-files.txt

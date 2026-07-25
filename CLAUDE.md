@@ -344,9 +344,11 @@ from the template again.
      repos of this type (CI configs, the worker script, etc.) — not files users
      customize per-repo (schedules, domain names, env vars).
 2. Add it to the available templates table above in this file.
-3. Add the type to the `TEMPLATES` and `REPO_TYPE` maps in
-   `scripts/create-service.mjs`.
-4. Update the `/new-repo` skill (`SKILL.md`) template table so agents know to
+3. Add the type key to the `TEMPLATE_DIRS` map in `provision-repos.sh` (so
+   `source=template:<key>` in `repos.register` works).
+4. Add the type to the `TEMPLATES` and `REPO_TYPE` maps in
+   `scripts/create-service.mjs` (for the manual Mac-side alternative).
+5. Update the `/new-repo` skill (`SKILL.md`) template table so agents know to
    offer it.
 
 ### `service.yaml` reference
@@ -354,8 +356,10 @@ from the template again.
 ```yaml
 type: app | service        # app = deploy-only; service = scheduled or always-on
 runtime: swift | node20 | python3
-deploy: "<command>"        # run on each deploy (app) or after pull (service)
-run: "<command>"           # long-running process (service only)
+deploy: "<command>"        # documentation only — schedrunner does NOT read this field.
+                           # Actual deploy is triggered by .auto-deploy (see §2).
+                           # Document what .auto-deploy runs here so it's in one place.
+run: "<command>"           # long-running process (service only; reserved for future use)
 schedule: "cron expr"      # when to run `run` (service only; standard 5-field cron)
 env:                       # env vars the service needs (documentation only; set via secrets.sh)
   - VAR_NAME
@@ -390,7 +394,8 @@ security notes are in **`SECRETS.md`**.
 | Auto-pull + redeploy on every push           | Add a `.auto-deploy` file to the repo root                         |
 | Both                                          | Do both — they are independent                                    |
 | Create a brand-new repo                       | Add a line to `repos.register` (or use the `/new-repo` skill)      |
-| Start from a template                         | `node scripts/create-service.mjs --name x --type <type>` (see section 4) |
+| Start from a template                         | Add `source=template:<type>` to `repos.register` (or use `/new-repo` skill) — see §4 |
 | Read a shared credential in a repo            | `source secrets.sh; get_secret <name>` (setup in `SECRETS.md`)     |
 | Inspect what happened                         | Read `log/<script-basename>.log` in the schedrunner repo           |
+| See all managed repos                         | `repos.yaml` — `mirror: true` entries are cloned into `mirror/` by `sync-mirror.mjs` (runs every 3 h) |
 | Install / uninstall the scheduler            | `cd loader && bash install.sh` (or `uninstall.sh`)                 |

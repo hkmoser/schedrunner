@@ -49,25 +49,28 @@ _sr_gcloud() { local -x CLOUDSDK_CONFIG="$SCHEDRUNNER_GCLOUD_CONFIG"; gcloud "$@
 _secrets_init() {
   [[ -n "${_SECRETS_READY:-}" ]] && return 0
 
-  if [[ -z "${SCHEDRUNNER_GCP_PROJECT:-}" ]]; then
-    _secrets_err "SCHEDRUNNER_GCP_PROJECT is not set (configure $SCHEDRUNNER_SECRETS_CONF)"
-    return 1
-  fi
   command -v gcloud >/dev/null 2>&1 || { _secrets_err "gcloud CLI not found on PATH"; return 1; }
-  if [[ ! -f "$SCHEDRUNNER_GCP_SA_KEY" ]]; then
-    _secrets_err "service-account key not found: $SCHEDRUNNER_GCP_SA_KEY"
-    return 1
+
+  # Project: env/config file wins; fall back to whatever gcloud already has active.
+  if [[ -z "${SCHEDRUNNER_GCP_PROJECT:-}" ]]; then
+    SCHEDRUNNER_GCP_PROJECT="$(gcloud config get-value project 2>/dev/null || true)"
+    [[ -n "$SCHEDRUNNER_GCP_PROJECT" ]] \
+      || { _secrets_err "no GCP project set — run: gcloud config set project <id>"; return 1; }
   fi
 
-  local sa_email active
-  sa_email="$(sed -n 's/.*"client_email"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
-              "$SCHEDRUNNER_GCP_SA_KEY" | head -1)"
-  active="$(_sr_gcloud auth list --filter=status:ACTIVE --format='value(account)' 2>/dev/null)"
-  if [[ -z "$sa_email" || "$active" != "$sa_email" ]]; then
-    _sr_gcloud auth activate-service-account ${sa_email:+"$sa_email"} \
-        --key-file="$SCHEDRUNNER_GCP_SA_KEY" --quiet >/dev/null 2>&1 \
-      || { _secrets_err "failed to activate service account from $SCHEDRUNNER_GCP_SA_KEY"; return 1; }
+  # SA key: use it when present; otherwise fall through to interactive credentials.
+  if [[ -f "$SCHEDRUNNER_GCP_SA_KEY" ]]; then
+    local sa_email active
+    sa_email="$(sed -n 's/.*"client_email"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+                "$SCHEDRUNNER_GCP_SA_KEY" | head -1)"
+    active="$(_sr_gcloud auth list --filter=status:ACTIVE --format='value(account)' 2>/dev/null)"
+    if [[ -z "$sa_email" || "$active" != "$sa_email" ]]; then
+      _sr_gcloud auth activate-service-account ${sa_email:+"$sa_email"} \
+          --key-file="$SCHEDRUNNER_GCP_SA_KEY" --quiet >/dev/null 2>&1 \
+        || { _secrets_err "failed to activate service account from $SCHEDRUNNER_GCP_SA_KEY"; return 1; }
+    fi
   fi
+
   _SECRETS_READY=1
 }
 
@@ -92,7 +95,9 @@ secret_to_var() {
 # secrets_check -> validate config + auth without printing any secret
 secrets_check() {
   _secrets_init || return 1
-  echo "secrets.sh: ready (project=$SCHEDRUNNER_GCP_PROJECT, key=$SCHEDRUNNER_GCP_SA_KEY)"
+  local auth_src="interactive gcloud"
+  [[ -f "$SCHEDRUNNER_GCP_SA_KEY" ]] && auth_src="$SCHEDRUNNER_GCP_SA_KEY"
+  echo "secrets.sh: ready (project=$SCHEDRUNNER_GCP_PROJECT, auth=$auth_src)"
 }
 
 # CLI dispatch only when executed directly (not when sourced).

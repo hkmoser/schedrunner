@@ -135,7 +135,10 @@ while IFS= read -r repo; do
         report_status "$remote_sha" success "Reset to ${remote_sha:0:7} (no hook)"
         deployed=$((deployed + 1))
     fi
-done < <(find "$SOURCE_DIR" -name ".auto-deploy" -not -path "*/.git/*" | xargs -I{} dirname {} | sort)
+done < <(find "$SOURCE_DIR" -name ".auto-deploy" \
+    -not -path "*/.git/*" \
+    -not -path "*/templates/*" \
+    | xargs -I{} dirname {} | sort)
 
 [[ $deployed -gt 0 ]] && echo "[$(ts)] $deployed repo(s) updated"
 

@@ -245,7 +245,78 @@ branch**, a new entry is provisioned only once it reaches the default branch
 
 ---
 
-## 4. Shared secrets (`secrets.sh` → Google Cloud Secret Manager)
+## 4. Start from a template (`templates/`)
+
+The `templates/` directory contains ready-to-use repo scaffolds. When creating
+a new repo that matches one of these types, **copy the template rather than
+scaffolding from scratch** — it provides a working starting point with the right
+file structure, `service.yaml`, CI configuration, and `CLAUDE.md` already wired.
+
+### Available templates
+
+| Template | Use when… | Key files |
+|----------|-----------|-----------|
+| `templates/ios-app/` | Building a native iOS + PWA app with a Vapor backend (SDUI architecture) | `setup.sh`, `project.yml`, `Server/`, `App/`, `Web/` |
+| `templates/mcp-connector/` | Exposing a data source as MCP tools on Cloudflare Workers (TypeScript) | `src/index.ts`, `wrangler.toml` |
+| `templates/data-collector/` | Periodic data fetch → store (Node.js cron service) | `src/collect.js`, `service.yaml` |
+| `templates/cf-static-site/` | Static website with multi-domain redirect on Cloudflare Workers | `setup.sh`, `src/index.js`, `wrangler.jsonc`, `public/` |
+
+### Template contract — every template must contain
+
+| File | Purpose |
+|------|---------|
+| `CLAUDE.md` | Agent guide: deploy flow, content editing, conventions |
+| `REPO.md` | Human-readable repo descriptor (fill in when instantiating) |
+| `service.yaml` | Tells schedrunner how to handle this repo (`type`, `runtime`, `deploy`/`run`/`schedule`) |
+| `managed-files.txt` | List of files schedrunner may update when syncing the template; agents must not hand-edit these |
+
+Templates for repos that need a one-time token-substitution setup also include:
+
+| File | Purpose |
+|------|---------|
+| `setup.sh` | Substitutes template tokens (`__APP_NAME__`, etc.) and runs the initial deploy |
+
+### How to instantiate a template
+
+```bash
+# From the schedrunner repo root:
+cp -r templates/<template-name>/. ~/Dropbox/Source/<new-repo-name>/
+cd ~/Dropbox/Source/<new-repo-name>/
+
+# For templates with setup.sh:
+bash setup.sh <args...>
+
+# Then create the repo and push:
+git init && git add -A
+git commit -m "chore: init from schedrunner template/<template-name>"
+gh repo create <owner>/<new-repo-name> --private --source=. --push
+```
+
+For repos that should auto-deploy, also add a `.auto-deploy` file (see section 2)
+and add an entry to `repos.register` if you want the Mac to provision it (section 3).
+
+### How to add a new template
+
+1. Create `templates/<name>/` with at minimum `CLAUDE.md`, `REPO.md`,
+   `service.yaml`, and `managed-files.txt`.
+2. Add it to the table above in this file.
+3. Update the `/new-repo` skill (`SKILL.md`) so agents know to offer it.
+
+### `service.yaml` reference
+
+```yaml
+type: app | service        # app = deploy-only; service = scheduled or always-on
+runtime: swift | node20 | python3
+deploy: "<command>"        # run on each deploy (app) or after pull (service)
+run: "<command>"           # long-running process (service only)
+schedule: "cron expr"      # when to run `run` (service only; standard 5-field cron)
+env:                       # env vars the service needs (documentation only; set via secrets.sh)
+  - VAR_NAME
+```
+
+---
+
+## 5. Shared secrets (`secrets.sh` → Google Cloud Secret Manager)
 
 Repos that need credentials read them from one shared place — Google Cloud
 Secret Manager — via `secrets.sh`, so secrets never live in a repo or Dropbox
@@ -272,6 +343,7 @@ security notes are in **`SECRETS.md`**.
 | Auto-pull + redeploy on every push           | Add a `.auto-deploy` file to the repo root                         |
 | Both                                          | Do both — they are independent                                    |
 | Create a brand-new repo                       | Add a line to `repos.register` (or use the `/new-repo` skill)      |
+| Start from a template                         | `cp -r templates/<name>/. ~/Dropbox/Source/<repo>/` (see section 4) |
 | Read a shared credential in a repo            | `source secrets.sh; get_secret <name>` (setup in `SECRETS.md`)     |
 | Inspect what happened                         | Read `log/<script-basename>.log` in the schedrunner repo           |
 | Install / uninstall the scheduler            | `cd loader && bash install.sh` (or `uninstall.sh`)                 |

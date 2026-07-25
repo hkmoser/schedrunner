@@ -17,6 +17,21 @@ declarative manifest, not a queue you clean up.
 
 "create a new repo for X", "spin up a project called Y", "scaffold a repo", etc.
 
+Before collecting fields, check whether the new repo matches an existing template
+in `templates/`. If it does, tell the user and recommend copying the template
+instead of (or in addition to) adding a `repos.register` entry:
+
+| Template | Matches when… |
+|----------|---------------|
+| `templates/ios-app/` | iOS app + Vapor server + PWA (SDUI) |
+| `templates/mcp-connector/` | MCP tools on Cloudflare Workers (TypeScript) |
+| `templates/data-collector/` | Periodic fetch/store job (Node.js cron) |
+| `templates/cf-static-site/` | Static website + multi-domain redirect on Cloudflare Workers |
+
+Template repos don't necessarily need a `repos.register` entry — they're
+instantiated by copying the template directory. Only add a `repos.register`
+entry if the user wants `provision-repos.sh` to create the GitHub repo for them.
+
 ## Step 1 — Ask the setup questions
 
 Collect the fields below. Use `AskUserQuestion` for the multiple-choice ones

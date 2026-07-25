@@ -1,0 +1,4 @@
+src/index.js
+wrangler.jsonc
+managed-files.txt
+service.yaml

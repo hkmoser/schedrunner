@@ -1,0 +1,6 @@
+# How schedrunner handles repos built from this template.
+# type: app = deploy-only target; schedrunner triggers wrangler deploy via
+# .auto-deploy whenever the default branch advances.
+type: app
+runtime: node20
+deploy: "npx wrangler deploy"

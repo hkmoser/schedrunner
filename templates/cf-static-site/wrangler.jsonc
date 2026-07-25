@@ -1,0 +1,26 @@
+{
+  // Worker name — setup.sh rewrites this from the primary domain.
+  "name": "my-site",
+
+  "main": "./src/index.js",
+  "compatibility_date": "2026-07-24",
+
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "not_found_handling": "404-page"
+  },
+
+  // setup.sh rewrites vars and routes from the domain list you pass it.
+  "vars": {
+    "PRIMARY_DOMAIN": "example.com"
+  },
+
+  // One entry per hostname (primary, www.primary, each secondary, www.secondary).
+  // setup.sh generates this array — edit manually only to add/remove domains later.
+  "routes": [
+    { "pattern": "example.com",     "custom_domain": true },
+    { "pattern": "www.example.com", "custom_domain": true }
+  ]
+}

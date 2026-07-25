@@ -14,9 +14,12 @@
 #     description one line; no '|' characters
 #     autodeploy  on | off                 (default: on; commits a .auto-deploy
 #                 flag so schedrunner keeps the new repo in sync on the Mac)
-#     source      optional repo (name or owner/repo). When set, the new repo is
-#                 a clean copy of that repo's current snapshot (no fork, no
-#                 history) instead of a fresh scaffold; type is ignored.
+#     source      optional. Two forms:
+#                 template:<type>   copy from schedrunner's templates/ dir;
+#                                   type values: collector, mcp, ios, site
+#                 <name|owner/repo> clean copy of an existing GitHub repo's
+#                                   snapshot (no fork, no history)
+#                 In both cases, the type field is ignored.
 #
 # Lines beginning with # and blank/malformed lines are ignored. The /new-repo
 # skill prompts for these fields and appends a line here for you.

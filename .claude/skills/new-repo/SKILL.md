@@ -28,24 +28,22 @@ Before collecting fields, check whether the new repo matches an existing templat
 | `collector` | Periodic fetch/store job (Node.js cron) |
 | `site` | Static website + multi-domain redirect on Cloudflare Workers |
 
-**If it matches a template**, the right tool is `create-service.mjs`, not
-`repos.register`. Tell the user:
+**If it matches a template**, use `repos.register` with `source=template:<type>`.
+Collect `name`, `visibility`, `autodeploy`, and optionally `description` as
+normal — skip the `type` question (ignored when source is set). Write the register
+entry with the `template:` source and proceed to Step 3. Example line:
 
-> This matches the `<type>` template. On the Mac, run:
-> ```bash
-> GITHUB_TOKEN=<token> REPO_OWNER=hkmoser \
->   node ~/Dropbox/Source/schedrunner/scripts/create-service.mjs \
->   --name <name> --type <type>
-> ```
-> That copies the template, creates the GitHub repo, pushes the initial commit,
-> and registers it in `repos.yaml`. Then commit `repos.yaml` on a branch and
-> open a PR. For `ios` and `site` types, also run `setup.sh` inside the new repo
-> after creation — the template's CLAUDE.md has the exact command.
+```
+my-site|private|generic|My new site.|on|template:site
+```
 
-Then skip to Step 3 (commit + PR) — no `repos.register` entry is needed.
+Once the PR merges, `provision-repos.sh` copies the template, creates the GitHub
+repo, and pushes automatically. Note: `ios` and `site` repos need a one-time
+`setup.sh` run on the Mac after the repo is created — mention this to the user
+and point them at the template's CLAUDE.md for the exact command.
 
-**If it does NOT match a template**, continue with Steps 1–4 below to add a
-`repos.register` entry and let `provision-repos.sh` scaffold it.
+**If it does NOT match a template**, continue with Steps 1–4 below for a plain
+scaffold.
 
 ## Step 1 — Ask the setup questions
 

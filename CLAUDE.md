@@ -228,12 +228,16 @@ name|visibility|type|description|autodeploy|source
 
 - `visibility`: `private` (default) or `public`.
 - `type`: `generic` (default), `python`, or `node` — controls `.gitignore`.
+  Ignored when `source` is set.
 - `autodeploy`: `on` (default) or `off`. When on, the provisioner commits an
   empty `.auto-deploy` flag to the new repo so schedrunner keeps it in sync on
   the Mac (see section 2). Use `off` for a repo you intend to hand-edit locally.
-- `source` (optional): a repo (`name` or `owner/repo`) to **copy** rather than
-  scaffold. When set, the new repo is a clean copy of that repo's current
-  snapshot (no fork link, no history) and `type` is ignored.
+- `source` (optional): two forms:
+  - `template:<type>` — copy from `templates/` in this repo. Valid types:
+    `collector`, `mcp`, `ios`, `site`. Produces a fully wired starting point
+    instead of a bare scaffold.
+  - `<name>` or `<owner/repo>` — clean copy of an existing GitHub repo's
+    current snapshot (no fork link, no history).
 - `name` must match `^[A-Za-z0-9._-]+$`; `description` must not contain `|`.
 
 This exists because cloud/mobile Claude Code sessions generally can't create
@@ -278,42 +282,38 @@ Templates for repos that need a one-time setup step also include:
 
 ### How to instantiate a template
 
-**Preferred — use `create-service.mjs` (runs on the Mac):**
+**From any session (cloud, mobile, Mac) — use `repos.register`:**
 
-```bash
-# From the schedrunner repo root:
-GITHUB_TOKEN=<token> REPO_OWNER=hkmoser \
-  node scripts/create-service.mjs --name my-new-repo --type <collector|mcp|ios|site>
+Add a line to `repos.register` with `source=template:<type>`, commit on a branch,
+and open a PR. Once the PR merges, the Mac's next provisioning tick copies the
+template, creates the GitHub repo, and pushes — the same hands-off flow as any
+other `repos.register` entry.
+
+```
+my-site|private|generic|My new static site.|on|template:site
+my-collector|private|generic|Pulls data from the API.|on|template:collector
 ```
 
-This copies the template to `~/Dropbox/Source/<name>/`, creates the GitHub repo,
-does the initial commit and push, and adds the repo to `repos.yaml`. Then commit
-`repos.yaml` on a branch and open a PR.
+The `/new-repo` skill handles this automatically — just describe what you want
+to build and it will detect the right template type and write the register entry.
 
-For templates with a setup step (`ios`, `site`), run `setup.sh` inside the new
-repo after creation:
+**For `ios` and `site` templates:** after the repo is created, run `setup.sh`
+inside the new repo on the Mac for the initial deploy:
 
 ```bash
 cd ~/Dropbox/Source/<name>/
 bash setup.sh <args...>    # see the template's CLAUDE.md for exact args
 ```
 
-**Manual fallback (any session with `gh` authenticated):**
+**Manual Mac-only alternative (`create-service.mjs`):**
 
 ```bash
-# From the schedrunner repo root:
-cp -r templates/<template-name>/. ~/Dropbox/Source/<new-repo-name>/
-cd ~/Dropbox/Source/<new-repo-name>/
-bash setup.sh <args...>    # if the template has setup.sh
-git init -b main && git add -A
-git commit -m "chore: init from schedrunner template/<template-name>"
-gh repo create hkmoser/<new-repo-name> --private --source=. --push
+GITHUB_TOKEN=<token> REPO_OWNER=hkmoser \
+  node scripts/create-service.mjs --name my-new-repo --type <collector|mcp|ios|site>
 ```
 
-Then add the repo to `repos.yaml` manually and open a PR.
-
-**Auto-deploy:** add a `.auto-deploy` file to the new repo if you want schedrunner
-to keep the Mac's clone in sync on every push (see section 2).
+Skips `repos.register` entirely — useful if you're already on the Mac and want
+the repo immediately without a PR cycle. Still updates `repos.yaml`.
 
 ### How to modify a template
 

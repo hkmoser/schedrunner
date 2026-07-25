@@ -1,3 +1,4 @@
+CLAUDE.md
 src/index.js
 wrangler.jsonc
 managed-files.txt

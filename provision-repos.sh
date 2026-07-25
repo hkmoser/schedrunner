@@ -34,13 +34,16 @@ REPO_TEMPLATES="$SCRIPT_DIR/templates"
 SOURCE_DIR="${SCHEDRUNNER_SOURCE_DIR:-$HOME/Dropbox/Source}"
 LOCK="/tmp/provision-repos.lock"
 
-# Maps source:template:<key> to the templates/ subdirectory name
-declare -A TEMPLATE_DIRS=(
-  [collector]="data-collector"
-  [mcp]="mcp-connector"
-  [ios]="ios-app"
-  [site]="cf-static-site"
-)
+# Maps template key -> templates/ subdirectory (bash 3.2 compatible)
+template_dir_for() {
+  case "$1" in
+    collector) echo "data-collector" ;;
+    mcp)       echo "mcp-connector" ;;
+    ios)       echo "ios-app" ;;
+    site)      echo "cf-static-site" ;;
+    *)         echo "" ;;
+  esac
+}
 
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 
@@ -72,9 +75,9 @@ str_replace() {  # str_replace <haystack> <needle> <replacement> — literal, po
 copy_template() {  # copy_template <name> <tmpl_key> <visibility> <autodeploy> <description>
   local rname="$1" tmpl_key="$2" rvis="$3" autod="$4" rdesc="$5"
 
-  local tmpl_subdir="${TEMPLATE_DIRS[$tmpl_key]:-}"
+  local tmpl_subdir; tmpl_subdir="$(template_dir_for "$tmpl_key")"
   if [[ -z "$tmpl_subdir" ]]; then
-    echo "[$(ts)] $rname: unknown template key '$tmpl_key' — valid keys: ${!TEMPLATE_DIRS[*]}"
+    echo "[$(ts)] $rname: unknown template key '$tmpl_key' — valid keys: collector mcp ios site"
     return 1
   fi
   local tmpl_dir="$REPO_TEMPLATES/$tmpl_subdir"
@@ -98,7 +101,7 @@ copy_template() {  # copy_template <name> <tmpl_key> <visibility> <autodeploy> <
     : > .auto-deploy
   fi
   git add -A
-  git diff --cached --quiet || git commit -qm "chore: init from schedrunner template/${TEMPLATE_DIRS[$tmpl_key]}"
+  git diff --cached --quiet || git commit -qm "chore: init from schedrunner template/$tmpl_subdir"
 
   if create_and_push "$rname" "$rvis" "$rdesc"; then
     echo "[$(ts)] $rname: created from template '$tmpl_key' -> $OWNER/$rname"

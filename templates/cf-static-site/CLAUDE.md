@@ -18,6 +18,10 @@ First deploy (new site):
 ./setup.sh primary.com [secondaries...]
 ```
 
+`setup.sh` creates any missing Cloudflare zones automatically and prints the
+nameservers to set at your registrar. Re-run it once nameservers are active —
+it will skip already-active zones and proceed to deploy.
+
 Subsequent deploys (content or config change):
 ```bash
 wrangler deploy

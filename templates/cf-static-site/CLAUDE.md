@@ -10,9 +10,11 @@ src/index.js     ← Worker: serve primary, redirect everything else
 wrangler.jsonc   ← config (name, PRIMARY_DOMAIN, routes)
 ```
 
+Credentials live in GCP Secret Manager (keys: `cloudflare-api-token`, `cloudflare-account-id`).
+`setup.sh` sources `~/Dropbox/Source/schedrunner/secrets.sh` automatically — no `.env` file needed.
+
 First deploy (new site):
 ```bash
-cp .env.example .env          # fill CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID
 ./setup.sh primary.com [secondaries...]
 ```
 

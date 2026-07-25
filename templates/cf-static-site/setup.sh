@@ -7,12 +7,34 @@
 #   gcloud secrets create cloudflare-api-token --data-file=- <<< "tok_..."
 #   gcloud secrets create cloudflare-account-id --data-file=- <<< "abc123"
 #
+# For the API token, create a Custom Token with these permissions
+# (use "All accounts" / "All zones" scope for each):
+#
+#   Account-level:
+#     Cloudflare Pages:Edit          — not needed, but harmless if present
+#     Workers Scripts:Edit           — deploy the Worker
+#     Account Settings:Read          — read account info (wrangler uses this)
+#
+#   Zone-level:
+#     Zone:Edit                      — create zones via API
+#     Zone Settings:Edit             — configure zone settings
+#     DNS:Edit                       — manage DNS records after zone creation
+#     Workers Routes:Edit            — bind custom domain routes to the Worker
+#
+# Minimal set that works: Zone:Edit + DNS:Edit + Workers Routes:Edit +
+#   Workers Scripts:Edit + Account Settings:Read
+#
+# Zone handling:
+#   - If a domain zone doesn't exist yet, setup.sh creates it via the CF API
+#     and prints the nameservers to set at your registrar.
+#   - If a zone exists but is Pending (nameservers not yet delegated), setup.sh
+#     prints the nameservers and exits — re-run after delegation is confirmed.
+#   - If all zones are Active, setup.sh deploys the worker.
+#
 # Prerequisites:
 #   - schedrunner checked out at ~/Dropbox/Source/schedrunner (GCP SA configured)
 #   - jq installed  (brew install jq)
 #   - wrangler installed globally (npm install -g wrangler)
-#   - Every domain already added as a zone in Cloudflare and delegated
-#     (nameservers pointed to Cloudflare). See README.md.
 set -euo pipefail
 
 # ── Pull credentials from Secret Manager ──────────────────────────────────
@@ -53,30 +75,65 @@ fi
 command -v jq       >/dev/null 2>&1 || { echo "ERROR: jq not found — brew install jq" >&2; exit 1; }
 command -v wrangler >/dev/null 2>&1 || { echo "ERROR: wrangler not found — npm install -g wrangler" >&2; exit 1; }
 
-# ── Verify every domain zone exists in Cloudflare ─────────────────────────
+# ── Zone management ───────────────────────────────────────────────────────
 cf_api() {
   curl -s -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
           -H "Content-Type: application/json" "$@"
 }
 
-check_zone() {
+# ensure_zone <domain>
+# Creates the zone if it doesn't exist. Returns 0 if zone is Active and ready,
+# 1 if zone is Pending (nameservers not yet delegated — caller should exit).
+ensure_zone() {
   local domain="$1"
-  local resp count
+  local resp zone_id status nameservers
+
   resp=$(cf_api "https://api.cloudflare.com/client/v4/zones?name=${domain}&account.id=${CLOUDFLARE_ACCOUNT_ID}")
-  count=$(echo "$resp" | jq '.result | length')
-  if [[ "$count" -eq 0 ]]; then
-    echo "ERROR: domain '$domain' is not a zone in your Cloudflare account." >&2
-    echo "  Add it at dash.cloudflare.com → 'Add a domain', then point nameservers before running setup." >&2
-    exit 1
+  zone_id=$(echo "$resp" | jq -r '.result[0].id // empty')
+
+  if [[ -z "$zone_id" ]]; then
+    echo "  $domain: zone not found — creating…"
+    resp=$(cf_api -X POST "https://api.cloudflare.com/client/v4/zones" \
+      -d "{\"name\":\"${domain}\",\"account\":{\"id\":\"${CLOUDFLARE_ACCOUNT_ID}\"},\"jump_start\":false,\"type\":\"full\"}")
+    zone_id=$(echo "$resp" | jq -r '.result.id // empty')
+    if [[ -z "$zone_id" ]]; then
+      echo "ERROR: failed to create zone for $domain:" >&2
+      echo "$resp" | jq -r '.errors[]?.message' >&2
+      exit 1
+    fi
+    echo "  $domain: zone created."
   fi
+
+  status=$(cf_api "https://api.cloudflare.com/client/v4/zones/${zone_id}" | jq -r '.result.status')
+  nameservers=$(cf_api "https://api.cloudflare.com/client/v4/zones/${zone_id}" \
+    | jq -r '.result.name_servers[]' 2>/dev/null | tr '\n' ' ')
+
+  if [[ "$status" != "active" ]]; then
+    echo ""
+    echo "  ⚠  $domain is $status — nameservers not yet delegated."
+    echo "     Set these at your registrar, then re-run setup.sh:"
+    echo ""
+    for ns in $nameservers; do echo "       $ns"; done
+    echo ""
+    return 1
+  fi
+
+  echo "  $domain: Active ✓"
+  return 0
 }
 
-echo "Verifying Cloudflare zones…"
-check_zone "$PRIMARY"
-for d in "${SECONDARIES[@]}"; do
-  check_zone "$d"
+echo "Checking Cloudflare zones…"
+pending=0
+all_domains=("$PRIMARY" "${SECONDARIES[@]}")
+for d in "${all_domains[@]}"; do
+  ensure_zone "$d" || pending=1
 done
-echo "All zones verified."
+
+if [[ "$pending" -eq 1 ]]; then
+  echo "One or more zones are pending delegation. Re-run setup.sh once nameservers are active."
+  exit 1
+fi
+echo "All zones active."
 
 # ── Derive worker name ─────────────────────────────────────────────────────
 WORKER_NAME=$(echo "$PRIMARY" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
@@ -122,16 +179,13 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "  Deploy complete. Manual steps remaining:"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "  1. Confirm Cloudflare is authoritative for each domain"
-echo "     (zone Overview shows 'Active' in the dashboard)."
+echo "  1. SSL/TLS: set mode to 'Full (strict)' in each zone's SSL/TLS tab"
+echo "     in the Cloudflare dashboard."
 echo ""
-echo "  2. SSL/TLS: set mode to 'Full (strict)' in each zone's SSL/TLS tab."
-echo ""
-echo "  3. If you migrated a live domain: restore DNS records (A, MX,"
+echo "  2. If you migrated a live domain: restore DNS records (A, MX,"
 echo "     CNAME, TXT) that existed before the nameserver switch."
 echo ""
-echo "  4. Smoke test:"
-all_domains=("$PRIMARY" "${SECONDARIES[@]}")
+echo "  3. Smoke test:"
 for d in "${all_domains[@]}"; do
   echo "       curl -sI https://${d}/ | head -2"
   echo "       curl -sI https://www.${d}/ | head -2"

@@ -17,20 +17,35 @@ declarative manifest, not a queue you clean up.
 
 "create a new repo for X", "spin up a project called Y", "scaffold a repo", etc.
 
-Before collecting fields, check whether the new repo matches an existing template
-in `templates/`. If it does, tell the user and recommend copying the template
-instead of (or in addition to) adding a `repos.register` entry:
+### Does it match a template?
 
-| Template | Matches when… |
+Before collecting fields, check whether the new repo matches an existing template:
+
+| Type arg | Matches when… |
 |----------|---------------|
-| `templates/ios-app/` | iOS app + Vapor server + PWA (SDUI) |
-| `templates/mcp-connector/` | MCP tools on Cloudflare Workers (TypeScript) |
-| `templates/data-collector/` | Periodic fetch/store job (Node.js cron) |
-| `templates/cf-static-site/` | Static website + multi-domain redirect on Cloudflare Workers |
+| `ios` | iOS app + Vapor server + PWA (SDUI) |
+| `mcp` | MCP tools on Cloudflare Workers (TypeScript) |
+| `collector` | Periodic fetch/store job (Node.js cron) |
+| `site` | Static website + multi-domain redirect on Cloudflare Workers |
 
-Template repos don't necessarily need a `repos.register` entry — they're
-instantiated by copying the template directory. Only add a `repos.register`
-entry if the user wants `provision-repos.sh` to create the GitHub repo for them.
+**If it matches a template**, the right tool is `create-service.mjs`, not
+`repos.register`. Tell the user:
+
+> This matches the `<type>` template. On the Mac, run:
+> ```bash
+> GITHUB_TOKEN=<token> REPO_OWNER=hkmoser \
+>   node ~/Dropbox/Source/schedrunner/scripts/create-service.mjs \
+>   --name <name> --type <type>
+> ```
+> That copies the template, creates the GitHub repo, pushes the initial commit,
+> and registers it in `repos.yaml`. Then commit `repos.yaml` on a branch and
+> open a PR. For `ios` and `site` types, also run `setup.sh` inside the new repo
+> after creation — the template's CLAUDE.md has the exact command.
+
+Then skip to Step 3 (commit + PR) — no `repos.register` entry is needed.
+
+**If it does NOT match a template**, continue with Steps 1–4 below to add a
+`repos.register` entry and let `provision-repos.sh` scaffold it.
 
 ## Step 1 — Ask the setup questions
 
@@ -87,8 +102,8 @@ creates `<owner>/<name>` with starter files and pushes it; then they can open it
 in a fresh Claude Code session (phone included). With `autodeploy=on` (the
 default) the repo ships with a `.auto-deploy` flag, so schedrunner already keeps
 the Mac's clone in sync — no extra step. If they also want it to run on a
-*schedule*, point them at schedrunner's `register.sh` (see the repo CLAUDE.md);
-that's separate from auto-deploy.
+*schedule*, point them at `scripts.conf` in the schedrunner repo (section 1 of
+CLAUDE.md); that's separate from auto-deploy.
 
 ## Notes
 

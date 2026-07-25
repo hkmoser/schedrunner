@@ -10,6 +10,7 @@ const TEMPLATES = {
   collector: "template-data-collector",
   mcp: "template-mcp-connector",
   ios: "template-ios-app",
+  site: "template-cf-static-site",
 };
 
 const { values } = parseArgs({ options: {
@@ -20,7 +21,7 @@ const owner = values.owner ?? process.env.REPO_OWNER;
 const token = process.env.GITHUB_TOKEN;
 
 if (!name || !type || !TEMPLATES[type]) {
-  console.error("usage: --name <name> --type <collector|mcp|ios>"); process.exit(1);
+  console.error("usage: --name <name> --type <collector|mcp|ios|site>"); process.exit(1);
 }
 if (!token || !owner) { console.error("GITHUB_TOKEN + REPO_OWNER (or --owner) required"); process.exit(1); }
 
@@ -45,7 +46,7 @@ if (manifest.repos.some((r) => r.name === name)) {
 } else {
   manifest.repos.push({
     name,
-    type: type === "ios" ? "app" : "service",
+    type: (type === "ios" || type === "site") ? "app" : "service",
     remote: repo.clone_url,
     mirror: true,
   });

@@ -38,3 +38,25 @@ repos:
 
   # native iOS apps are type: app (schedrunner builds them, never runs them).
   # New iOS apps created from template-ios-app go here with mirror: true.
+
+  # GitHub template repos — source repos used by create-service.mjs.
+  # These must exist as GitHub template repos (is_template: true).
+  - name: template-ios-app
+    type: template
+    remote: git@github.com:hkmoser/template-ios-app.git
+    mirror: false
+
+  - name: template-data-collector
+    type: template
+    remote: git@github.com:hkmoser/template-data-collector.git
+    mirror: false
+
+  - name: template-mcp-connector
+    type: template
+    remote: git@github.com:hkmoser/template-mcp-connector.git
+    mirror: false
+
+  - name: template-cf-static-site
+    type: template
+    remote: git@github.com:hkmoser/template-cf-static-site.git
+    mirror: false

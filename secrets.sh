@@ -40,9 +40,15 @@
 
 _secrets_err() { echo "secrets.sh: $*" >&2; }
 
-# Run gcloud with the service account's isolated config, without leaking that
-# config dir into the caller's environment (local -x is function-scoped).
-_sr_gcloud() { local -x CLOUDSDK_CONFIG="$SCHEDRUNNER_GCLOUD_CONFIG"; gcloud "$@"; }
+# Run gcloud: use the isolated SA config when a key is present, otherwise use
+# the default config so interactive credentials work.
+_sr_gcloud() {
+  if [[ -f "$SCHEDRUNNER_GCP_SA_KEY" ]]; then
+    local -x CLOUDSDK_CONFIG="$SCHEDRUNNER_GCLOUD_CONFIG"; gcloud "$@"
+  else
+    gcloud "$@"
+  fi
+}
 
 # Validate config and ensure the service account is the active gcloud identity.
 # Cached for the life of the shell via _SECRETS_READY.

@@ -36,6 +36,7 @@
 #   - jq installed  (brew install jq)
 #   - wrangler installed globally (npm install -g wrangler)
 set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 # ── Pull credentials from Secret Manager ──────────────────────────────────
 SECRETS_SH="${SCHEDRUNNER_DIR:-$HOME/Dropbox/Source/schedrunner}/secrets.sh"
@@ -154,8 +155,6 @@ ROUTES=$(build_routes)
 
 # ── Rewrite wrangler.jsonc ─────────────────────────────────────────────────
 echo "Updating wrangler.jsonc…"
-HEADER=$(head -3 wrangler.jsonc)
-
 sed '/^[[:space:]]*\/\//d' wrangler.jsonc \
   | jq \
       --arg name "$WORKER_NAME" \
@@ -163,9 +162,7 @@ sed '/^[[:space:]]*\/\//d' wrangler.jsonc \
       --argjson routes "$ROUTES" \
       '.name = $name | .vars.PRIMARY_DOMAIN = $primary | .routes = $routes' \
   > wrangler.jsonc.tmp
-
-{ echo "$HEADER"; cat wrangler.jsonc.tmp; } > wrangler.jsonc
-rm wrangler.jsonc.tmp
+mv wrangler.jsonc.tmp wrangler.jsonc
 echo "wrangler.jsonc updated."
 
 # ── Deploy ─────────────────────────────────────────────────────────────────

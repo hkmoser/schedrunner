@@ -188,7 +188,18 @@ while IFS='|' read -r name visibility type description autodeploy source || [[ -
   source="$(echo "${source:-}" | xargs)"
 
   if gh repo view "$OWNER/$name" >/dev/null 2>&1; then
-    echo "[$(ts)] $name: already exists on GitHub — skipping"
+    # Repo exists on GitHub — ensure local copy is present and has origin configured.
+    # Dropbox can revert .git/config, silently dropping the remote; re-clone when that happens.
+    local_dir="$SOURCE_DIR/$name"
+    if [[ ! -d "$local_dir/.git" ]] || ! git -C "$local_dir" remote get-url origin >/dev/null 2>&1; then
+      echo "[$(ts)] $name: exists on GitHub but local copy missing or has no remote — cloning"
+      rm -rf "$local_dir"
+      gh repo clone "$OWNER/$name" "$local_dir" -- --quiet \
+        && echo "[$(ts)] $name: cloned to $local_dir" \
+        || echo "[$(ts)] $name: clone FAILED"
+    else
+      echo "[$(ts)] $name: already exists on GitHub — skipping"
+    fi
     continue
   fi
 

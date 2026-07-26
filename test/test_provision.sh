@@ -39,13 +39,33 @@ printf 'pyrepo|private|python|Python project.|on\n' > "$reg"
 run_provision "$reg" "$src" >/dev/null
 assert_contains "$(cat "$src/pyrepo/.gitignore")" "__pycache__" "type=python: gitignore has Python section"
 
-# --- edge: a repo that already exists is skipped ----------------------------
+# --- edge: a repo that already exists locally (with remote) is skipped ------
 src="$(make_tmpdir)"; reg="$(make_tmpdir)/register"; log="$(make_tmpdir)/gh.log"
 printf 'exists|private|generic|Already there.|on\n' > "$reg"
+# Create a local git repo with an origin remote so provision-repos sees it as healthy
+mkdir -p "$src/exists"
+git -C "$src/exists" init -q
+git -C "$src/exists" remote add origin "https://github.com/testuser/exists.git"
 out="$(GH_STUB_LOG="$log" GH_STUB_EXISTING="testuser/exists" run_provision "$reg" "$src")"
 assert_contains "$out" "already exists on GitHub — skipping" "existing repo: skipped"
-assert_no_file "$src/exists" "existing repo: no local dir scaffolded"
 assert_not_contains "$(cat "$log")" "repo create" "existing repo: gh repo create NOT called"
+
+# --- edge: existing GitHub repo but missing local copy triggers re-clone -----
+src="$(make_tmpdir)"; reg="$(make_tmpdir)/register"; log="$(make_tmpdir)/gh.log"
+printf 'missing-local|private|generic|On GitHub only.|on\n' > "$reg"
+out="$(GH_STUB_LOG="$log" GH_STUB_EXISTING="testuser/missing-local" run_provision "$reg" "$src")"
+assert_contains "$out" "exists on GitHub but local copy missing or has no remote — cloning" "missing local: triggers re-clone"
+assert_contains "$(cat "$log")" "repo clone testuser/missing-local" "missing local: gh repo clone called"
+assert_not_contains "$(cat "$log")" "repo create" "missing local: gh repo create NOT called"
+
+# --- edge: existing GitHub repo but local .git has no remote triggers re-clone
+src="$(make_tmpdir)"; reg="$(make_tmpdir)/register"; log="$(make_tmpdir)/gh.log"
+printf 'no-remote|private|generic|No remote configured.|on\n' > "$reg"
+mkdir -p "$src/no-remote"
+git -C "$src/no-remote" init -q
+out="$(GH_STUB_LOG="$log" GH_STUB_EXISTING="testuser/no-remote" run_provision "$reg" "$src")"
+assert_contains "$out" "exists on GitHub but local copy missing or has no remote — cloning" "no-remote: triggers re-clone"
+assert_contains "$(cat "$log")" "repo clone testuser/no-remote" "no-remote: gh repo clone called"
 
 # --- edge: malformed name is rejected ---------------------------------------
 src="$(make_tmpdir)"; reg="$(make_tmpdir)/register"

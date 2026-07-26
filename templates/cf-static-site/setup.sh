@@ -73,7 +73,7 @@ if [[ ${#missing[@]} -gt 0 ]]; then
 fi
 
 command -v jq       >/dev/null 2>&1 || { echo "ERROR: jq not found — brew install jq" >&2; exit 1; }
-command -v wrangler >/dev/null 2>&1 || { echo "ERROR: wrangler not found — npm install -g wrangler" >&2; exit 1; }
+command -v wrangler >/dev/null 2>&1 || { echo "wrangler not found — installing…"; npm install -g wrangler; }
 
 # ── Zone management ───────────────────────────────────────────────────────
 cf_api() {

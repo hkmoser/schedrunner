@@ -36,6 +36,7 @@
 #   - jq installed  (brew install jq)
 #   - wrangler installed globally (npm install -g wrangler)
 set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 # ── Pull credentials from Secret Manager ──────────────────────────────────
 SECRETS_SH="${SCHEDRUNNER_DIR:-$HOME/Dropbox/Source/schedrunner}/secrets.sh"

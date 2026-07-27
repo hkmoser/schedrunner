@@ -65,5 +65,14 @@ python3 gchat_collector.py --full-read    # deep scrape every chat (sends receip
 ## Notes
 - Secrets/state (`~/.mail_collector_config.json`, `~/.gchat_collector_profile/`)
   live outside the repo and are git-ignored.
-- Scheduling: see `run_export.sh` for the Full Disk Access / Terminal wrapper
-  pattern used to run under a scheduler.
+- **Full Disk Access, briefly:** FDA is *not* a Python requirement — it's only
+  needed to read Apple's TCC-protected stores (`chat.db`, the AddressBook DB).
+  If the process that launches the export (your scheduler, terminal, or IDE)
+  already has FDA, child Python processes inherit it and everything just works.
+- **Scheduling the Messages export (headless, no Terminal window):** point your
+  scheduler at `run_export.sh` — it runs `python3` directly, with no window. If
+  your scheduler already has FDA, that's all you need. Only if a run fails on
+  permissions do you grant FDA to something in the launch chain (the failure
+  message prints the exact interpreter path). As an optional, self-contained
+  alternative that needs just one grant, `./install_launchagent.sh` installs a
+  background LaunchAgent that execs the interpreter directly.

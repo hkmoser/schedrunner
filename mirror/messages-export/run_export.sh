@@ -1,21 +1,22 @@
 #!/bin/bash
-# run_export.sh — Schedrunner wrapper for export_messages.py
+# run_export.sh — headless wrapper for export_messages.py (NO Terminal window).
 #
-# macOS Full Disk Access (FDA) is required to read ~/Library/Messages/chat.db.
-# Terminal.app has FDA on this Mac. We open a Terminal session via Launch
-# Services (open -a Terminal), which runs the script inside Terminal's process
-# tree — subprocesses inherit Terminal's FDA entitlement.
+# This just runs python3 directly. FDA is NOT a "Python" requirement — it's only
+# needed to read the TCC-protected stores (~/Library/Messages/chat.db and the
+# AddressBook DB). If the process that launches this script (your scheduler, or a
+# terminal/IDE) already has Full Disk Access, child processes inherit it and this
+# works with nothing further to configure.
 #
-# Called every 60 min by schedrunner. Output captured to schedrunner's log.
+# ONLY if a run fails on permissions do you need to grant FDA to something in the
+# launch chain (the exact interpreter path is printed below on failure). For a
+# fully unattended, window-free scheduler that needs just one grant, you can use
+# the optional LaunchAgent: ./install_launchagent.sh
 set -uo pipefail
-export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PYTHON="${PYTHON:-$(command -v python3)}"
 LOCK="/tmp/messages_export.lock"
-INNER_LOG="/tmp/messages_export_out_$$.log"
-DONE_FILE="/tmp/messages_export_done_$$"
-RUNNER="/tmp/messages_export_runner_$$.sh"
-
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 
 # Single-instance guard
@@ -27,41 +28,23 @@ if [[ -f "$LOCK" ]]; then
     fi
 fi
 echo $$ > "$LOCK"
-trap 'rm -f "$LOCK" "$RUNNER"' EXIT INT TERM
+trap 'rm -f "$LOCK"' EXIT INT TERM
 
-echo "[$(ts)] messages-export: starting incremental export"
+echo "[$(ts)] messages-export: starting incremental export (python: $PYTHON)"
 
-# Write a self-contained runner script that Terminal will execute.
-# Terminal's FDA entitlement is inherited by all processes it spawns.
-cat > "$RUNNER" << INNERSCRIPT
-#!/bin/bash
-python3 '${SCRIPT_DIR}/export_messages.py' > '${INNER_LOG}' 2>&1
-printf '%s' \$? > '${DONE_FILE}'
-exit
-INNERSCRIPT
-chmod +x "$RUNNER"
+# Run directly — no Terminal, no window. Output goes to stdout, which the
+# scheduler (or the LaunchAgent's log file) captures.
+"$PYTHON" "$SCRIPT_DIR/export_messages.py"
+status=$?
 
-# Open in Terminal via Launch Services — works from launchd agent context
-# without requiring osascript Automation permissions.
-open -a Terminal "$RUNNER"
-
-# Poll for the done marker (max 5 min)
-waited=0
-while [[ ! -f "$DONE_FILE" && $waited -lt 300 ]]; do
-    sleep 2
-    (( waited += 2 ))
-done
-
-# Stream Python output to stdout → schedrunner captures it to its log
-if [[ -f "$INNER_LOG" ]]; then
-    cat "$INNER_LOG"
-    rm -f "$INNER_LOG"
-else
-    echo "[$(ts)] WARNING: no output captured from Python script (timed out?)"
+if [[ $status -ne 0 ]]; then
+    real_py="$("$PYTHON" -c 'import sys; print(sys.executable)' 2>/dev/null || echo "$PYTHON")"
+    echo "[$(ts)] export failed (exit $status)."
+    echo "[$(ts)] If this is a Full Disk Access error, grant FDA to the interpreter:"
+    echo "         System Settings → Privacy & Security → Full Disk Access → + →"
+    echo "         $real_py"
+    echo "         (reveal it in Finder: open -R \"$real_py\")"
 fi
 
-exit_status=$(cat "$DONE_FILE" 2>/dev/null | tr -d '[:space:]' || echo "1")
-rm -f "$DONE_FILE"
-
-echo "[$(ts)] messages-export: done (exit $exit_status)"
-[[ "$exit_status" == "0" ]] || exit 1
+echo "[$(ts)] messages-export: done (exit $status)"
+[[ $status -eq 0 ]] || exit 1

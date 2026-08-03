@@ -78,9 +78,13 @@ public struct AppConfig: Sendable {
     public var warmEnabled: Bool
     /// Seconds between warm passes over the cheap pages (DASHBOARD_WARM_INTERVAL, default 60).
     public var warmInterval: TimeInterval
-    /// Seconds between warm passes over the BigQuery-backed pages (afm, afm48). 0 = never
-    /// warm them (the safe default — warming them on a timer adds BigQuery cost that the
-    /// lazy-on-request design otherwise avoids). DASHBOARD_WARM_BQ_INTERVAL to opt in.
+    /// Seconds between warm passes dedicated to the Activity page (AFMProvider / /screen/afm).
+    /// Defaults to 120 s (matching the AFM TTL) so the page is always pre-warmed and never
+    /// stale on open. Set to 0 to opt out. DASHBOARD_WARM_AFM_INTERVAL to override.
+    public var warmAFMInterval: TimeInterval
+    /// Seconds between warm passes over ALL BigQuery-backed pages (afm, afm48, afmLog). 0 =
+    /// never warm them (the safe default for the broader set — warming on a timer adds BQ cost
+    /// the lazy-on-request design avoids). DASHBOARD_WARM_BQ_INTERVAL to opt in.
     public var warmBQInterval: TimeInterval
     /// Seconds between log-failure watcher polls of the sidecar /logs (push an APNs alert
     /// when a service newly fails). DASHBOARD_LOG_WATCH_INTERVAL, default 120; min 30.
@@ -156,6 +160,7 @@ public struct AppConfig: Sendable {
             shipPR: nil,
             warmEnabled: str("DASHBOARD_WARM").map { $0 != "0" && $0.lowercased() != "false" } ?? true,
             warmInterval: str("DASHBOARD_WARM_INTERVAL").flatMap(Double.init) ?? 60,
+            warmAFMInterval: str("DASHBOARD_WARM_AFM_INTERVAL").flatMap(Double.init) ?? 120,
             warmBQInterval: str("DASHBOARD_WARM_BQ_INTERVAL").flatMap(Double.init) ?? 0,
             logWatchInterval: str("DASHBOARD_LOG_WATCH_INTERVAL").flatMap(Double.init) ?? 120,
             liveActivityInterval: str("DASHBOARD_LIVE_ACTIVITY_INTERVAL").flatMap(Double.init) ?? 0,

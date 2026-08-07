@@ -73,6 +73,11 @@
     "path": "/screen/messages"
   },
   {
+    "title": "Housing",
+    "icon": "building.2.fill",
+    "path": "/screen/housing"
+  },
+  {
     "title": "System",
     "icon": "wrench.and.screwdriver.fill",
     "children": [

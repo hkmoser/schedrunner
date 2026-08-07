@@ -68,6 +68,33 @@ def log(msg: str) -> None:
     print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] {msg}", flush=True)
 
 
+def ensure_messages_db_readable() -> None:
+    """Exit with an ACCURATE message if chat.db is missing or unreadable.
+
+    A bare Path.exists() check reports "not found" even when the file is present
+    but blocked by Full Disk Access — which masked a week of silent FDA failures.
+    Actually opening the file surfaces the real cause (FileNotFoundError vs
+    PermissionError) so the log says what's wrong and nothing fails quietly.
+    """
+    try:
+        with open(MESSAGES_DB, "rb") as f:
+            f.read(16)
+    except FileNotFoundError:
+        log("ERROR: ~/Library/Messages/chat.db not found. "
+            "Is this a Mac signed in to Messages?")
+        sys.exit(1)
+    except PermissionError:
+        log("ERROR: cannot read ~/Library/Messages/chat.db — macOS Full Disk "
+            "Access (FDA) is required, and nothing in the launch chain has it.")
+        log("       Grant FDA to whatever starts this job (your scheduler), or "
+            "run it via ./install_launchagent.sh and grant FDA to the interpreter.")
+        log("       Nothing was exported. See README → Full Disk Access.")
+        sys.exit(2)
+    except OSError as e:
+        log(f"ERROR: cannot read ~/Library/Messages/chat.db: {e}")
+        sys.exit(2)
+
+
 def apple_ts_to_str(ns: int) -> str:
     """Convert Apple nanosecond epoch to a human-readable local datetime string."""
     unix_ts = ns / 1_000_000_000 + APPLE_EPOCH
@@ -374,9 +401,7 @@ def save_state(state: dict[str, int]) -> None:
 
 # ── Core export ────────────────────────────────────────────────────────────────
 def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
-    if not MESSAGES_DB.exists():
-        log("ERROR: ~/Library/Messages/chat.db not found")
-        sys.exit(1)
+    ensure_messages_db_readable()
 
     output_dir = find_output_dir()
     log(f"Output directory: {output_dir}")
@@ -474,9 +499,7 @@ def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
 
 def list_conversations() -> None:
     """Print a summary of all conversations, sorted by most recent activity."""
-    if not MESSAGES_DB.exists():
-        log("ERROR: ~/Library/Messages/chat.db not found")
-        sys.exit(1)
+    ensure_messages_db_readable()
 
     shutil.copy2(MESSAGES_DB, TMP_DB)
     conn = sqlite3.connect(TMP_DB)
@@ -528,9 +551,7 @@ def check_contacts() -> None:
         for ident, name in list(contacts.items())[:5]:
             print(f"  {ident} → {name}")
 
-    if not MESSAGES_DB.exists():
-        log("ERROR: ~/Library/Messages/chat.db not found")
-        sys.exit(1)
+    ensure_messages_db_readable()
 
     shutil.copy2(MESSAGES_DB, TMP_DB)
     conn = sqlite3.connect(TMP_DB)

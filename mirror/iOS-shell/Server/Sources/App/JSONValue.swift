@@ -4,7 +4,7 @@ import Foundation
 /// untouched and to assemble the data bag dynamically. This is the Swift analog
 /// of the permissive JSON values the web renderer uses, and it keeps the served
 /// manifest conformant to Shared/schema/manifest.schema.json by construction.
-public indirect enum JSONValue: Codable, Equatable {
+public indirect enum JSONValue: Codable, Equatable, Sendable {
     case string(String)
     case double(Double)
     case int(Int)

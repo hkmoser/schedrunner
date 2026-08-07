@@ -33,6 +33,7 @@ enum Warmer {
             Target(composer: Composer(providers: [SmartHomeLogProvider()]), screen: { $0.smarthomeLog }, expensive: false, afm: false),
             Target(composer: Composer(providers: [DeployProvider()]), screen: { $0.deploy }, expensive: false, afm: false),
             Target(composer: Composer(providers: [MessagesProvider()]), screen: { $0.messages }, expensive: false, afm: false),
+            Target(composer: Composer(providers: [HousingProvider()]), screen: { $0.housing }, expensive: false, afm: false),
             Target(composer: Composer(providers: [LogsProvider()]), screen: { $0.logs }, expensive: false, afm: false),
             Target(composer: Composer(providers: [ReposProvider()]), screen: { $0.repos }, expensive: false, afm: false),
             Target(composer: Composer(providers: [SchedrunnerProvider()]), screen: { $0.schedrunner }, expensive: false, afm: false),

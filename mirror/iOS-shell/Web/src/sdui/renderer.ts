@@ -424,6 +424,14 @@ export function renderNode(node: Node, ctx: Ctx): HTMLElement | null {
       });
       return el;
     }
+    case "propertyCard": {
+      const raw = node.binding ? resolvePath(node.binding, ctx.scope) : undefined;
+      const prop = raw && typeof raw === "object" && !Array.isArray(raw)
+        ? (raw as Record<string, JSONValue>)
+        : {};
+      return renderPropertyCard(prop, ctx);
+    }
+
     default:
       // Unknown component type -> inert placeholder; never throw.
       return placeholder(node.type);
@@ -599,4 +607,239 @@ export function renderScreen(
 ): HTMLElement {
   const el = renderNode(screen, { scope, actions, form });
   return el ?? document.createElement("div");
+}
+
+// Rich property card for the Housing Search page.
+// Bound to an object with: id, address, price, contact, interest, status,
+// actionRequired, listingUrl, photoUrl, mapsUrl, commsCount, commsSnippet.
+function renderPropertyCard(prop: Record<string, JSONValue>, ctx: Ctx): HTMLElement {
+  const id = String(prop.id ?? "");
+  const address = String(prop.address ?? "");
+  const price = String(prop.price ?? "");
+  const contact = String(prop.contact ?? "");
+  const interest = String(prop.interest ?? "medium");
+  const status = String(prop.status ?? "flagged");
+  const actionRequired = prop.actionRequired;
+  const listingUrl = String(prop.listingUrl ?? "");
+  const photoUrl = String(prop.photoUrl ?? "");
+  const mapsUrl = String(prop.mapsUrl ?? "");
+  const commsCount = typeof prop.commsCount === "number" ? prop.commsCount : 0;
+  const commsSnippet = typeof prop.commsSnippet === "string" ? prop.commsSnippet : "";
+
+  const card = document.createElement("div");
+  card.className = "prop-card";
+
+  // Photo or placeholder
+  if (photoUrl) {
+    const img = document.createElement("img");
+    img.className = "prop-photo";
+    img.src = photoUrl;
+    img.alt = address;
+    card.appendChild(img);
+  } else {
+    const ph = document.createElement("div");
+    ph.className = "prop-photo-placeholder";
+    ph.textContent = "🏡";
+    card.appendChild(ph);
+  }
+
+  const body = document.createElement("div");
+  body.className = "prop-body";
+
+  // Address + price row
+  const addrRow = document.createElement("div");
+  addrRow.className = "prop-addr-row";
+  const addrEl = document.createElement("div");
+  addrEl.className = "prop-addr";
+  addrEl.textContent = address;
+  const priceEl = document.createElement("div");
+  priceEl.className = "prop-price";
+  priceEl.textContent = price;
+  addrRow.append(addrEl, priceEl);
+  body.appendChild(addrRow);
+
+  if (contact) {
+    const contactEl = document.createElement("div");
+    contactEl.className = "prop-contact";
+    contactEl.textContent = contact;
+    body.appendChild(contactEl);
+  }
+
+  // Pipeline: Flagged → Scheduling → Scheduled → Visited
+  const STEPS = ["flagged", "scheduling", "scheduled", "visited"];
+  const STEP_LABELS: Record<string, string> = {
+    flagged: "Flagged", scheduling: "Scheduling", scheduled: "Scheduled", visited: "Visited",
+  };
+  const currentIdx = STEPS.indexOf(status);
+  const pipeline = document.createElement("div");
+  pipeline.className = "prop-pipeline";
+  for (let i = 0; i < STEPS.length; i++) {
+    const step = document.createElement("div");
+    step.className = "prop-pipe-step" + (i < currentIdx ? " done" : i === currentIdx ? " active" : "");
+    const dot = document.createElement("div");
+    dot.className = "prop-pipe-dot";
+    const label = document.createElement("div");
+    label.className = "prop-pipe-label";
+    label.textContent = STEP_LABELS[STEPS[i]];
+    step.append(dot, label);
+    pipeline.appendChild(step);
+    if (i < STEPS.length - 1) {
+      const line = document.createElement("div");
+      line.className = "prop-pipe-line";
+      pipeline.appendChild(line);
+    }
+  }
+  body.appendChild(pipeline);
+
+  // Action banner (if the property needs follow-up)
+  if (actionRequired) {
+    const banner = document.createElement("div");
+    banner.className = "prop-action";
+    banner.textContent = typeof actionRequired === "string" && actionRequired ? actionRequired : "Action needed";
+    body.appendChild(banner);
+  }
+
+  // Interest chips + external links
+  const footer = document.createElement("div");
+  footer.className = "prop-footer";
+
+  const chips = document.createElement("div");
+  chips.className = "prop-chips";
+  for (const level of ["high", "medium", "low"]) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "prop-chip" + (interest === level ? " active-" + level : "");
+    chip.textContent = level.charAt(0).toUpperCase() + level.slice(1);
+    chip.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      await fetch("/housing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: [{ key: "id", value: id }, { key: "interest", value: level }] }),
+      });
+      ctx.actions.refresh();
+    });
+    chips.appendChild(chip);
+  }
+  footer.appendChild(chips);
+
+  const links = document.createElement("div");
+  links.className = "prop-links";
+  if (listingUrl) {
+    const a = document.createElement("a");
+    a.href = listingUrl;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = "Listing ↗";
+    links.appendChild(a);
+  }
+  if (mapsUrl) {
+    const a = document.createElement("a");
+    a.href = mapsUrl;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = "Maps ↗";
+    links.appendChild(a);
+  }
+  footer.appendChild(links);
+  body.appendChild(footer);
+
+  // Comms summary
+  if (commsCount > 0 || commsSnippet) {
+    const comms = document.createElement("div");
+    comms.className = "prop-comms";
+    const msgLabel = commsCount > 0 ? `💬 ${commsCount} msg${commsCount !== 1 ? "s" : ""}` : "";
+    comms.textContent = msgLabel && commsSnippet ? `${msgLabel} · ${commsSnippet}` : msgLabel || commsSnippet;
+    body.appendChild(comms);
+  }
+
+  // "Advance to next step" button (not shown for visited/passed)
+  const NEXT_STATUS: Record<string, string> = {
+    flagged: "scheduling", scheduling: "scheduled", scheduled: "visited",
+  };
+  if (status !== "passed" && NEXT_STATUS[status]) {
+    const nextLabel = STEP_LABELS[NEXT_STATUS[status]] ?? "";
+    const advanceBtn = document.createElement("button");
+    advanceBtn.type = "button";
+    advanceBtn.className = "prop-advance";
+    advanceBtn.textContent = `Mark as ${nextLabel}`;
+    advanceBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      await fetch("/housing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: [{ key: "id", value: id }, { key: "status", value: NEXT_STATUS[status] }] }),
+      });
+      ctx.actions.refresh();
+    });
+    body.appendChild(advanceBtn);
+  }
+
+  // Pass button + inline form with tag chips
+  if (status !== "passed") {
+    const PASS_TAGS = ["Too expensive", "Wrong area", "Needs too much work", "Lost bidding", "Changed plans", "Other"];
+    const passToggle = document.createElement("button");
+    passToggle.type = "button";
+    passToggle.className = "prop-pass-btn";
+    passToggle.textContent = "Pass on this property";
+
+    const passForm = document.createElement("div");
+    passForm.className = "prop-pass-form";
+    passForm.hidden = true;
+
+    const tagWrap = document.createElement("div");
+    tagWrap.className = "prop-pass-tags";
+    const selectedTags = new Set<string>();
+    for (const tag of PASS_TAGS) {
+      const tagChip = document.createElement("button");
+      tagChip.type = "button";
+      tagChip.className = "prop-tag-chip";
+      tagChip.textContent = tag;
+      tagChip.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (selectedTags.has(tag)) { selectedTags.delete(tag); tagChip.classList.remove("selected"); }
+        else { selectedTags.add(tag); tagChip.classList.add("selected"); }
+      });
+      tagWrap.appendChild(tagChip);
+    }
+    passForm.appendChild(tagWrap);
+
+    const noteEl = document.createElement("textarea");
+    noteEl.className = "prop-pass-note";
+    noteEl.placeholder = "Optional notes…";
+    noteEl.rows = 2;
+    passForm.appendChild(noteEl);
+
+    const passSubmit = document.createElement("button");
+    passSubmit.type = "button";
+    passSubmit.className = "prop-pass-submit";
+    passSubmit.textContent = "Confirm Pass";
+    passSubmit.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      await fetch("/housing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: [
+            { key: "id", value: id },
+            { key: "status", value: "passed" },
+            { key: "passedTags", value: Array.from(selectedTags).join(", ") },
+            { key: "passedNote", value: noteEl.value },
+          ],
+        }),
+      });
+      ctx.actions.refresh();
+    });
+    passForm.appendChild(passSubmit);
+
+    passToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      passForm.hidden = !passForm.hidden;
+    });
+
+    body.append(passToggle, passForm);
+  }
+
+  card.appendChild(body);
+  return card;
 }

@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-06T10:00:00Z",
+  "theme": {
+    "colors": {
+      "bg": "#0b1020",
+      "bgAccent": "#16204a",
+      "cardBg": "#161c2e",
+      "textPrimary": "#f2f5ff",
+      "textSecondary": "#9aa4c4",
+      "accent": "#6ea8fe",
+      "up": "#43d18a",
+      "down": "#ff6b6b",
+      "divider": "#2a3350"
+    },
+    "fonts": {
+      "family": "-apple-system, system-ui, sans-serif"
+    },
+    "spacing": 12,
+    "radius": 20
+  },
+  "nav": [
+    {
+      "title": "Home",
+      "icon": "house.fill",
+      "path": "/dashboard"
+    },
+    {
+      "title": "Finance",
+      "icon": "dollarsign.circle.fill",
+      "children": [
+        {
+          "title": "Balances",
+          "icon": "creditcard.fill",
+          "path": "/screen/balances"
+        },
+        {
+          "title": "Budget",
+          "icon": "chart.pie.fill",
+          "path": "/screen/budget"
+        },
+        {
+          "title": "GCP Costs",
+          "icon": "cloud.fill",
+          "path": "/screen/gcp_costs"
+        }
+      ]
+    },
+    {
+      "title": "Location",
+      "icon": "map.fill",
+      "children": [
+        {
+          "title": "Activity",
+          "icon": "location.fill",
+          "path": "/screen/afm"
+        },
+        {
+          "title": "Activity Log",
+          "icon": "list.bullet.rectangle",
+          "path": "/screen/afm_log"
+        },
+        {
+          "title": "Last 48h",
+          "icon": "clock.arrow.circlepath",
+          "path": "/screen/afm48"
+        },
+        {
+          "title": "Live Health",
+          "icon": "waveform.path.ecg",
+          "path": "/screen/afm_health"
+        }
+      ]
+    },
+    {
+      "title": "Smart Home",
+      "icon": "house.circle.fill",
+      "children": [
+        {
+          "title": "Overview",
+          "icon": "house.circle.fill",
+          "path": "/screen/smarthome"
+        },
+        {
+          "title": "Event Log",
+          "icon": "list.bullet.rectangle",
+          "path": "/screen/smarthome_log"
+        }
+      ]
+    },
+    {
+      "title": "Messages",
+      "icon": "message.fill",
+      "path": "/screen/messages"
+    },
+    {
+      "title": "Housing",
+      "icon": "building.2.fill",
+      "path": "/screen/housing"
+    },
+    {
+      "title": "System",
+      "icon": "wrench.and.screwdriver.fill",
+      "children": [
+        {
+          "title": "Logs",
+          "icon": "doc.text.fill",
+          "path": "/screen/logs"
+        },
+        {
+          "title": "Sched Logs",
+          "icon": "doc.text.magnifyingglass",
+          "path": "/screen/schedlogs"
+        },
+        {
+          "title": "Schedrunner",
+          "icon": "timer",
+          "path": "/screen/schedrunner"
+        },
+        {
+          "title": "Repos",
+          "icon": "chevron.left.forwardslash.chevron.right",
+          "path": "/screen/repos"
+        },
+        {
+          "title": "BQ Tables",
+          "icon": "tablecells",
+          "path": "/screen/bqtables"
+        },
+        {
+          "title": "Deploy",
+          "icon": "arrow.triangle.2.circlepath",
+          "path": "/screen/deploy"
+        }
+      ]
+    },
+    {
+      "title": "Docs",
+      "icon": "folder.fill",
+      "path": "/screen/docs"
+    },
+    {
+      "title": "Settings",
+      "icon": "gearshape.fill",
+      "children": [
+        {
+          "title": "Preferences",
+          "icon": "slider.horizontal.3",
+          "path": "/screen/config"
+        },
+        {
+          "title": "Secrets & Keys",
+          "icon": "key.fill",
+          "path": "/screen/settings"
+        }
+      ]
+    }
+  ],
+  "data": {
+    "meta": {
+      "updatedAtFormatted": "10:00 AM"
+    },
+    "gcpCosts": {
+      "title": "GCP Costs",
+      "subtitleFormatted": "Last 30 days",
+      "totalFormatted": "$12.34",
+      "rows": [],
+      "ok": true
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": {
+      "background": "$bg"
+    },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": {
+              "spacing": 16,
+              "padding": 16
+            },
+            "children": [
+              {
+                "type": "hstack",
+                "style": {
+                  "align": "center"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "binding": "gcpCosts.title",
+                    "style": {
+                      "font": "largeTitle",
+                      "weight": "bold",
+                      "color": "$textPrimary"
+                    }
+                  },
+                  {
+                    "type": "spacer"
+                  },
+                  {
+                    "type": "text",
+                    "binding": "meta.updatedAtFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    },
+                    "action": {
+                      "type": "refresh"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "gcpCosts.subtitleFormatted",
+                "style": {
+                  "font": "caption",
+                  "color": "$textSecondary"
+                }
+              },
+              {
+                "type": "text",
+                "binding": "gcpCosts.totalFormatted",
+                "style": {
+                  "font": "title",
+                  "weight": "bold",
+                  "color": "$textPrimary"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

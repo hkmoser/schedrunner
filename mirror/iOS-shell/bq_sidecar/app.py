@@ -4209,6 +4209,729 @@ def get_messages():
     }
 
 
+# ----------------------------------------------------------------- housing search page
+# Tracks properties you're evaluating: flagged → scheduling → scheduled → visited → passed.
+# Properties are auto-discovered from Gmail (Zillow/Redfin alerts + agent emails),
+# Drive-synced Messages exports, and macOS Calendar (showing events). User preferences
+# (interest level, pipeline status overrides, pass feedback) are persisted in a local
+# JSON file. Discovery is rate-limited to HOUSING_SCAN_TTL seconds (default 10 min)
+# so IMAP isn't hammered on every 60-second provider refresh.
+
+import uuid as _uuid
+import urllib.parse as _urlparse
+import urllib.request as _urlreq
+import subprocess as _subprocess
+
+_HOUSING_SCAN_TTL = int(os.environ.get("HOUSING_SCAN_TTL", "600"))
+
+_HOUSING_STATUS_ORDER = ["flagged", "scheduling", "scheduled", "visited", "passed"]
+_HOUSING_STATUS_LABELS = {
+    "flagged": "Flagged", "scheduling": "Scheduling",
+    "scheduled": "Scheduled", "visited": "Visited", "passed": "Passed",
+}
+_HOUSING_STATUS_ACTIONS = {
+    "flagged": "Schedule a showing",
+    "scheduling": "Confirm the time",
+    "scheduled": None,
+    "visited": "Log your feedback",
+    "passed": None,
+}
+_HOUSING_NEXT_STATUS = {
+    "flagged": "scheduling",
+    "scheduling": "scheduled",
+    "scheduled": "visited",
+}
+
+# US street address: house number + street name words + street type abbreviation/full
+_RE_US_ADDR = _re.compile(
+    r'\b(\d{1,5})\s+([A-Z][a-zA-Z]+(?:[\s\-][A-Z][a-zA-Z]+){0,4})\s+'
+    r'(St(?:reet)?|Ave(?:nue)?|Blvd|Boulevard|Dr(?:ive)?|Rd|Road|'
+    r'Ln|Lane|Way|Ct|Court|Pl(?:ace)?|Ter(?:race)?|Cir(?:cle)?|'
+    r'Loop|Trail|Pkwy|Parkway|Hwy|Highway|Fwy|Freeway)\b',
+)
+_RE_PRICE = _re.compile(r'\$\s*(\d[\d,]*(?:\.\d+)?(?:K|k|M|m)?)\b')
+
+# Street type normalisation for address deduplication
+_ADDR_ABBR = [
+    ("street", "st"), ("avenue", "ave"), ("boulevard", "blvd"), ("drive", "dr"),
+    ("road", "rd"), ("lane", "ln"), ("court", "ct"), ("place", "pl"),
+    ("terrace", "ter"), ("circle", "cir"), ("parkway", "pkwy"), ("highway", "hwy"),
+]
+
+
+def _housing_data_path():
+    env = os.environ.get("HOUSING_DATA")
+    return os.path.expanduser(env) if env else os.path.expanduser("~/housing_properties.json")
+
+
+def _load_housing():
+    """Return the housing store as {properties: [...], _last_scan: float}."""
+    path = _housing_data_path()
+    if not os.path.exists(path):
+        return {"properties": [], "_last_scan": 0.0}
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        # Migrate old bare-list format
+        if isinstance(data, list):
+            return {"properties": data, "_last_scan": 0.0}
+        if isinstance(data, dict):
+            data.setdefault("properties", [])
+            data.setdefault("_last_scan", 0.0)
+            return data
+    except Exception:
+        pass
+    return {"properties": [], "_last_scan": 0.0}
+
+
+def _save_housing(store):
+    path = _housing_data_path()
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(store, f, indent=2, ensure_ascii=False)
+
+
+# ── Address utilities ──────────────────────────────────────────────────────
+
+def _extract_us_addr(text):
+    """Extract the first US street address from text. Returns normalised string or None."""
+    if not text:
+        return None
+    m = _RE_US_ADDR.search(text)
+    return " ".join(m.group(0).split()) if m else None
+
+
+def _normalize_addr_key(addr):
+    """Reduce address to stable lookup key: lowercase number+street, no city/state."""
+    if not addr:
+        return ""
+    street = addr.split(",")[0].strip().lower()
+    for full, abbr in _ADDR_ABBR:
+        street = _re.sub(r'\b' + full + r'\b', abbr, street)
+    return _re.sub(r'\s+', ' ', street).strip()
+
+
+def _extract_price(text):
+    """Extract first dollar price from text. Returns int or None."""
+    if not text:
+        return None
+    m = _RE_PRICE.search(text)
+    if not m:
+        return None
+    raw = m.group(1).replace(",", "")
+    try:
+        if raw.lower().endswith("k"):
+            return int(float(raw[:-1]) * 1_000)
+        if raw.lower().endswith("m"):
+            return int(float(raw[:-1]) * 1_000_000)
+        return int(float(raw))
+    except (ValueError, TypeError):
+        return None
+
+
+def _format_price(price):
+    if price is None:
+        return None
+    try:
+        return f"${int(price):,}"
+    except (TypeError, ValueError):
+        return str(price)
+
+
+def _showing_formatted(iso_str):
+    if not iso_str:
+        return None
+    try:
+        dt = datetime.datetime.fromisoformat(iso_str)
+        return dt.strftime("%a %b %-d · %-I:%M %p")
+    except Exception:
+        return iso_str
+
+
+def _maps_url(address):
+    if not address:
+        return None
+    return f"https://maps.apple.com/?address={_urlparse.quote(address)}"
+
+
+# ── Gmail housing scan ─────────────────────────────────────────────────────
+
+def _parse_housing_email(from_addr, subject, body_text, received_at):
+    """Parse one email into a property discovery dict. Returns None if no address found."""
+    from_lower = (from_addr or "").lower()
+    is_zillow = "zillow.com" in from_lower
+    is_redfin = "redfin.com" in from_lower
+
+    addr = _extract_us_addr(subject) or _extract_us_addr(body_text or "")
+    if not addr:
+        return None
+
+    price = _extract_price(subject) or _extract_price(body_text or "")
+
+    # Contact: real name from agent From header
+    contact = None
+    m = _re.match(r'^"?([^"<@\n]{2,50})"?\s*<', from_addr or "")
+    if m:
+        cand = m.group(1).strip().strip('"').strip("'")
+        # Skip generic senders like "Zillow" or "Redfin"
+        if cand and cand.lower() not in ("zillow", "redfin", "realtor.com", "homes.com"):
+            contact = cand
+
+    # Listing URL from body
+    listing_url = None
+    if is_zillow:
+        m2 = _re.search(r'https?://(?:www\.)?zillow\.com/homedetails/[^\s"<>]+', body_text or "")
+        if m2:
+            listing_url = m2.group(0).rstrip(".,;)")
+    elif is_redfin:
+        m2 = _re.search(r'https?://(?:www\.)?redfin\.com/[A-Z]{2}/[^\s"<>]+/home/\d+', body_text or "")
+        if m2:
+            listing_url = m2.group(0).rstrip(".,;)")
+
+    # Photo URL from CDN links in body
+    photo_url = None
+    for pattern in (
+        r'https?://photos\.zillowstatic\.com/fp/[^\s"\'<>]+\.(?:jpg|jpeg|webp)',
+        r'https?://ssl\.cdn-redfin\.com/[^\s"\'<>]+\.(?:jpg|jpeg|webp)',
+        r'https?://[^\s"\'<>]+\.(?:jpg|jpeg)(?:\?[^\s"\'<>]*)?',
+    ):
+        m3 = _re.search(pattern, body_text or "")
+        if m3:
+            photo_url = m3.group(0).rstrip(".,;)")
+            break
+
+    source = "zillow" if is_zillow else "redfin" if is_redfin else "email"
+    return {
+        "address": addr, "price": price, "listingUrl": listing_url,
+        "photoUrl": photo_url, "contact": contact,
+        "source": source, "receivedAt": received_at,
+    }
+
+
+def _gmail_housing_scan(user, pw):
+    """Scan one Gmail account for housing-related emails. Returns list of property dicts."""
+    import imaplib
+    import email
+    from email.header import decode_header, make_header
+
+    def _dh(hdr):
+        try:
+            return str(make_header(decode_header(hdr or ""))).strip()
+        except Exception:
+            return hdr or ""
+
+    results = []
+    M = None
+    try:
+        M = imaplib.IMAP4_SSL("imap.gmail.com", timeout=12)
+        M.login(user, pw)
+        M.select("INBOX", readonly=True)
+
+        # Server-side searches (fast — no data transfer)
+        seen_uids: set = set()
+        for criterion in [
+            '(FROM "zillow.com")',
+            '(FROM "redfin.com")',
+            '(SUBJECT "showing")',
+            '(SUBJECT "open house")',
+            '(SUBJECT "new listing")',
+            '(SUBJECT "price drop")',
+            '(SUBJECT "price reduced")',
+            '(SUBJECT "new home for you")',
+            '(SUBJECT "schedule a tour")',
+        ]:
+            try:
+                typ, data = M.search(None, criterion)
+                if typ == "OK" and data and data[0]:
+                    seen_uids.update(data[0].split())
+            except Exception:
+                continue
+
+        if not seen_uids:
+            return results
+
+        # Fetch most-recent 50, newest first
+        sorted_uids = sorted(seen_uids, key=lambda x: int(x), reverse=True)[:50]
+
+        for uid in sorted_uids:
+            try:
+                # Fetch first 5 KB of the whole message (headers + start of body)
+                typ, raw = M.fetch(uid, "(BODY.PEEK[]<0.5000>)")
+                if typ != "OK" or not raw or not isinstance(raw[0], tuple):
+                    continue
+                msg_bytes = raw[0][1]
+                if not isinstance(msg_bytes, bytes):
+                    continue
+                msg = email.message_from_bytes(msg_bytes)
+                from_addr = _dh(msg.get("From", ""))
+                subject = _dh(msg.get("Subject", ""))
+                date_str = msg.get("Date", "")
+                received_at = None
+                try:
+                    received_at = email.utils.parsedate_to_datetime(date_str).isoformat()
+                except Exception:
+                    pass
+
+                # Collect body text (plain or raw payload from truncated message)
+                body_text = ""
+                if msg.is_multipart():
+                    for part in msg.walk():
+                        ct = part.get_content_type()
+                        if ct in ("text/plain", "text/html"):
+                            payload = part.get_payload(decode=True)
+                            if payload:
+                                body_text += payload.decode(errors="replace")[:3000]
+                            if ct == "text/plain":
+                                break
+                else:
+                    payload = msg.get_payload(decode=True)
+                    if payload:
+                        body_text = payload.decode(errors="replace")
+                    elif isinstance(msg.get_payload(), str):
+                        body_text = msg.get_payload()
+
+                prop = _parse_housing_email(from_addr, subject, body_text, received_at)
+                if prop:
+                    results.append(prop)
+            except Exception:
+                continue
+    except Exception:
+        pass
+    finally:
+        if M is not None:
+            try:
+                M.logout()
+            except Exception:
+                pass
+    return results
+
+
+# ── Messages address scan ─────────────────────────────────────────────────
+
+def _messages_scan_addresses(all_messages):
+    """Scan Drive-synced message records for US address mentions.
+    Returns list of {address, contact, receivedAt, source}."""
+    results = []
+    seen: set = set()
+    for msg in all_messages:
+        body = (msg.get("text") or msg.get("body") or msg.get("message") or "")
+        addr = _extract_us_addr(body)
+        if not addr:
+            continue
+        key = _normalize_addr_key(addr)
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        handle = (msg.get("sender") or msg.get("handle") or msg.get("from") or "")
+        dt_raw = msg.get("date") or msg.get("ts") or msg.get("timestamp")
+        received_at = None
+        try:
+            dt = _parse_iso_or_epoch(dt_raw)
+            if dt:
+                received_at = dt.isoformat()
+        except Exception:
+            pass
+        results.append({"address": addr, "contact": handle or None,
+                         "receivedAt": received_at, "source": "message"})
+    return results
+
+
+# ── macOS Calendar showing scan ───────────────────────────────────────────
+
+_CALENDAR_SCRIPT = """\
+tell application "Calendar"
+    set res to {}
+    set checkStart to current date
+    set checkEnd to (current date) + 3888000
+    repeat with cal in every calendar
+        try
+            set evts to (every event of cal whose start date > checkStart and start date < checkEnd)
+            repeat with evt in evts
+                set ttl to (summary of evt) as string
+                set isHousing to false
+                ignoring case
+                    if ttl contains "showing" or ttl contains "tour" or ttl contains "open house" or ttl contains "walkthrough" or ttl contains "walk-through" then
+                        set isHousing to true
+                    end if
+                end ignoring
+                if isHousing then
+                    set loc to ""
+                    try
+                        set loc to (location of evt) as string
+                    end try
+                    if loc is missing value then set loc to ""
+                    set startStr to ((start date of evt) as string)
+                    set end of res to (ttl & "||" & loc & "||" & startStr)
+                end if
+            end repeat
+        end try
+    end repeat
+    set output to ""
+    repeat with i from 1 to count of res
+        set output to output & item i of res & linefeed
+    end repeat
+    return output
+end tell
+"""
+
+
+def _calendar_showings_mac():
+    """Query macOS Calendar.app via AppleScript for upcoming showing events (next 45 days).
+    Returns list of {address, showingAt (ISO), title, source}. Returns [] on any failure
+    (Calendar access not granted, not macOS, etc.)."""
+    try:
+        out = _subprocess.run(
+            ["osascript", "-e", _CALENDAR_SCRIPT],
+            capture_output=True, text=True, timeout=15,
+        )
+        if out.returncode != 0 or not out.stdout.strip():
+            return []
+        showings = []
+        for line in out.stdout.strip().splitlines():
+            parts = line.split("||")
+            if len(parts) < 3:
+                continue
+            title, location, date_str = parts[0].strip(), parts[1].strip(), parts[2].strip()
+            if not location:
+                continue
+            addr = _extract_us_addr(location) or location.strip()
+            showing_at = None
+            # macOS date string: "Thursday, July 10, 2025 at 10:00:00 AM"
+            for fmt in ("%A, %B %d, %Y at %I:%M:%S %p", "%A, %B %d, %Y at %I:%M %p"):
+                try:
+                    showing_at = datetime.datetime.strptime(date_str, fmt).isoformat()
+                    break
+                except ValueError:
+                    continue
+            if addr:
+                showings.append({"address": addr, "showingAt": showing_at,
+                                  "title": title, "source": "calendar"})
+        return showings
+    except Exception:
+        return []
+
+
+# ── Zillow enrichment ─────────────────────────────────────────────────────
+
+def _zillow_enrich(address, rapidapi_key):
+    """Look up a property address via Zillow RapidAPI. Returns enrichment dict or None."""
+    if not rapidapi_key or not address:
+        return None
+    host = "zillow-com1.p.rapidapi.com"
+    loc = _urlparse.quote(address)
+    url = f"https://{host}/propertyExtendedSearch?location={loc}&page=1"
+    try:
+        req = _urlreq.Request(url, headers={
+            "X-RapidAPI-Key": rapidapi_key,
+            "X-RapidAPI-Host": host,
+        })
+        with _urlreq.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode())
+        props = data.get("props") or []
+        if not props:
+            return None
+        p = props[0]
+        hdp = p.get("detailUrl") or p.get("hdpUrl") or ""
+        listing_url = ("https://www.zillow.com" + hdp) if hdp and not hdp.startswith("http") else (hdp or None)
+        return {
+            "price": p.get("price") or p.get("zestimate"),
+            "photoUrl": p.get("imgSrc"),
+            "listingUrl": listing_url,
+            "zpid": p.get("zpid"),
+        }
+    except Exception:
+        return None
+
+
+# ── Merge discovered into stored registry ─────────────────────────────────
+
+def _merge_housing(stored_props, discovered):
+    """Merge auto-discovered properties into the stored registry.
+    Auto-discovered facts (price, photo, contact, listingUrl, showingAt) fill in blanks;
+    user preferences (interest, status overrides, passedTags, passedFeedback) are never
+    overwritten. New properties get auto-inferred initial values."""
+    index = {}
+    for p in stored_props:
+        key = _normalize_addr_key(p.get("address", ""))
+        if key:
+            index[key] = p
+
+    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+    for disc in discovered:
+        addr = disc.get("address", "")
+        if not addr:
+            continue
+        key = _normalize_addr_key(addr)
+        if not key:
+            continue
+
+        source = disc.get("source", "unknown")
+
+        if key in index:
+            p = index[key]
+            # Fill in blank auto-discovered fields; never overwrite user-set data
+            if disc.get("price") and not p.get("price"):
+                p["price"] = disc["price"]
+            if disc.get("photoUrl") and not p.get("photoUrl"):
+                p["photoUrl"] = disc["photoUrl"]
+            if disc.get("listingUrl") and not p.get("listingUrl"):
+                p["listingUrl"] = disc["listingUrl"]
+            if disc.get("contact") and not p.get("contact"):
+                p["contact"] = disc["contact"]
+            # Calendar showings: update showing time and advance pipeline status only
+            if disc.get("showingAt"):
+                p["showingAt"] = disc["showingAt"]
+                if p.get("status") not in ("visited", "passed"):
+                    p["status"] = "scheduled"
+            p.setdefault("_sources", [])
+            if source not in p["_sources"]:
+                p["_sources"].append(source)
+            p["updatedAt"] = now_iso
+        else:
+            # New property — interest is always None until the user sets it manually
+            has_showing = bool(disc.get("showingAt"))
+            status = "scheduled" if has_showing or source == "calendar" else "flagged"
+            new_p = {
+                "id": str(_uuid.uuid4()),
+                "address": addr,
+                "price": disc.get("price"),
+                "listingUrl": disc.get("listingUrl") or "",
+                "photoUrl": disc.get("photoUrl") or "",
+                "contact": disc.get("contact") or "",
+                "interest": None,
+                "status": status,
+                "showingAt": disc.get("showingAt"),
+                "notes": "",
+                "passedTags": [],
+                "passedFeedback": "",
+                "addedAt": now_iso,
+                "updatedAt": now_iso,
+                "_sources": [source],
+            }
+            stored_props.append(new_p)
+            index[key] = new_p
+
+    return stored_props
+
+
+# ── Comms count ───────────────────────────────────────────────────────────
+
+def _housing_comms(address, all_messages):
+    """Count Drive-synced messages that mention this address. Returns (count, latest_snippet)."""
+    if not address or not all_messages:
+        return 0, None
+    street = address.split(",")[0].strip()
+    tokens = [t.lower() for t in street.split() if len(t) > 2][:3]
+    if not tokens:
+        return 0, None
+    count = 0
+    latest_text = None
+    latest_dt = datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
+    for msg in all_messages:
+        body = (msg.get("text") or msg.get("body") or msg.get("message") or "").lower()
+        if all(tok in body for tok in tokens):
+            count += 1
+            dt = _parse_iso_or_epoch(msg.get("date") or msg.get("ts") or msg.get("timestamp"))
+            if dt and dt > latest_dt:
+                latest_dt = dt
+                raw = (msg.get("text") or msg.get("body") or msg.get("message") or "").strip()
+                latest_text = raw[:90]
+    return count, (latest_text if count else None)
+
+
+# ── Main endpoints ────────────────────────────────────────────────────────
+
+def get_housing():
+    """Housing search. Auto-discovers properties from Gmail, Drive-synced messages, and
+    macOS Calendar showings. Merges with stored user preferences. Enriches with Zillow
+    when RAPIDAPI_KEY is set. Discovery scan is rate-limited to HOUSING_SCAN_TTL (default
+    10 min) so Gmail IMAP isn't hammered on every 60-second provider refresh."""
+    store = _load_housing()
+    props = store.get("properties", [])
+    now = _time.time()
+
+    # Load messages for both comms scanning and address extraction
+    all_messages = []
+    d = _messages_dir()
+    if d and os.path.isdir(d):
+        import glob as _g2
+        files = sorted(_g2.glob(os.path.join(d, "*.jsonl")) + _g2.glob(os.path.join(d, "*.json")),
+                       key=os.path.getmtime, reverse=True)[:5]
+        for fpath in files:
+            all_messages.extend(_load_message_records(fpath))
+
+    if now - store.get("_last_scan", 0.0) > _HOUSING_SCAN_TTL:
+        discovered = []
+
+        # 1. Gmail — Zillow/Redfin alerts and showing emails
+        for user, pw in _gmail_accounts():
+            try:
+                discovered.extend(_gmail_housing_scan(user, pw))
+            except Exception:
+                pass
+
+        # 2. Drive-synced messages — US address extraction
+        discovered.extend(_messages_scan_addresses(all_messages))
+
+        # 3. macOS Calendar — upcoming showing events
+        try:
+            discovered.extend(_calendar_showings_mac())
+        except Exception:
+            pass
+
+        # 4. Zillow enrichment for new/price-less discovered properties
+        rapidapi_key = os.environ.get("RAPIDAPI_KEY")
+        if rapidapi_key:
+            for disc in discovered:
+                if not disc.get("price") or not disc.get("photoUrl"):
+                    try:
+                        enriched = _zillow_enrich(disc.get("address", ""), rapidapi_key)
+                        if enriched:
+                            if not disc.get("price"):
+                                disc["price"] = enriched.get("price")
+                            if not disc.get("photoUrl"):
+                                disc["photoUrl"] = enriched.get("photoUrl")
+                            if not disc.get("listingUrl"):
+                                disc["listingUrl"] = enriched.get("listingUrl")
+                    except Exception:
+                        pass
+
+        props = _merge_housing(props, discovered)
+        store["properties"] = props
+        store["_last_scan"] = now
+        _save_housing(store)
+
+    # Format response
+    active, passed_props, showings = [], [], []
+
+    for p in props:
+        address = p.get("address", "")
+        status = p.get("status", "flagged")
+        interest = p.get("interest", "medium")
+
+        parts = [s.strip() for s in address.split(",")]
+        street = parts[0] if parts else address
+        city_state = ", ".join(parts[1:]) if len(parts) > 1 else ""
+
+        status_idx = _HOUSING_STATUS_ORDER.index(status) if status in _HOUSING_STATUS_ORDER else 0
+        next_status = _HOUSING_NEXT_STATUS.get(status)
+        comm_count, latest_comm = _housing_comms(address, all_messages)
+        price = p.get("price")
+        showing_at = p.get("showingAt")
+
+        record = {
+            "id": p.get("id", ""),
+            "address": street,
+            "addressLine2": city_state,
+            "fullAddress": address,
+            "price": price,
+            "priceFormatted": _format_price(price),
+            "listingUrl": p.get("listingUrl") or None,
+            "photoUrl": p.get("photoUrl") or None,
+            "contact": p.get("contact") or None,
+            "interest": interest,
+            "status": status,
+            "statusLabel": _HOUSING_STATUS_LABELS.get(status, status.title()),
+            "statusIndex": status_idx,
+            "nextStatus": next_status,
+            "nextStatusLabel": _HOUSING_STATUS_LABELS.get(next_status) if next_status else None,
+            "actionNeeded": _HOUSING_STATUS_ACTIONS.get(status),
+            "showingAt": showing_at,
+            "showingAtFormatted": _showing_formatted(showing_at),
+            "mapsUrl": _maps_url(address),
+            "commsCount": comm_count,
+            "commsFormatted": (f"{comm_count} msg{'s' if comm_count != 1 else ''}" if comm_count else None),
+            "latestComm": latest_comm,
+            "notes": p.get("notes") or "",
+            "passedTags": p.get("passedTags") or [],
+            "passedFeedback": p.get("passedFeedback") or "",
+            "isPassed": status == "passed",
+            "sources": p.get("_sources") or [],
+        }
+
+        if status == "passed":
+            passed_props.append(record)
+        else:
+            active.append(record)
+            if status == "scheduled" and showing_at:
+                showings.append(record)
+
+    _interest_rank = {"high": 0, "medium": 1, "low": 2}
+    active.sort(key=lambda p: (_interest_rank.get(p["interest"], 9), p["address"].lower()))
+    showings.sort(key=lambda p: p.get("showingAt") or "")
+
+    unrated = [p for p in active if p["interest"] not in ("high", "medium", "low")]
+    high = [p for p in active if p["interest"] == "high"]
+    medium = [p for p in active if p["interest"] == "medium"]
+    low = [p for p in active if p["interest"] == "low"]
+
+    last_scan_fmt = None
+    try:
+        ts = store.get("_last_scan", 0)
+        if ts:
+            last_scan_fmt = datetime.datetime.fromtimestamp(ts).strftime("%-I:%M %p")
+    except Exception:
+        pass
+
+    subtitle_parts = []
+    if active:
+        subtitle_parts.append(f"{len(active)} active")
+    if passed_props:
+        subtitle_parts.append(f"{len(passed_props)} passed")
+    if last_scan_fmt:
+        subtitle_parts.append(f"synced {last_scan_fmt}")
+
+    return {
+        "title": "Housing",
+        "subtitleFormatted": " · ".join(subtitle_parts) if subtitle_parts else "Scanning email & calendar…",
+        "newProperties": unrated,
+        "newLabel": "NEW — TAP TO RATE" if unrated else None,
+        "highProperties": high,
+        "highLabel": "HIGH INTEREST" if high else None,
+        "mediumProperties": medium,
+        "mediumLabel": "MEDIUM INTEREST" if medium else None,
+        "lowProperties": low,
+        "lowLabel": "LOW INTEREST" if low else None,
+        "passedProperties": passed_props,
+        "showings": showings,
+        "showingsEmptyFormatted": "No showings scheduled" if not showings else None,
+        "activeCount": len(active),
+        "passedCount": len(passed_props),
+        "ok": True,
+    }
+
+
+def upsert_housing(items):
+    """Update user preferences for an existing property (interest, status, passedTags,
+    passedFeedback). id is required. Properties are created automatically by the discovery
+    scan — this endpoint only handles user-preference overrides."""
+    store = _load_housing()
+    props = store.get("properties", [])
+    data = {it["key"]: it.get("value") for it in items if isinstance(it, dict) and it.get("key")}
+
+    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    prop_id = data.get("id")
+
+    if prop_id:
+        for p in props:
+            if p.get("id") == prop_id:
+                for k, v in data.items():
+                    if k == "id":
+                        continue
+                    if k in ("passedTags",) and isinstance(v, str):
+                        p[k] = [t.strip() for t in v.split(",") if t.strip()]
+                    elif v is None or v == "":
+                        pass  # leave unchanged
+                    else:
+                        p[k] = v
+                p["updatedAt"] = now_iso
+                break
+
+    store["properties"] = props
+    _save_housing(store)
+    return {"ok": True}
+
+
 # ---------------------------------------------------------------- secrets / Settings page
 # Enter config (incl. secrets) through the app instead of editing Deploy/.env. Stored in a
 # pluggable secrets backend: a 0600 local file by default, or Google Secret Manager when the
@@ -4568,6 +5291,7 @@ class Handler(BaseHTTPRequestHandler):
             "/bqtables": lambda: get_bqtables(qs.get("dataset", [""])[0], qs.get("table", [""])[0],
                                               qs.get("view", ["columns"])[0]),
             "/gcp_costs": get_gcp_costs,
+            "/housing": get_housing,
         }
         fn = handlers.get(path)
         if not fn:
@@ -4580,7 +5304,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         path = self.path.split("?", 1)[0]
         qs = _urlparse.parse_qs(_urlparse.urlparse(self.path).query)
-        writers = {"/config": upsert_config, "/known_locs": upsert_known_loc, "/settings": upsert_settings}
+        writers = {"/config": upsert_config, "/known_locs": upsert_known_loc, "/settings": upsert_settings,
+                   "/housing": upsert_housing}
         try:
             length = int(self.headers.get("Content-Length", "0"))
             body = json.loads(self.rfile.read(length) or b"{}")

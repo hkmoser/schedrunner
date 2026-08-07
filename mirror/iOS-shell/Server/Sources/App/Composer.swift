@@ -28,6 +28,7 @@ public struct Templates: Sendable {
     public let bqtables: JSONValue
     public let gcpCosts: JSONValue
     public let messages: JSONValue
+    public let housing: JSONValue
     public let deploy: JSONValue
     public let nav: JSONValue
 
@@ -57,6 +58,7 @@ public struct Templates: Sendable {
             bqtables: try loadResource("bqtables"),
             gcpCosts: try loadResource("gcp_costs"),
             messages: try loadResource("messages"),
+            housing: try loadResource("housing"),
             deploy: try loadResource("deploy"),
             nav: try loadResource("nav")
         )

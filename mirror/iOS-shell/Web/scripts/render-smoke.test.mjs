@@ -113,7 +113,7 @@ assert.ok(
 );
 // Section headers are not clickable destinations (no path) — only leaves are.
 const items = [...drawer.querySelectorAll(".drawer-item")];
-assert.equal(items.length, 19, "nineteen leaf links (sections excluded)");
+assert.equal(items.length, 21, "twenty-one leaf links (sections excluded)");
 // The active leaf is highlighted.
 const active = drawer.querySelector(".drawer-item.active");
 assert.ok(active && (active.textContent ?? "").includes("Balances"), "active leaf marked");

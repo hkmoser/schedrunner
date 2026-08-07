@@ -43,6 +43,19 @@ const ICONS: Record<string, string> = {
   "message.fill": "💬",
   "paperplane.fill": "📤",
   "envelope.fill": "✉️",
+  "building.2.fill": "🏘️",
+  "creditcard.fill": "💳",
+  "chart.pie.fill": "📊",
+  "list.bullet.rectangle": "📋",
+  "clock.arrow.circlepath": "🕐",
+  "waveform.path.ecg": "📡",
+  "house.circle.fill": "🏠",
+  "location.fill": "📍",
+  "timer": "⏱️",
+  "key.fill": "🔑",
+  "slider.horizontal.3": "⚙️",
+  "arrow.triangle.2.circlepath": "♻️",
+  "doc.text.magnifyingglass": "🔍",
 };
 
 export function iconGlyph(name: string | undefined): string {

@@ -1,0 +1,565 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-06T10:00:00Z",
+  "theme": {
+    "colors": {
+      "bg": "#0b1020",
+      "bgAccent": "#16204a",
+      "cardBg": "#161c2e",
+      "textPrimary": "#f2f5ff",
+      "textSecondary": "#9aa4c4",
+      "accent": "#6ea8fe",
+      "up": "#43d18a",
+      "down": "#ff6b6b",
+      "divider": "#2a3350"
+    },
+    "fonts": {
+      "family": "-apple-system, system-ui, sans-serif"
+    },
+    "spacing": 12,
+    "radius": 20
+  },
+  "nav": [
+    {
+      "title": "Home",
+      "icon": "house.fill",
+      "path": "/dashboard"
+    },
+    {
+      "title": "Finance",
+      "icon": "dollarsign.circle.fill",
+      "children": [
+        {
+          "title": "Balances",
+          "icon": "creditcard.fill",
+          "path": "/screen/balances"
+        },
+        {
+          "title": "Budget",
+          "icon": "chart.pie.fill",
+          "path": "/screen/budget"
+        },
+        {
+          "title": "GCP Costs",
+          "icon": "cloud.fill",
+          "path": "/screen/gcp_costs"
+        }
+      ]
+    },
+    {
+      "title": "Location",
+      "icon": "map.fill",
+      "children": [
+        {
+          "title": "Activity",
+          "icon": "location.fill",
+          "path": "/screen/afm"
+        },
+        {
+          "title": "Activity Log",
+          "icon": "list.bullet.rectangle",
+          "path": "/screen/afm_log"
+        },
+        {
+          "title": "Last 48h",
+          "icon": "clock.arrow.circlepath",
+          "path": "/screen/afm48"
+        },
+        {
+          "title": "Live Health",
+          "icon": "waveform.path.ecg",
+          "path": "/screen/afm_health"
+        }
+      ]
+    },
+    {
+      "title": "Smart Home",
+      "icon": "house.circle.fill",
+      "children": [
+        {
+          "title": "Overview",
+          "icon": "house.circle.fill",
+          "path": "/screen/smarthome"
+        },
+        {
+          "title": "Event Log",
+          "icon": "list.bullet.rectangle",
+          "path": "/screen/smarthome_log"
+        }
+      ]
+    },
+    {
+      "title": "Messages",
+      "icon": "message.fill",
+      "path": "/screen/messages"
+    },
+    {
+      "title": "Housing",
+      "icon": "building.2.fill",
+      "path": "/screen/housing"
+    },
+    {
+      "title": "System",
+      "icon": "wrench.and.screwdriver.fill",
+      "children": [
+        {
+          "title": "Logs",
+          "icon": "doc.text.fill",
+          "path": "/screen/logs"
+        },
+        {
+          "title": "Sched Logs",
+          "icon": "doc.text.magnifyingglass",
+          "path": "/screen/schedlogs"
+        },
+        {
+          "title": "Schedrunner",
+          "icon": "timer",
+          "path": "/screen/schedrunner"
+        },
+        {
+          "title": "Repos",
+          "icon": "chevron.left.forwardslash.chevron.right",
+          "path": "/screen/repos"
+        },
+        {
+          "title": "BQ Tables",
+          "icon": "tablecells",
+          "path": "/screen/bqtables"
+        },
+        {
+          "title": "Deploy",
+          "icon": "arrow.triangle.2.circlepath",
+          "path": "/screen/deploy"
+        }
+      ]
+    },
+    {
+      "title": "Docs",
+      "icon": "folder.fill",
+      "path": "/screen/docs"
+    },
+    {
+      "title": "Settings",
+      "icon": "gearshape.fill",
+      "children": [
+        {
+          "title": "Preferences",
+          "icon": "slider.horizontal.3",
+          "path": "/screen/config"
+        },
+        {
+          "title": "Secrets & Keys",
+          "icon": "key.fill",
+          "path": "/screen/settings"
+        }
+      ]
+    }
+  ],
+  "data": {
+    "meta": {
+      "updatedAtFormatted": "10:00 AM"
+    },
+    "housing": {
+      "title": "Housing",
+      "subtitleFormatted": "2 active \u00b7 synced 10:00 AM",
+      "newLabel": "NEW \u2014 TAP TO RATE",
+      "newProperties": [
+        {
+          "id": "aaa-111",
+          "address": "42 Elm St, Philadelphia, PA 19103",
+          "price": 475000,
+          "priceFormatted": "$475,000",
+          "listingUrl": "https://www.redfin.com/PA/Philadelphia/42-Elm-St",
+          "photoUrl": "",
+          "contact": "Jane Agent",
+          "interest": null,
+          "status": "flagged",
+          "showingAt": null,
+          "showingAtFormatted": null,
+          "mapsUrl": "https://maps.apple.com/?address=42+Elm+St+Philadelphia+PA",
+          "actionRequired": null,
+          "commsCount": 3,
+          "commsFormatted": "3 msgs",
+          "latestComm": "Are you available Thursday?",
+          "passedTags": [],
+          "passedFeedback": "",
+          "isPassed": false,
+          "sources": [
+            "email"
+          ]
+        }
+      ],
+      "highLabel": "HIGH INTEREST",
+      "highProperties": [
+        {
+          "id": "bbb-222",
+          "address": "99 Oak Ave, Philadelphia, PA 19104",
+          "price": 525000,
+          "priceFormatted": "$525,000",
+          "listingUrl": "https://www.zillow.com/homes/99-Oak-Ave",
+          "photoUrl": "",
+          "contact": "Bob Realtor",
+          "interest": "high",
+          "status": "scheduled",
+          "showingAt": "2026-08-10T14:00:00",
+          "showingAtFormatted": "Sun Aug 10 \u00b7 2:00 PM",
+          "mapsUrl": "https://maps.apple.com/?address=99+Oak+Ave+Philadelphia+PA",
+          "actionRequired": null,
+          "commsCount": 7,
+          "commsFormatted": "7 msgs",
+          "latestComm": "Confirmed for Sunday at 2pm",
+          "passedTags": [],
+          "passedFeedback": "",
+          "isPassed": false,
+          "sources": [
+            "email",
+            "calendar"
+          ]
+        }
+      ],
+      "mediumLabel": null,
+      "mediumProperties": [],
+      "lowLabel": null,
+      "lowProperties": [],
+      "passedProperties": [
+        {
+          "id": "ccc-333",
+          "address": "7 Pine Rd, Ardmore, PA 19003",
+          "price": 410000,
+          "priceFormatted": "$410,000",
+          "listingUrl": "",
+          "photoUrl": "",
+          "contact": "",
+          "interest": "low",
+          "status": "passed",
+          "showingAt": null,
+          "showingAtFormatted": null,
+          "mapsUrl": "https://maps.apple.com/?address=7+Pine+Rd+Ardmore+PA",
+          "actionRequired": null,
+          "commsCount": 1,
+          "commsFormatted": "1 msg",
+          "latestComm": null,
+          "passedTags": [
+            "Wrong area"
+          ],
+          "passedFeedback": "Too far from work",
+          "isPassed": true,
+          "sources": [
+            "email"
+          ]
+        }
+      ],
+      "showings": [
+        {
+          "id": "bbb-222",
+          "address": "99 Oak Ave",
+          "addressLine2": "Philadelphia, PA 19104",
+          "showingAtFormatted": "Sun Aug 10 \u00b7 2:00 PM",
+          "contact": "Bob Realtor",
+          "mapsUrl": "https://maps.apple.com/?address=99+Oak+Ave+Philadelphia+PA"
+        }
+      ],
+      "showingsEmptyFormatted": null,
+      "activeCount": 2,
+      "passedCount": 1,
+      "ok": true
+    }
+  },
+  "screen": {
+    "type": "screen",
+    "style": {
+      "background": "$bg"
+    },
+    "children": [
+      {
+        "type": "scroll",
+        "children": [
+          {
+            "type": "vstack",
+            "style": {
+              "spacing": 16,
+              "padding": 16
+            },
+            "children": [
+              {
+                "type": "hstack",
+                "style": {
+                  "align": "center"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "binding": "housing.title",
+                    "style": {
+                      "font": "largeTitle",
+                      "weight": "bold",
+                      "color": "$textPrimary"
+                    }
+                  },
+                  {
+                    "type": "spacer"
+                  },
+                  {
+                    "type": "text",
+                    "binding": "meta.updatedAtFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary"
+                    },
+                    "action": {
+                      "type": "refresh"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "housing.subtitleFormatted",
+                "style": {
+                  "font": "caption",
+                  "color": "$textSecondary"
+                }
+              },
+              {
+                "type": "text",
+                "binding": "housing.newLabel",
+                "style": {
+                  "font": "caption",
+                  "weight": "bold",
+                  "color": "$textSecondary"
+                }
+              },
+              {
+                "type": "vstack",
+                "props": {
+                  "repeat": "housing.newProperties"
+                },
+                "style": {
+                  "spacing": 12
+                },
+                "children": [
+                  {
+                    "type": "propertyCard",
+                    "binding": "item"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "housing.highLabel",
+                "style": {
+                  "font": "caption",
+                  "weight": "bold",
+                  "color": "$accent"
+                }
+              },
+              {
+                "type": "vstack",
+                "props": {
+                  "repeat": "housing.highProperties"
+                },
+                "style": {
+                  "spacing": 12
+                },
+                "children": [
+                  {
+                    "type": "propertyCard",
+                    "binding": "item"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "housing.mediumLabel",
+                "style": {
+                  "font": "caption",
+                  "weight": "bold",
+                  "color": "$textSecondary"
+                }
+              },
+              {
+                "type": "vstack",
+                "props": {
+                  "repeat": "housing.mediumProperties"
+                },
+                "style": {
+                  "spacing": 12
+                },
+                "children": [
+                  {
+                    "type": "propertyCard",
+                    "binding": "item"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "binding": "housing.lowLabel",
+                "style": {
+                  "font": "caption",
+                  "weight": "bold",
+                  "color": "$textSecondary"
+                }
+              },
+              {
+                "type": "vstack",
+                "props": {
+                  "repeat": "housing.lowProperties"
+                },
+                "style": {
+                  "spacing": 12
+                },
+                "children": [
+                  {
+                    "type": "propertyCard",
+                    "binding": "item"
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "style": {
+                  "background": "$cardBg",
+                  "cornerRadius": 20,
+                  "padding": 16
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "props": {
+                      "text": "Showings"
+                    },
+                    "style": {
+                      "font": "subhead",
+                      "weight": "semibold",
+                      "color": "$textSecondary"
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "binding": "housing.showingsEmptyFormatted",
+                    "style": {
+                      "font": "caption",
+                      "color": "$textSecondary",
+                      "align": "center"
+                    }
+                  },
+                  {
+                    "type": "vstack",
+                    "props": {
+                      "repeat": "housing.showings"
+                    },
+                    "style": {
+                      "spacing": 0
+                    },
+                    "children": [
+                      {
+                        "type": "hstack",
+                        "style": {
+                          "align": "center",
+                          "spacing": 12
+                        },
+                        "children": [
+                          {
+                            "type": "vstack",
+                            "style": {
+                              "spacing": 2
+                            },
+                            "children": [
+                              {
+                                "type": "text",
+                                "binding": "item.showingAtFormatted",
+                                "style": {
+                                  "font": "caption",
+                                  "weight": "semibold",
+                                  "color": "$accent"
+                                }
+                              },
+                              {
+                                "type": "text",
+                                "binding": "item.address",
+                                "style": {
+                                  "font": "body",
+                                  "weight": "semibold",
+                                  "color": "$textPrimary"
+                                }
+                              },
+                              {
+                                "type": "text",
+                                "binding": "item.addressLine2",
+                                "style": {
+                                  "font": "caption",
+                                  "color": "$textSecondary"
+                                }
+                              },
+                              {
+                                "type": "text",
+                                "binding": "item.contact",
+                                "style": {
+                                  "font": "caption",
+                                  "color": "$textSecondary"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "spacer"
+                          },
+                          {
+                            "type": "text",
+                            "props": {
+                              "text": "Maps \u2197"
+                            },
+                            "style": {
+                              "font": "caption",
+                              "color": "$accent"
+                            },
+                            "action": {
+                              "type": "openURL",
+                              "urlBinding": "item.mapsUrl"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "divider",
+                        "style": {
+                          "color": "$divider"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "disclosure",
+                "props": {
+                  "text": "Passed properties",
+                  "open": false
+                },
+                "children": [
+                  {
+                    "type": "vstack",
+                    "props": {
+                      "repeat": "housing.passedProperties"
+                    },
+                    "style": {
+                      "spacing": 12
+                    },
+                    "children": [
+                      {
+                        "type": "propertyCard",
+                        "binding": "item"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

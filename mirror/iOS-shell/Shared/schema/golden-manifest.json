@@ -38,6 +38,11 @@
           "title": "Budget",
           "icon": "chart.pie.fill",
           "path": "/screen/budget"
+        },
+        {
+          "title": "GCP Costs",
+          "icon": "cloud.fill",
+          "path": "/screen/gcp_costs"
         }
       ]
     },
@@ -87,6 +92,11 @@
       "title": "Messages",
       "icon": "message.fill",
       "path": "/screen/messages"
+    },
+    {
+      "title": "Housing",
+      "icon": "building.2.fill",
+      "path": "/screen/housing"
     },
     {
       "title": "System",

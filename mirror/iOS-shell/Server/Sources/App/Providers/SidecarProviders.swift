@@ -671,6 +671,33 @@ public struct DocsProvider: DataProvider {
 
 /// Recent iMessage/SMS (the Mac's chat.db) + latest Gmail headers — passes the sidecar's
 /// `/messages` JSON through as `messages`. Each source degrades independently server-side.
+/// Housing search page — properties under evaluation, communication counts from the
+/// Drive-synced Messages export, and the upcoming showings schedule.
+/// Backed by a local JSON file (no BigQuery); cheap enough to warm on the default interval.
+public struct HousingProvider: DataProvider {
+    public let key = "housing"
+    public let ttl: TimeInterval = 60
+    public init() {}
+
+    public func fetch(client: Client, config: AppConfig, logger: Logger) async throws -> JSONValue {
+        let value = try await client.getJSON("\(config.bqSidecarURL)/housing", as: JSONValue.self)
+        return try value.requireOK("housing")
+    }
+
+    public func stub(config: AppConfig) -> JSONValue {
+        .obj([
+            ("title", .string("Housing")),
+            ("subtitleFormatted", .string("sidecar unavailable")),
+            ("highProperties", .array([])),
+            ("mediumProperties", .array([])),
+            ("lowProperties", .array([])),
+            ("passedProperties", .array([])),
+            ("showings", .array([])),
+            ("showingsEmptyFormatted", .string("Connect on Tailscale to load Housing.")),
+        ])
+    }
+}
+
 public struct MessagesProvider: DataProvider {
     public let key = "messages"
     public let ttl: TimeInterval = 60

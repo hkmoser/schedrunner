@@ -94,6 +94,7 @@ public func routes(_ app: Application) throws {
     let logsComposer = Composer(providers: [LogsProvider()])
     let logFileComposer = Composer(providers: [LogFileProvider()])
     let messagesComposer = Composer(providers: [MessagesProvider()])
+    let housingComposer = Composer(providers: [HousingProvider()])
     let reposComposer = Composer(providers: [ReposProvider()])
     let reposShipComposer = Composer(providers: [ReposShipProvider()])
     let schedrunnerComposer = Composer(providers: [SchedrunnerProvider()])
@@ -448,6 +449,18 @@ public func routes(_ app: Application) throws {
         )
     }
 
+    // Housing search page — property pipeline tracker backed by a local JSON file.
+    app.get("screen", "housing") { req async -> Manifest in
+        await housingComposer.build(
+            client: req.client,
+            config: req.application.dashboardConfig,
+            cache: req.application.providerCache,
+            templates: req.application.templates,
+            logger: req.logger,
+            screen: req.application.templates.housing
+        )
+    }
+
     // Write config edits / known locations: proxy the body to the sidecar's MERGE-upsert.
     func proxyPost(_ req: Request, to endpoint: String) async throws -> Response {
         let url = "\(req.application.dashboardConfig.bqSidecarURL)\(endpoint)"
@@ -462,6 +475,7 @@ public func routes(_ app: Application) throws {
         return response
     }
     app.post("config") { req async throws -> Response in try await proxyPost(req, to: "/config") }
+    app.post("housing") { req async throws -> Response in try await proxyPost(req, to: "/housing") }
     // Saving a setting writes it to the sidecar's store, but the RUNNING server still holds the
     // env it loaded at boot (and the APNs client built from it). Restart the launchd service on a
     // successful save so SecretsHydrator re-runs and clients rebuild with the new value — no manual

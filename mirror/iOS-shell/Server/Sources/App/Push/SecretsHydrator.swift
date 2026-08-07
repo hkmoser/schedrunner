@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 import Vapor
 
 /// At startup, pull app-entered settings from the sidecar's secrets store (Settings page →

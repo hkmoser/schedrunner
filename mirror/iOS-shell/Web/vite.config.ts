@@ -90,9 +90,9 @@ export default defineConfig({
             urlPattern: ({ url }) => url.pathname === "/dashboard",
             handler: "NetworkFirst",
             options: {
-              cacheName: "manifest",
-              networkTimeoutSeconds: 4,
-              expiration: { maxEntries: 4, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheName: "manifest-v2",
+              networkTimeoutSeconds: 10,
+              expiration: { maxEntries: 25, maxAgeSeconds: 60 * 60 * 24 * 2 },
             },
           },
           {
@@ -103,9 +103,9 @@ export default defineConfig({
             urlPattern: ({ url }) => url.pathname.startsWith("/screen/"),
             handler: "NetworkFirst",
             options: {
-              cacheName: "pages",
-              networkTimeoutSeconds: 4,
-              expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheName: "pages-v2",
+              networkTimeoutSeconds: 10,
+              expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 2 },
             },
           },
           {

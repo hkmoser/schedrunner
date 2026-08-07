@@ -282,6 +282,13 @@ reload_service() {
   local domain="gui/$uid"
   local target="$domain/$LABEL"
 
+  # SIGKILL the managed process before unloading so it releases its port
+  # immediately. bootout alone removes the launchd registration but does not
+  # wait for the process to exit — without this the new instance races the
+  # old one for the same port and fails with "Address already in use".
+  launchctl kill SIGKILL "$target" 2>/dev/null || true
+  sleep 1
+
   launchctl bootout "$target" 2>/dev/null || true
   # Wait for the old job to fully unload (avoids the bootstrap I/O error).
   local i

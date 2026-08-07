@@ -3042,7 +3042,7 @@ def _repo_prs_and_branches(repo, deadline):
     # Open PRs (cheap — one call).
     _st, pulls = _gh_request("GET", f"{api}/pulls?state=open&per_page=20", token)
     prs, pr_heads = [], set()
-    for p in (pulls or []):
+    for p in (pulls if isinstance(pulls, list) else []):
         head = (p.get("head") or {}).get("ref") or ""
         base = (p.get("base") or {}).get("ref") or default_branch
         pr_heads.add(head)
@@ -3065,7 +3065,7 @@ def _repo_prs_and_branches(repo, deadline):
     # branch is bounded by the shared CI/GitHub time budget.
     branches = []
     _st, br = _gh_request("GET", f"{api}/branches?per_page=50", token)
-    for b in (br or []):
+    for b in (br if isinstance(br, list) else []):
         if deadline and _time.monotonic() > deadline:
             break
         bn = b.get("name") or ""
@@ -3304,7 +3304,7 @@ def get_repo_banner():
     branches = []
     deadline = _time.monotonic() + _int_env("REPOS_CI_BUDGET", 8)
     _st, br = _gh_request("GET", f"{api}/branches?per_page=50", token)
-    for b in (br or []):
+    for b in (br if isinstance(br, list) else []):
         if _time.monotonic() > deadline:
             break
         bn = b.get("name") or ""
@@ -4347,7 +4347,7 @@ def _showing_formatted(iso_str):
         return iso_str
 
 
-def _maps_url(address):
+def _property_maps_url(address):
     if not address:
         return None
     return f"https://maps.apple.com/?address={_urlparse.quote(address)}"
@@ -4838,7 +4838,7 @@ def get_housing():
             "actionNeeded": _HOUSING_STATUS_ACTIONS.get(status),
             "showingAt": showing_at,
             "showingAtFormatted": _showing_formatted(showing_at),
-            "mapsUrl": _maps_url(address),
+            "mapsUrl": _property_maps_url(address),
             "commsCount": comm_count,
             "commsFormatted": (f"{comm_count} msg{'s' if comm_count != 1 else ''}" if comm_count else None),
             "latestComm": latest_comm,

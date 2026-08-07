@@ -135,7 +135,7 @@ final class DashboardViewModel: ObservableObject {
             // Keep the "latest activity status" Live Activity in sync when AFM data arrives.
             if path == "/screen/afm" { updateLiveActivity(from: m) }
         } catch {
-            isOffline = (current == nil)
+            isOffline = true
         }
     }
 

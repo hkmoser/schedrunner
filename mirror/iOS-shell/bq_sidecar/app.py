@@ -181,10 +181,29 @@ def _afm_history_table():
 DEFAULT_DEVICE = os.environ.get("BQ_AFM_DEVICE", "iPhone 12 mini")
 
 
+# The device list only backs a dropdown and changes maybe monthly, but its query is a
+# full-scan GROUP BY over the whole fix history — and /afm is hit every ~60s by the Vapor
+# cache warmer even with no client open, so it was re-billed ~1400x/day (~5 TiB/month).
+# Cache it for AFM_DEVICE_OPTIONS_TTL seconds (default 6h); `?refresh=1` on any endpoint
+# busts it (see do_GET). Same shape as HOUSING_SCAN_TTL: an env-tunable rate limit so a
+# rarely-changing lookup isn't redone on every 60-second provider refresh.
+_AFM_DEVICE_OPTIONS_TTL = int(os.environ.get("AFM_DEVICE_OPTIONS_TTL", "21600"))
+# An empty result is a degenerate state (no fixes in the window / transient hiccup), so
+# it's held only briefly — long enough to not hammer BigQuery, short enough to self-heal.
+_AFM_DEVICE_OPTIONS_EMPTY_TTL = 300
+_device_options_cache = {}  # hours -> (fetched_at, ttl, options)
+
+
 def _device_options(client, hours=24):
     """Locatable devices over the window (those actually reporting a position),
-    most-active first, with a friendly label and a flag for the '12 mini' model."""
+    most-active first, with a friendly label and a flag for the '12 mini' model.
+    Cached for _AFM_DEVICE_OPTIONS_TTL — the list rarely changes and the query is
+    expensive; a failed refresh keeps serving the last-good list rather than blanking."""
     hist = _afm_history_table()
+    key = int(hours)
+    hit = _device_options_cache.get(key)
+    if hit and (_time.time() - hit[0]) < hit[1]:
+        return hit[2]
     try:
         sql = f"""
             SELECT deviceName,
@@ -203,9 +222,11 @@ def _device_options(client, hours=24):
             name, dn = d.get("name"), d.get("deviceName")
             label = f"{name} ({dn})" if name and name != dn else dn
             out.append({"value": dn, "label": label, "n": int(d.get("n") or 0), "is12m": bool(d.get("is12m"))})
+        ttl = _AFM_DEVICE_OPTIONS_TTL if out else _AFM_DEVICE_OPTIONS_EMPTY_TTL
+        _device_options_cache[key] = (_time.time(), ttl, out)
         return out
     except Exception:
-        return []
+        return hit[2] if hit else []
 
 
 def _best_default_device(opts):
@@ -5255,6 +5276,10 @@ class Handler(BaseHTTPRequestHandler):
         qs = _urlparse.parse_qs(parsed.query, keep_blank_values=True)
         if path == "/healthz":
             return self._send(200, {"status": "ok"})
+        # `?refresh=1` busts the long-lived device-options cache (see _device_options)
+        # so a newly-tracked device shows up without waiting out AFM_DEVICE_OPTIONS_TTL.
+        if qs.get("refresh", [""])[0] not in ("", "0"):
+            _device_options_cache.clear()
         # /afm takes an optional ?hours= window (default 24); the rest take none.
         handlers = {
             "/query": run_query,

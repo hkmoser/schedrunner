@@ -1,0 +1,917 @@
+From 50af60bb65cbe71f08cbdda9976385f8a3254835 Mon Sep 17 00:00:00 2001
+From: claude <joe@joemoser.com>
+Date: Sun, 16 Aug 2026 16:24:57 +0000
+Subject: [PATCH] fix(daemon): stop re-authing a session Apple already declared
+ dead
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+When Apple returns 421 ("Authentication required for Account"), pyicloud raises
+PyiCloudFailedLoginException("Invalid authentication token.") and the daemon
+alerts + exits(1). Under KeepAlive/ThrottleInterval=300 launchd restarts it five
+minutes later, and startup calls /accountLogin with the same dead token again —
+an unbounded loop (~288 failed auth attempts/day), visible in afm-daemon.log as
+10:15 -> 10:54 repeating identically.
+
+Only util/auth.sh can mint a new session, and repeated auth attempts are exactly
+what makes Apple rate-limit SRP and withhold trust tokens, so the restart loop was
+sabotaging the auth.sh run that fixes it.
+
+afm_session_hold.SessionHold records the rejection on disk. While the hold is
+active the daemon short-circuits at startup without contacting Apple, re-probing
+on an escalating 15m -> 30m -> 60m schedule (~24 attempts/day instead of ~288).
+The hold is keyed to a fingerprint of ~/.pyicloud, so auth.sh installing a new
+session clears it automatically on the next restart — recovery is unchanged and
+still hands-off. Every corrupt/unreadable state path fails open, so the hold can
+never keep a healthy session offline.
+
+Transient failures (5xx/429/network) are untouched and keep the 5-minute cadence;
+the hold applies only to sessions Apple has actually rejected.
+
+Tests: 34 new cases, no dependencies (pyicloud/BigQuery stubbed).
+test_daemon_hold.test_restart_after_rejection_does_not_contact_apple is the
+reproducer — it fails without this change (12 auth calls/hour, 1 with it).
+---
+ CLAUDE.md            |  22 +++-
+ afm_live_daemon.py   |  76 ++++++++++---
+ afm_session_hold.py  | 171 +++++++++++++++++++++++++++++
+ test_daemon_hold.py  | 250 +++++++++++++++++++++++++++++++++++++++++++
+ test_session_hold.py | 205 +++++++++++++++++++++++++++++++++++
+ util/DAEMON.md       |  22 +++-
+ 6 files changed, 727 insertions(+), 19 deletions(-)
+ create mode 100644 afm_session_hold.py
+ create mode 100644 test_daemon_hold.py
+ create mode 100644 test_session_hold.py
+
+diff --git a/CLAUDE.md b/CLAUDE.md
+index babddeb..9568a35 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -149,6 +149,17 @@ accessible). A failed or interrupted auth run **never touches the live session**
+ zero auth attempts before retrying. The cron job with `_CronPyiCloudService` does NOT
+ consume rate-limit quota — it only calls `_authenticate_with_token()`, never SRP.
+ 
++**Dead-session hold (daemon only):** When Apple rejects the session outright
++(421 → `PyiCloudFailedLoginException("Invalid authentication token.")`), only
++`auth.sh` can fix it — but `KeepAlive` restarts the daemon every 300 s, and each
++restart used to re-call `/accountLogin` with the same dead token (~288 failed auth
++attempts/day, which is exactly what makes Apple rate-limit SRP and withhold trust
++tokens). `afm_session_hold.py` now records the rejection in
++`~/.pyicloud-daemon-session-dead`; restarts then skip Apple entirely and re-probe on
++an escalating 15 min → 30 min → 60 min schedule. The hold is fingerprinted against
++`~/.pyicloud`, so `auth.sh` installing a new session clears it automatically — the
++recovery procedure is unchanged: run `auth.sh`, nothing else. See `util/DAEMON.md`.
++
+ **Progressive backoff:** After the first auth failure, `afm_live.py` writes `~/.pyicloud-auth-backoff`
+ and applies escalating delays before retrying Apple's auth endpoint (1st failure: retry
+ immediately; 2nd: 1 min; 3rd: 2 min; 4th+: 5 min). The following are treated as transient
+@@ -224,7 +235,16 @@ Intended to run on a cron schedule. It:
+ 6. Calls `lib_bq_changealerts.py` logic for change detection and Pushcut notifications
+ 
+ ### Testing
+-There is no automated test suite. Testing is done ad-hoc:
++
++The daemon's dead-session logic has a real suite (stdlib `unittest`, no deps —
++pyicloud/BigQuery are stubbed, so it runs anywhere including CI):
++
++```bash
++python3 test_session_hold.py    # the hold state machine
++python3 test_daemon_hold.py     # afm_live_daemon's auth-failure paths
++```
++
++Everything else is still ad-hoc:
+ - Use `afm_live_test.py` to test the pipeline without side effects
+ - Use `bq-test.py` to test BigQuery operations in isolation
+ - Use `icloud-test.py` to test PyiCloud connectivity
+diff --git a/afm_live_daemon.py b/afm_live_daemon.py
+index 6bcb2ad..3568418 100644
+--- a/afm_live_daemon.py
++++ b/afm_live_daemon.py
+@@ -21,6 +21,17 @@ OWNERSHIP / SUPERVISION
+     ThrottleInterval spaces restarts. On a genuine session death it alerts and
+     exits(1); after util/auth.sh it recovers on the next launchd restart.
+ 
++DEAD-SESSION HOLD
++    launchd's KeepAlive means "exit on session death" turns into a restart every
++    ThrottleInterval (300 s) — each one re-calling /accountLogin with the same
++    dead token, ~288 failed auth attempts a day. Only util/auth.sh can fix a dead
++    session, and that hammering is precisely what makes Apple rate-limit SRP and
++    withhold trust tokens, so the loop sabotages its own cure. afm_session_hold
++    records the death on disk: while it is active, startup short-circuits WITHOUT
++    contacting Apple and only re-probes on a slow escalating schedule. The hold is
++    keyed to a fingerprint of ~/.pyicloud, so auth.sh installing a new session
++    clears it automatically on the next restart.
++
+ MUTUAL EXCLUSION WITH THE CRON FALLBACK
+     Holds the same /tmp/afm_live.lock that afm_live.py uses, for its whole life.
+     While the daemon runs, any stray cron afm_live.py tick sees the lock and exits
+@@ -55,6 +66,7 @@ except ImportError:
+     PyiCloudAcceptTermsException = None
+ 
+ import afm_pipeline
++from afm_session_hold import SessionHold
+ 
+ INTERVAL_SECS = int(os.environ.get("AFM_INTERVAL_SECS", "300"))
+ LOCK_PATH = "/tmp/afm_live.lock"
+@@ -71,6 +83,10 @@ EXPIRY_WARN_DAYS = 5
+ EXPIRY_WARN_FILE = os.path.expanduser("~/.pyicloud-expiry-warned")
+ _SESSION_COOKIE_NAMES = ("X-APPLE-WEBAUTH-HSA-TRUST", "X-APPLE-WEBAUTH-TOKEN")
+ 
++# Stops the launchd restart storm from re-calling /accountLogin with a token
++# Apple has already rejected. See afm_session_hold for the full rationale.
++HOLD = SessionHold(cookie_dir=afm_pipeline.COOKIE_DIR)
++
+ _running = True
+ 
+ 
+@@ -169,6 +185,22 @@ def _acquire_lock():
+     return lf
+ 
+ 
++def declare_session_dead(alert_text, log_line):
++    """Apple rejected the session: only util/auth.sh fixes it.
++
++    Records the rejection so the launchd restart that follows this exit skips
++    Apple entirely, alerts (deduped), and exits(1). Never returns."""
++    state = HOLD.enter()
++    probes = int(state.get("probes", 1))
++    wait_min = HOLD.next_probe_secs(probes) / 60.0
++    log(log_line)
++    log(f"[auth] session marked dead (rejection #{probes}) — restarts will skip Apple "
++        f"for the next {wait_min:.0f} min. Run util/auth.sh; the hold clears itself as "
++        f"soon as a new session is installed.")
++    send_alert_deduped(alert_text)
++    sys.exit(1)
++
++
+ def _handle_signal(signum, frame):
+     global _running
+     log(f"[daemon] received signal {signum} — will exit after current cycle")
+@@ -183,21 +215,33 @@ def main():
+     log(f"afm_live_daemon starting  interval={INTERVAL_SECS}s  pid={os.getpid()}")
+     log("=" * 70)
+ 
++    # ── dead-session hold ─────────────────────────────────────────────────────
++    # A previous run was rejected by Apple and nothing has re-authed since. Do
++    # NOT construct the session: that call is a guaranteed-failing /accountLogin,
++    # and repeating it every ThrottleInterval is what gets the account rate-limited.
++    held_for = HOLD.wait_secs()
++    if held_for > 0:
++        log(f"[auth] session is on the dead-session hold — skipping Apple entirely. "
++            f"Next probe in {held_for / 60:.0f} min. Run util/auth.sh to recover now "
++            f"(installing a new session clears the hold automatically).")
++        sys.exit(1)
++
+     lock = _acquire_lock()  # noqa: F841 — keep handle alive for the process lifetime
+ 
+     # ── construct the ONE long-lived session ──────────────────────────────────
+     try:
+         api = afm_pipeline.build_api()
+         log("[auth] session constructed (token-only, no SRP)")
++        HOLD.clear()  # Apple accepted the token: any earlier hold is obsolete
+     except PyiCloud2FARequiredException as e:
+-        send_alert_deduped("Session untrusted (is_trusted_session=False) — "
+-                           "run util/auth.sh and complete the full 2FA + trust flow.")
+-        log(f"[auth] FATAL: untrusted session — {e}")
+-        sys.exit(1)
++        declare_session_dead(
++            "Session untrusted (is_trusted_session=False) — "
++            "run util/auth.sh and complete the full 2FA + trust flow.",
++            f"[auth] FATAL: untrusted session — {e}")
+     except (PyiCloudFailedLoginException, PyiCloudAuthRequiredException) as e:
+-        send_alert_deduped("iCloud session needs re-auth (run util/auth.sh).")
+-        log(f"[auth] FATAL: session dead — {e}")
+-        sys.exit(1)
++        declare_session_dead(
++            "iCloud session needs re-auth (run util/auth.sh).",
++            f"[auth] FATAL: session dead — {e}")
+     except Exception as e:
+         if _is_transient(e):
+             log(f"[auth] transient error constructing session — {e}; exiting for restart")
+@@ -228,6 +272,7 @@ def main():
+                 f"{afm_pipeline.accountlogin_total()} since start]")
+             consecutive_transient = 0
+             clear_dead_alert_cooldown()  # healthy again: allow future dead-alerts
++            HOLD.clear()                 # …and never hold a session that just worked
+             check_session_expiry(api)
+             if time.time() - last_cleanup >= CLEANUP_EVERY_SECS:
+                 afm_pipeline.cleanup_old_csvs(log=log)
+@@ -235,11 +280,12 @@ def main():
+             sleep_for = INTERVAL_SECS
+ 
+         except (PyiCloud2FARequiredException, PyiCloudFailedLoginException) as e:
+-            # Session genuinely dead — only auth.sh fixes it. Alert + exit so
+-            # launchd restarts (throttled); recovers after auth.sh.
+-            send_alert_deduped("iCloud session needs re-auth (run util/auth.sh).")
+-            log(f"[cycle] FATAL: session dead — {type(e).__name__}: {e}")
+-            sys.exit(1)
++            # Session genuinely dead — only auth.sh fixes it. Record the hold so
++            # the launchd restarts that follow don't re-ask Apple, then exit;
++            # recovers on the first restart after auth.sh.
++            declare_session_dead(
++                "iCloud session needs re-auth (run util/auth.sh).",
++                f"[cycle] FATAL: session dead — {type(e).__name__}: {e}")
+ 
+         except PyiCloudAuthRequiredException as e:
+             # Raw 450 that pyicloud's internal reauth could not self-heal. In a warm
+@@ -250,9 +296,9 @@ def main():
+                 api.authenticate(force_refresh=True)
+                 log("[cycle] force_refresh OK — will retry shortly")
+             except (PyiCloud2FARequiredException, PyiCloudFailedLoginException) as e2:
+-                send_alert_deduped("iCloud session needs re-auth (run util/auth.sh).")
+-                log(f"[cycle] FATAL after force_refresh — {type(e2).__name__}: {e2}")
+-                sys.exit(1)
++                declare_session_dead(
++                    "iCloud session needs re-auth (run util/auth.sh).",
++                    f"[cycle] FATAL after force_refresh — {type(e2).__name__}: {e2}")
+             except Exception as e2:
+                 log(f"[cycle] force_refresh failed transiently: {e2}")
+             consecutive_transient += 1
+diff --git a/afm_session_hold.py b/afm_session_hold.py
+new file mode 100644
+index 0000000..0129353
+--- /dev/null
++++ b/afm_session_hold.py
+@@ -0,0 +1,171 @@
++#!/usr/bin/env python3
++"""
++afm_session_hold.py — "the session is dead, stop calling Apple" state.
++
++WHY THIS EXISTS
++    afm_live_daemon runs under a KeepAlive LaunchAgent with ThrottleInterval=300.
++    When Apple declares the session dead (421 "Authentication required for
++    Account" -> PyiCloudFailedLoginException("Invalid authentication token.")),
++    the daemon alerts and exits(1) — and launchd restarts it 5 minutes later.
++    That restart calls /accountLogin again with the same dead token, fails
++    identically, and the cycle repeats forever: ~288 failed auth attempts a day.
++
++    That loop is worse than useless. Only util/auth.sh can mint a new session,
++    and repeated auth attempts are exactly what makes Apple rate-limit SRP and
++    refuse trust tokens for 24 h — so the crash loop actively sabotages the
++    auth.sh run that would fix it.
++
++    This module records the death on disk. While the hold is active the daemon
++    short-circuits at startup WITHOUT touching Apple, and probes only on a slow
++    escalating schedule (15 min -> 30 min -> 60 min, capped) in case Apple's
++    refusal was transient after all.
++
++SELF-CLEARING
++    The hold is stamped with a fingerprint of ~/.pyicloud. util/auth.sh installs
++    a brand-new session directory (atomic rename), so the fingerprint changes the
++    moment re-auth succeeds — the next launchd restart sees the mismatch, drops
++    the hold, and reconnects. Recovery stays hands-off: run auth.sh, done.
++
++FAIL OPEN
++    Every unreadable/corrupt/missing-state path resolves to "no hold" (0 s wait).
++    A bug in this file must never be able to keep a healthy session offline.
++
++Stdlib only — no pyicloud, pandas, or BigQuery imports — so it stays importable
++(and unit-testable) anywhere.
++"""
++
++import hashlib
++import json
++import os
++import tempfile
++import time
++
++DEFAULT_STATE_PATH = os.path.expanduser("~/.pyicloud-daemon-session-dead")
++DEFAULT_COOKIE_DIR = os.path.expanduser("~/.pyicloud")
++
++
++class SessionHold:
++    """On-disk record of 'Apple says this session is dead; stop hammering it'."""
++
++    # Delay before the 1st re-probe after the session is declared dead, doubling
++    # per failed probe up to the cap. 15 min is long enough to stop the storm,
++    # short enough that a genuinely transient refusal self-heals within the hour.
++    FIRST_PROBE_SECS = 900
++    MAX_PROBE_SECS = 3600
++
++    def __init__(self, state_path=DEFAULT_STATE_PATH, cookie_dir=DEFAULT_COOKIE_DIR):
++        self.state_path = state_path
++        self.cookie_dir = cookie_dir
++
++    # ── session identity ──────────────────────────────────────────────────────
++
++    def fingerprint(self):
++        """Cheap identity of the on-disk session: changes iff the session files
++        change (i.e. auth.sh installed a new one). Never raises — an unreadable
++        cookie dir just hashes to its own distinct value."""
++        try:
++            parts = []
++            for entry in sorted(os.scandir(self.cookie_dir), key=lambda e: e.name):
++                if not entry.is_file():
++                    continue
++                st = entry.stat()
++                parts.append(f"{entry.name}:{st.st_size}:{st.st_mtime_ns}")
++            blob = "|".join(parts)
++        except Exception as exc:
++            blob = f"unreadable:{type(exc).__name__}"
++        return hashlib.sha256(blob.encode()).hexdigest()
++
++    # ── state file ────────────────────────────────────────────────────────────
++
++    def _read(self):
++        try:
++            with open(self.state_path) as f:
++                state = json.load(f)
++            return state if isinstance(state, dict) else None
++        except Exception:
++            return None  # missing or corrupt -> fail open, no hold
++
++    def _write(self, state):
++        """Write atomically: a launchd restart mid-write must never read a
++        half-written state file (which would fail open and resume hammering)."""
++        try:
++            d = os.path.dirname(self.state_path) or "."
++            fd, tmp = tempfile.mkstemp(dir=d, prefix=".afm-hold-")
++            try:
++                with os.fdopen(fd, "w") as f:
++                    json.dump(state, f)
++                os.replace(tmp, self.state_path)
++            except Exception:
++                try:
++                    os.unlink(tmp)
++                except OSError:
++                    pass
++                raise
++        except Exception:
++            pass  # never let bookkeeping break the daemon
++
++    def clear(self):
++        """Drop the hold — the session is healthy again."""
++        try:
++            os.remove(self.state_path)
++        except FileNotFoundError:
++            pass
++        except Exception:
++            pass
++
++    # ── the two calls the daemon makes ────────────────────────────────────────
++
++    def enter(self, now=None):
++        """Record that Apple just rejected this session. Escalates the probe
++        delay if the SAME session has already been rejected before; a different
++        session on disk starts the escalation over. Returns the new state."""
++        now = time.time() if now is None else now
++        fp = self.fingerprint()
++        state = self._read() or {}
++        if state.get("fingerprint") != fp:
++            state = {"since": now}
++        state["fingerprint"] = fp
++        state["probes"] = int(state.get("probes", 0)) + 1
++        state["last_probe"] = now
++        state.setdefault("since", now)
++        self._write(state)
++        return state
++
++    def next_probe_secs(self, probes):
++        """Delay after `probes` consecutive rejections: 15m, 30m, 60m, 60m…"""
++        if probes < 1:
++            return 0.0
++        return float(min(self.FIRST_PROBE_SECS * (2 ** (probes - 1)),
++                         self.MAX_PROBE_SECS))
++
++    def wait_secs(self, now=None):
++        """Seconds the daemon must wait before contacting Apple again.
++
++        0.0 means "go ahead and authenticate" — either there is no hold, the
++        session on disk has changed (auth.sh ran), or the next probe is due.
++        Clears the hold when the session changed, so recovery needs no manual
++        cleanup."""
++        now = time.time() if now is None else now
++        state = self._read()
++        if not state:
++            return 0.0
++        if state.get("fingerprint") != self.fingerprint():
++            self.clear()  # auth.sh installed a new session — hold is obsolete
++            return 0.0
++        try:
++            probes = int(state.get("probes", 0))
++            last_probe = float(state.get("last_probe", 0))
++        except (TypeError, ValueError):
++            return 0.0  # corrupt fields -> fail open
++        due_at = last_probe + self.next_probe_secs(probes)
++        return max(0.0, due_at - now)
++
++    def held_since(self):
++        """Epoch seconds when this session was first declared dead, or None."""
++        state = self._read()
++        if not state:
++            return None
++        try:
++            return float(state["since"])
++        except (KeyError, TypeError, ValueError):
++            return None
+diff --git a/test_daemon_hold.py b/test_daemon_hold.py
+new file mode 100644
+index 0000000..431e907
+--- /dev/null
++++ b/test_daemon_hold.py
+@@ -0,0 +1,250 @@
++#!/usr/bin/env python3
++"""
++Integration tests for afm_live_daemon's dead-session handling.
++
++Reproduces the failure in log/afm-daemon.log (2026-08-16 10:15–10:54): Apple
++returns 421, the daemon exits, launchd restarts it 5 min later, and it calls
++/accountLogin with the same dead token again — forever.
++
++Apple (pyicloud) and the data plane (afm_pipeline -> pandas/BigQuery) are the
++external services here, so they are stubbed; everything else — main(), the lock,
++the hold, the alert bookkeeping — is the real code under test.
++
++Run:  python3 test_daemon_hold.py
++"""
++
++import os
++import sys
++import tempfile
++import types
++import unittest
++import warnings
++
++# main() intentionally holds the lock file open for the process lifetime; calling
++# it in-process makes that show up as an unclosed-file warning. Not a leak.
++warnings.filterwarnings("ignore", category=ResourceWarning)
++
++
++def _install_stubs():
++    """Stand in for pyicloud + the BigQuery data plane so the daemon imports."""
++    requests_stub = types.ModuleType("requests")
++    requests_stub.post = lambda *a, **k: None
++    sys.modules["requests"] = requests_stub
++
++    exceptions = types.ModuleType("pyicloud.exceptions")
++
++    class PyiCloudException(Exception):
++        pass
++
++    class PyiCloudFailedLoginException(PyiCloudException):
++        pass
++
++    class PyiCloudAuthRequiredException(PyiCloudException):
++        pass
++
++    class PyiCloud2FARequiredException(PyiCloudException):
++        pass
++
++    class PyiCloudAPIResponseException(PyiCloudException):
++        def __init__(self, reason, code=None):
++            super().__init__(reason)
++            self.code = code
++
++    for cls in (PyiCloudException, PyiCloudFailedLoginException,
++                PyiCloudAuthRequiredException, PyiCloud2FARequiredException,
++                PyiCloudAPIResponseException):
++        setattr(exceptions, cls.__name__, cls)
++
++    pyicloud = types.ModuleType("pyicloud")
++    pyicloud.exceptions = exceptions
++    sys.modules["pyicloud"] = pyicloud
++    sys.modules["pyicloud.exceptions"] = exceptions
++
++    pipeline = types.ModuleType("afm_pipeline")
++    pipeline.COOKIE_DIR = "/nonexistent-until-a-test-sets-it"
++    pipeline.build_api = lambda: (_ for _ in ()).throw(AssertionError("unset"))
++    pipeline.install_accountlogin_logging = lambda api, log=None: None
++    pipeline.cleanup_old_csvs = lambda log=None: (0, 0)
++    pipeline.run_pipeline = lambda api, log=None: 0
++    pipeline.accountlogin_total = lambda: 0
++    pipeline.accountlogin_count_since = lambda secs: 0
++    sys.modules["afm_pipeline"] = pipeline
++    return exceptions, pipeline
++
++
++EXC, PIPELINE = _install_stubs()
++
++import afm_live_daemon as daemon  # noqa: E402 — must follow the stub install
++from afm_session_hold import SessionHold  # noqa: E402
++
++
++class DaemonTestCase(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.TemporaryDirectory()
++        self.cookie_dir = os.path.join(self.tmp.name, "pyicloud")
++        os.mkdir(self.cookie_dir)
++        self._write_session("original-token")
++
++        PIPELINE.COOKIE_DIR = self.cookie_dir
++        daemon.HOLD = SessionHold(
++            state_path=os.path.join(self.tmp.name, "session-dead"),
++            cookie_dir=self.cookie_dir,
++        )
++        daemon.LOCK_PATH = os.path.join(self.tmp.name, "afm_live.lock")
++        daemon.DEAD_ALERT_FILE = os.path.join(self.tmp.name, "alert-last")
++        daemon.EXPIRY_WARN_FILE = os.path.join(self.tmp.name, "expiry-warned")
++        daemon._running = True
++
++        self.alerts = []
++        daemon.send_alert = lambda text: self.alerts.append(text)
++
++        self.build_calls = 0
++        self.addCleanup(self.tmp.cleanup)
++
++    def _write_session(self, token):
++        with open(os.path.join(self.cookie_dir, "abc123.session"), "w") as f:
++            f.write(token)
++
++    def _reauth(self):
++        """Stand in for util/auth.sh installing a new session."""
++        self._write_session("brand-new-token-from-auth-sh")
++
++    def _apple_rejects(self, exc):
++        def build_api():
++            self.build_calls += 1
++            raise exc
++        PIPELINE.build_api = build_api
++
++    def _apple_accepts(self):
++        def build_api():
++            self.build_calls += 1
++            return object()
++        PIPELINE.build_api = build_api
++
++    def _boot(self):
++        """One launchd start of the daemon that is expected to die. Returns the
++        exit code."""
++        daemon._running = True
++        with self.assertRaises(SystemExit) as cm:
++            daemon.main()
++        return cm.exception.code
++
++    def _boot_healthy(self):
++        """One launchd start expected to reach the collection loop and leave it
++        cleanly (the stubbed run_pipeline clears _running after one cycle)."""
++        daemon._running = True
++        daemon.main()
++
++    def _dead_session_error(self):
++        """The exact shape from the log: 421 wrapped in a failed-login."""
++        return EXC.PyiCloudFailedLoginException(
++            "Invalid authentication token.",
++            EXC.PyiCloudAPIResponseException(
++                "Authentication required for Account. (421)", code=421),
++        )
++
++
++class TestRestartStormIsStopped(DaemonTestCase):
++    def test_first_rejection_alerts_and_exits_nonzero(self):
++        self._apple_rejects(self._dead_session_error())
++        self.assertEqual(self._boot(), 1)
++        self.assertEqual(self.build_calls, 1)
++        self.assertTrue(any("auth.sh" in a for a in self.alerts))
++
++    def test_restart_after_rejection_does_not_contact_apple(self):
++        """THE REGRESSION: before the hold, every launchd restart re-called
++        /accountLogin with the token Apple had already rejected."""
++        self._apple_rejects(self._dead_session_error())
++        self._boot()
++        for _ in range(11):  # a full hour of ThrottleInterval=300 restarts
++            self.assertEqual(self._boot(), 1)
++        self.assertEqual(self.build_calls, 1)
++
++    def test_held_restart_does_not_take_the_lock(self):
++        """Short-circuiting must not touch /tmp/afm_live.lock — the cron
++        fallback's mutual exclusion stays exactly as it was."""
++        self._apple_rejects(self._dead_session_error())
++        self._boot()
++        os.remove(daemon.LOCK_PATH)
++        self._boot()
++        self.assertFalse(os.path.exists(daemon.LOCK_PATH))
++
++    def test_untrusted_session_also_holds(self):
++        self._apple_rejects(EXC.PyiCloud2FARequiredException("not trusted"))
++        self._boot()
++        self._boot()
++        self.assertEqual(self.build_calls, 1)
++        self.assertTrue(any("2FA" in a or "trust" in a for a in self.alerts))
++
++    def test_auth_required_also_holds(self):
++        self._apple_rejects(EXC.PyiCloudAuthRequiredException("450 at startup"))
++        self._boot()
++        self._boot()
++        self.assertEqual(self.build_calls, 1)
++
++
++class TestRecovery(DaemonTestCase):
++    def test_reauth_lets_the_next_restart_through(self):
++        self._apple_rejects(self._dead_session_error())
++        self._boot()
++        self._boot()
++        self.assertEqual(self.build_calls, 1)
++
++        self._reauth()
++        self._apple_accepts()
++        PIPELINE.run_pipeline = self._one_cycle_then_stop
++        self._boot_healthy()
++        self.assertEqual(self.build_calls, 2)
++
++    def test_successful_startup_clears_a_stale_hold(self):
++        daemon.HOLD.enter()
++        self._reauth()
++        self._apple_accepts()
++        PIPELINE.run_pipeline = self._one_cycle_then_stop
++        self._boot_healthy()
++        self.assertFalse(os.path.exists(daemon.HOLD.state_path))
++
++    def test_transient_startup_error_does_not_hold(self):
++        """A network blip must keep the 5-minute retry cadence — the hold is
++        only for sessions Apple has actually rejected."""
++        self._apple_rejects(EXC.PyiCloudAPIResponseException("gateway", code=503))
++        self._boot()
++        self._boot()
++        self.assertEqual(self.build_calls, 2)
++        self.assertFalse(os.path.exists(daemon.HOLD.state_path))
++
++    def _one_cycle_then_stop(self, api, log=None):
++        daemon._running = False
++        return 3
++
++
++class TestMidLoopDeath(DaemonTestCase):
++    def test_session_dying_mid_loop_holds_too(self):
++        self._apple_accepts()
++
++        def run_pipeline(api, log=None):
++            raise self._dead_session_error()
++
++        PIPELINE.run_pipeline = run_pipeline
++        self.assertEqual(self._boot(), 1)
++        self.assertTrue(os.path.exists(daemon.HOLD.state_path))
++
++        self._boot()  # the restart that follows must not re-auth
++        self.assertEqual(self.build_calls, 1)
++
++    def test_healthy_cycle_clears_the_hold(self):
++        daemon.HOLD.enter()
++        self._reauth()
++        self._apple_accepts()
++
++        def run_pipeline(api, log=None):
++            daemon._running = False
++            return 2
++
++        PIPELINE.run_pipeline = run_pipeline
++        self._boot_healthy()  # exits the loop cleanly, no SystemExit
++        self.assertFalse(os.path.exists(daemon.HOLD.state_path))
++
++
++if __name__ == "__main__":
++    unittest.main(verbosity=2)
+diff --git a/test_session_hold.py b/test_session_hold.py
+new file mode 100644
+index 0000000..341f76f
+--- /dev/null
++++ b/test_session_hold.py
+@@ -0,0 +1,205 @@
++#!/usr/bin/env python3
++"""
++Tests for afm_session_hold — the dead-session hold that stops afm_live_daemon
++from re-calling Apple's auth endpoint on every launchd restart.
++
++Run:  python3 test_session_hold.py
++
++Deliberately imports only afm_session_hold (stdlib-only), so this suite runs
++without pyicloud / pandas / BigQuery credentials.
++"""
++
++import os
++import tempfile
++import time
++import unittest
++
++from afm_session_hold import SessionHold
++
++RESTART_INTERVAL = 300  # launchd ThrottleInterval in com.joemoser.afm-daemon.plist
++
++
++class HoldTestCase(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.TemporaryDirectory()
++        self.cookie_dir = os.path.join(self.tmp.name, "pyicloud")
++        os.mkdir(self.cookie_dir)
++        self._write_session("original-token")
++        self.hold = SessionHold(
++            state_path=os.path.join(self.tmp.name, "session-dead"),
++            cookie_dir=self.cookie_dir,
++        )
++
++    def tearDown(self):
++        self.tmp.cleanup()
++
++    def _write_session(self, token):
++        """Stand in for ~/.pyicloud/<md5>.session."""
++        with open(os.path.join(self.cookie_dir, "abc123.session"), "w") as f:
++            f.write(token)
++
++    def _reauth(self):
++        """Stand in for util/auth.sh installing a freshly minted session."""
++        self._write_session("brand-new-token-from-auth-sh")
++
++
++class TestRestartStorm(HoldTestCase):
++    """The bug: a dead session + KeepAlive restarts = one failed /accountLogin
++    every 5 minutes, forever."""
++
++    def _apple_calls_over(self, seconds, enter_hold):
++        """Simulate launchd restarting the daemon every ThrottleInterval with a
++        session Apple keeps rejecting. Returns how many restarts actually reached
++        Apple's auth endpoint."""
++        calls = 0
++        for now in range(0, seconds, RESTART_INTERVAL):
++            if self.hold.wait_secs(now=now) > 0:
++                continue  # daemon short-circuits: no network call
++            calls += 1  # build_api() -> /accountLogin -> rejected
++            if enter_hold:
++                self.hold.enter(now=now)
++        return calls
++
++    def test_unheld_dead_session_hammers_apple_every_restart(self):
++        """Baseline — this is the behavior in the logs (12 auth attempts/hour)."""
++        self.assertEqual(self._apple_calls_over(3600, enter_hold=False), 12)
++
++    def test_hold_throttles_the_storm_to_a_few_probes(self):
++        """With the hold, an hour of restarts costs 3 auth attempts, not 12."""
++        # t=0 rejected (hold, 15m) / t=900 probe rejected (30m) / t=2700 probe.
++        self.assertEqual(self._apple_calls_over(3600, enter_hold=True), 3)
++
++    def test_hold_converges_to_hourly_over_a_day(self):
++        """Long outage: ~24 probes/day instead of ~288."""
++        calls = self._apple_calls_over(24 * 3600, enter_hold=True)
++        self.assertLessEqual(calls, 26)
++        self.assertGreaterEqual(calls, 20)
++
++
++class TestHoldLifecycle(HoldTestCase):
++    def test_no_state_means_no_hold(self):
++        self.assertEqual(self.hold.wait_secs(), 0.0)
++
++    def test_enter_blocks_the_next_restart(self):
++        self.hold.enter(now=1000)
++        self.assertEqual(self.hold.wait_secs(now=1000 + RESTART_INTERVAL), 600.0)
++
++    def test_probe_becomes_due_after_the_delay(self):
++        self.hold.enter(now=1000)
++        self.assertEqual(self.hold.wait_secs(now=1000 + 900), 0.0)
++
++    def test_delay_escalates_then_caps(self):
++        self.assertEqual(self.hold.next_probe_secs(1), 900.0)
++        self.assertEqual(self.hold.next_probe_secs(2), 1800.0)
++        self.assertEqual(self.hold.next_probe_secs(3), 3600.0)
++        self.assertEqual(self.hold.next_probe_secs(9), 3600.0)
++
++    def test_repeated_rejections_escalate_the_wait(self):
++        self.hold.enter(now=0)
++        self.hold.enter(now=900)
++        self.assertEqual(self.hold.wait_secs(now=900), 1800.0)
++
++    def test_clear_releases_the_hold(self):
++        self.hold.enter(now=0)
++        self.hold.clear()
++        self.assertEqual(self.hold.wait_secs(now=0), 0.0)
++
++    def test_clear_is_idempotent(self):
++        self.hold.clear()
++        self.hold.clear()  # must not raise when there is no state file
++
++    def test_held_since_records_first_rejection(self):
++        self.hold.enter(now=500)
++        self.hold.enter(now=1400)
++        self.assertEqual(self.hold.held_since(), 500.0)
++        self.assertIsNone(SessionHold(
++            state_path=os.path.join(self.tmp.name, "absent"),
++            cookie_dir=self.cookie_dir).held_since())
++
++
++class TestSelfClearingOnReauth(HoldTestCase):
++    """auth.sh must be the only recovery step — no manual state cleanup."""
++
++    def test_reauth_clears_the_hold_immediately(self):
++        self.hold.enter(now=0)
++        self.assertGreater(self.hold.wait_secs(now=60), 0)
++        self._reauth()
++        self.assertEqual(self.hold.wait_secs(now=60), 0.0)
++
++    def test_reauth_removes_the_state_file(self):
++        self.hold.enter(now=0)
++        self._reauth()
++        self.hold.wait_secs(now=60)
++        self.assertFalse(os.path.exists(self.hold.state_path))
++
++    def test_reauth_resets_the_escalation(self):
++        """A new session that also dies starts at 15 min, not the old backoff."""
++        for t in (0, 900, 2700):
++            self.hold.enter(now=t)
++        self._reauth()
++        state = self.hold.enter(now=3000)
++        self.assertEqual(state["probes"], 1)
++        self.assertEqual(self.hold.wait_secs(now=3000), 900.0)
++
++    def test_fingerprint_tracks_session_content(self):
++        before = self.hold.fingerprint()
++        self._reauth()
++        self.assertNotEqual(before, self.hold.fingerprint())
++
++    def test_fingerprint_is_stable_when_nothing_changes(self):
++        self.assertEqual(self.hold.fingerprint(), self.hold.fingerprint())
++
++    def test_added_session_file_changes_the_fingerprint(self):
++        before = self.hold.fingerprint()
++        with open(os.path.join(self.cookie_dir, "abc123.cookiejar"), "w") as f:
++            f.write("cookies")
++        self.assertNotEqual(before, self.hold.fingerprint())
++
++
++class TestFailsOpen(HoldTestCase):
++    """A bug in the hold must never keep a working session offline."""
++
++    def test_corrupt_state_file_does_not_hold(self):
++        with open(self.hold.state_path, "w") as f:
++            f.write("{not json")
++        self.assertEqual(self.hold.wait_secs(), 0.0)
++
++    def test_non_dict_state_file_does_not_hold(self):
++        with open(self.hold.state_path, "w") as f:
++            f.write('"just a string"')
++        self.assertEqual(self.hold.wait_secs(), 0.0)
++
++    def test_garbage_fields_do_not_hold(self):
++        self.hold.enter(now=0)
++        state = self.hold._read()
++        state["last_probe"] = "not-a-number"
++        self.hold._write(state)
++        self.assertEqual(self.hold.wait_secs(now=0), 0.0)
++
++    def test_missing_cookie_dir_still_fingerprints(self):
++        hold = SessionHold(state_path=self.hold.state_path,
++                           cookie_dir=os.path.join(self.tmp.name, "gone"))
++        self.assertIsInstance(hold.fingerprint(), str)
++        hold.enter(now=0)
++        self.assertEqual(hold.wait_secs(now=60), 840.0)  # 900s delay, 60s elapsed
++
++    def test_state_write_is_atomic(self):
++        """No temp files left behind, and the state file is always complete."""
++        self.hold.enter(now=0)
++        leftovers = [n for n in os.listdir(os.path.dirname(self.hold.state_path))
++                     if n.startswith(".afm-hold-")]
++        self.assertEqual(leftovers, [])
++        self.assertIsInstance(self.hold._read(), dict)
++
++    def test_default_paths_are_absolute(self):
++        hold = SessionHold()
++        self.assertTrue(os.path.isabs(hold.state_path))
++        self.assertTrue(os.path.isabs(hold.cookie_dir))
++
++    def test_wait_secs_defaults_to_wall_clock(self):
++        self.hold.enter(now=time.time())
++        self.assertGreater(self.hold.wait_secs(), 0)
++
++
++if __name__ == "__main__":
++    unittest.main(verbosity=2)
+diff --git a/util/DAEMON.md b/util/DAEMON.md
+index c5c9218..df935bc 100644
+--- a/util/DAEMON.md
++++ b/util/DAEMON.md
+@@ -12,6 +12,9 @@ rationale, and `util/probe_session.py` for the diagnostic that proved it.
+ |---|---|
+ | `afm_live_daemon.py` | The daemon: builds one session, loops `run_pipeline` every `AFM_INTERVAL_SECS`. |
+ | `afm_pipeline.py` | Shared collection body (device loop → CSV → BigQuery → alerts). |
++| `afm_session_hold.py` | Dead-session hold: stops the launchd restart loop from re-authing a session Apple has rejected. Stdlib only. |
++| `test_session_hold.py` | Unit tests for the hold (no deps — runs anywhere). |
++| `test_daemon_hold.py` | Integration tests for the daemon's dead-session paths (pyicloud/BigQuery stubbed). |
+ | `afm_live.py` | **Untouched.** The cron fallback — instant rollback target. |
+ | `util/com.joemoser.afm-daemon.plist` | KeepAlive LaunchAgent (no StartInterval). launchd keeps the daemon alive. |
+ | `util/install_daemon.sh` | Idempotent (re)install of the LaunchAgent. Called by auto-deploy. |
+@@ -89,9 +92,22 @@ survive future deploys, also revert the `bash util/install_daemon.sh` line in
+ ## Behavior notes
+ 
+ - **Session death** (needs `auth.sh`): the daemon sends one Pushcut alert
+-  (deduped 30 min) and exits; launchd restarts it every `ThrottleInterval` (300s).
+-  After you run `auth.sh`, the next restart picks up the fresh session — no manual
+-  daemon restart needed.
++  (deduped 30 min), records a **dead-session hold**, and exits; launchd restarts it
++  every `ThrottleInterval` (300s). Each restart while the hold is active
++  short-circuits **without contacting Apple** — it logs `session is on the
++  dead-session hold` and exits. Apple is re-probed on an escalating schedule
++  (15 min → 30 min → 60 min, capped), so a dead session costs ~24 auth attempts a
++  day instead of ~288. After you run `auth.sh`, the next restart picks up the fresh
++  session — no manual daemon restart needed.
++
++  *Why the hold exists:* only `auth.sh` can revive a dead session, and repeatedly
++  re-calling `/accountLogin` with a token Apple has already rejected is precisely
++  what triggers SRP rate-limiting and withheld trust tokens — i.e. the restart loop
++  was sabotaging the `auth.sh` run that fixes it. State lives in
++  `~/.pyicloud-daemon-session-dead` and is keyed to a fingerprint of `~/.pyicloud`,
++  so installing a new session clears it automatically. **Never delete it by hand as
++  a recovery step** — run `auth.sh`. (Deleting it is harmless but pointless: it only
++  buys one immediate retry against a session that is still dead.)
+ - **Transient errors** (Apple 5xx/429, network, an un-self-healed 450): logged,
+   retried after 60s, session kept in memory. No exit.
+ - **Data-plane errors** (BigQuery/pandas/alerts): logged + alerted, but the daemon
+-- 
+2.43.0
+

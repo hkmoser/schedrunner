@@ -139,7 +139,10 @@ def _elapsed(since_iso: str | None, now: datetime.datetime) -> str:
 
 def _location_label(row: dict, osm_name: str | None = None) -> str:
     if row.get("at_hm"):
-        return "home"
+        # at_hm stays true at CF, so name the closest known location when it is
+        # something other than home; only fall back to "home" if there's nothing.
+        loc = _norm(row.get("cls_loc")) or _norm(row.get("cls_loc_ref"))
+        return "home" if not loc or loc.lower() in ("hm", "home") else loc
     # OSM reverse-geocode result takes priority — more accurate for nearby venues/hotels
     if osm_name:
         return osm_name
@@ -387,6 +390,7 @@ def _query_latest(client: bigquery.Client) -> pd.DataFrame:
             t.mvmt_type,
             t.at_hm,
             t.in_nh,
+            t.cls_loc,
             t.cls_loc_ref,
             t.cls_loc_ref_dist,
             t.twd_loc,
@@ -495,7 +499,7 @@ def _process_device(dev: str, row: dict, ds: dict, now: datetime.datetime,
             delta = (now - datetime.datetime.fromisoformat(pending_since)).total_seconds()
             if delta >= _MIN_ARRIVAL_SECS:
                 seg_elapsed = _elapsed(ds.get("mvmt_since"), now)
-                home_tag = "🏠 Home" if curr_at_hm else "📍 Arrived"
+                home_tag = "🏠 Home" if curr_loc_label == "home" else "📍 Arrived"
                 title = f"{home_tag} · {dev}"
                 lines = [f"At {curr_loc_label}", f"Travelled for {seg_elapsed}"]
                 poi_addr = osm_addr or _norm(row.get("poi_address"))
@@ -684,7 +688,7 @@ def _process_device(dev: str, row: dict, ds: dict, now: datetime.datetime,
         # Use the CONFIRMED anchor's label/home-flag (not the current fix), so a
         # jittery cycle can't relabel the ongoing stop notification.
         anchor_label = _norm(ds.get("loc_label")) or curr_loc_label
-        home_tag = "🏠" if ds.get("anchor_at_hm") else "📍"
+        home_tag = "🏠" if anchor_label == "home" else "📍"
         title = f"{home_tag} {anchor_label} · {elapsed} · {dev}"
         lines = [f"For {elapsed}", f"Battery {round(curr_bat_lvl * 100)}% · {curr_bat_stat}"]
         _push(dev, title, "\n".join(lines), notification_id=st_seg_id, config=config)

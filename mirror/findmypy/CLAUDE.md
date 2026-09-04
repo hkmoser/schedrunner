@@ -142,8 +142,42 @@ bash util/auth.sh
 ```
 
 **Critical safety property:** `auth.py` writes all session files to a temp dir and only
-copies them to `~/.pyicloud` after full success (SRP + 2FA + `trust_session()` + devices
-accessible). A failed or interrupted auth run **never touches the live session**.
+swaps them into `~/.pyicloud` (atomic `os.rename`) once the session is worth keeping.
+A failed or interrupted auth run **never touches the live session**.
+
+**Smoke test is not a gate on the 450.** After 2FA, the first FindMy call on a brand-new
+session normally returns 450 (Apple has no `_server_ctx` for it yet) and pyicloud raises
+`PyiCloudAuthRequiredException` when its own retry also 450s — the same exception
+`afm_live.py` classifies as transient and self-healing. `auth.py` therefore retries the
+smoke test up to 3× (20 s, then 45 s, re-minting FindMy cookies between attempts) and, if
+it still doesn't pass, offers to install anyway (default **yes**). Only a session-level
+failure — `PyiCloudFailedLoginException`, `PyiCloud2FARequiredException`,
+`PyiCloud2SARequiredException`, `PyiCloudServiceNotActivatedException` — blocks the install,
+because those mean Apple rejected the credential itself, not just the FindMy call.
+Discarding a freshly trusted session over a 450 is strictly worse than installing it: the
+only way back is another SRP round, which is exactly what triggers the 24 h rate limit.
+
+**Session file naming.** This pyicloud build names the session pair after the sanitized
+Apple ID — `joejoemosercom.session` / `joejoemosercom.cookiejar` — not `md5(apple_id).session`.
+`auth.py`'s post-trust flush asks pyicloud for the path, then falls back to whichever
+`*.session` file pyicloud already wrote. An earlier version guessed the md5 name, so the
+post-trust `dsWebAuthToken` went into a file pyicloud never reads (that stray
+`cd609d0f7969d7e841b161eca48fedf2.session` in `~/.pyicloud` is the leftover) while the real
+session file kept the pre-trust token. Never hardcode a session filename here.
+
+**A good session is never thrown away.** When `auth.py` declines to install, it leaves the
+temp session on disk and prints its path. Install it later without any SRP or 2FA:
+
+```bash
+.venv/bin/python util/auth.py --install-from /var/folders/.../pyicloud-auth-XXXX
+```
+
+**State reset on install:** `auth.py` clears `~/.pyicloud-auth-backoff`,
+`~/.pyicloud-transient-ctr`, `~/.pyicloud-transient-last`,
+`~/.pyicloud-accountlogin-holdoff`, and `~/.pyicloud-expiry-warned`, so the new session
+doesn't inherit the old one's backoff or hold-off state. `auth.sh` clears the
+`/accountLogin` holdoff only when `auth.py` exits 0 — after a failed run the live session
+is still the old one, and its holdoff is what protects it from token burn.
 
 **Rate limiting:** Apple rate-limits SRP after repeated failures. Wait a full 24 hours with
 zero auth attempts before retrying. The cron job with `_CronPyiCloudService` does NOT

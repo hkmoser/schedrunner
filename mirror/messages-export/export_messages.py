@@ -98,9 +98,32 @@ def ensure_messages_db_readable() -> None:
 
 
 # Google Drive's File Provider returns EDEADLK ("Resource deadlock avoided")
-# when a write lands on a file it's busy with: one that's mid-sync, or an
-# online-only placeholder it's still downloading. It clears on its own, so retry.
-DRIVE_RETRY_DELAYS = (2, 5, 10, 20)
+# when a write lands on a file it's busy with (mid-sync), and, persistently, when
+# the file is an online-only placeholder that this process can't download. The
+# first kind clears on its own, so retry briefly; the second never does, so
+# conversation files fall back to being rewritten whole (see export_messages).
+DRIVE_RETRY_DELAYS = (1, 3)
+
+
+def enable_dataless_materialization() -> None:
+    """Let this process download online-only (dataless) files on access.
+
+    macOS can disable this per process, in which case touching a placeholder
+    fails with EDEADLK instead of fetching it. Best effort: if the call isn't
+    available, the rewrite fallback still covers it.
+    """
+    if sys.platform != "darwin":
+        return
+    try:
+        import ctypes
+        libc = ctypes.CDLL(None, use_errno=True)
+        # <sys/resource.h>: IOPOL_TYPE_VFS_MATERIALIZE_DATALESS_FILES = 3,
+        # IOPOL_SCOPE_PROCESS = 0, IOPOL_MATERIALIZE_DATALESS_FILES_ON = 2
+        if libc.setiopolicy_np(3, 0, 2) != 0:
+            log(f"Note: couldn't enable online-only file downloads "
+                f"(errno {ctypes.get_errno()}); continuing.")
+    except Exception as e:
+        log(f"Note: couldn't enable online-only file downloads ({e}); continuing.")
 
 
 def drive_write(fn):
@@ -114,6 +137,21 @@ def drive_write(fn):
             log(f"  Google Drive busy ({e.strerror}) — retrying in {delay}s ...")
             time.sleep(delay)
     return fn()
+
+
+def drive_replace(path: Path, text: str) -> None:
+    """Write text to a temp file beside path, then swap it in.
+
+    Unlike opening the synced file, this never needs Drive to download the old
+    contents, so it works on online-only placeholders.
+    """
+    tmp_path = path.with_name(f".{path.name}.tmp")
+
+    def _write() -> None:
+        tmp_path.write_text(text, encoding="utf-8")
+        os.replace(tmp_path, path)
+
+    drive_write(_write)
 
 
 def apple_ts_to_str(ns: int) -> str:
@@ -391,15 +429,7 @@ def _write_contacts_reference(contact_map: dict[str, str], output_dir: Path) -> 
 
     ordered = dict(sorted(by_name.items()))
     out_path = output_dir / "_contacts.json"
-    tmp_path = output_dir / "._contacts.json.tmp"
-
-    # Write a fresh file and swap it in, rather than rewriting the synced file
-    # in place (which needs Drive to download it first if it's online-only).
-    def _write() -> None:
-        tmp_path.write_text(json.dumps(ordered, indent=2, ensure_ascii=False))
-        os.replace(tmp_path, out_path)
-
-    drive_write(_write)
+    drive_replace(out_path, json.dumps(ordered, indent=2, ensure_ascii=False))
     log(f"Contacts reference written → {out_path} ({len(ordered)} people)")
 
 
@@ -433,6 +463,7 @@ def save_state(state: dict[str, int]) -> None:
 # ── Core export ────────────────────────────────────────────────────────────────
 def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
     ensure_messages_db_readable()
+    enable_dataless_materialization()
 
     output_dir = find_output_dir()
     log(f"Output directory: {output_dir}")
@@ -465,12 +496,47 @@ def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
     chats = cur.fetchall()
     log(f"Found {len(chats)} conversations")
 
-    total_written = 0
-    failed: list[str] = []
+    MESSAGES_SQL = """
+        SELECT
+            cmj.chat_id,
+            m.date,
+            CASE WHEN m.is_from_me = 1
+                 THEN 'Me'
+                 ELSE COALESCE(h.id, 'Unknown')
+            END AS sender,
+            COALESCE(m.text, '[attachment/reaction]') AS body
+        FROM message m
+        JOIN chat_message_join cmj ON m.ROWID = cmj.message_id
+        LEFT JOIN handle h         ON m.handle_id = h.ROWID
+        WHERE cmj.chat_id IN ({ids}) AND m.date > ?
+        ORDER BY m.date ASC
+    """
 
+    def fetch_messages(chat_ids: list[int], since: int) -> list[sqlite3.Row]:
+        sql = MESSAGES_SQL.format(ids=",".join("?" * len(chat_ids)))
+        cur.execute(sql, (*chat_ids, since))
+        return cur.fetchall()
+
+    def render(messages: list[sqlite3.Row]) -> str:
+        lines = []
+        for msg in messages:
+            ts_str = apple_ts_to_str(msg["date"])
+            body   = (msg["body"] or "").replace("\n", " ").replace("\r", " ")
+            sender = resolve_handle(msg["sender"], contacts) if msg["sender"] != "Me" else "Me"
+            lines.append(f"[{ts_str}] {sender}: {body}\n")
+        return "".join(lines)
+
+    def header(display: str, participants_raw: str) -> str:
+        return (f"# Conversation: {display}\n"
+                f"# Participants: {participants_raw}\n"
+                f"# Exported: {datetime.now():%Y-%m-%d %H:%M:%S}\n\n")
+
+    # Resolve every chat's name up front. Different chats can share a filename
+    # (e.g. an SMS and an iMessage thread with the same person); the rewrite
+    # fallback needs all of them to rebuild that file without losing any.
+    resolved = []
+    by_filename: dict[str, list[int]] = {}
     for chat in chats:
-        chat_id   = chat["chat_id"]
-        chat_guid = chat["chat_guid"]
         participants_raw = chat["participants"] or ""
         participant_list = [p.strip() for p in participants_raw.split(",") if p.strip()]
 
@@ -482,50 +548,70 @@ def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
         else:
             display = ", ".join(resolve_handle(p, contacts) for p in participant_list)
 
-        filename   = safe_filename(display) + ".txt"
-        out_path   = output_dir / filename
-        last_date  = state.get(chat_guid, 0) if not full else 0
+        filename = safe_filename(display) + ".txt"
+        resolved.append((chat, display, participants_raw, filename))
+        by_filename.setdefault(filename, []).append(chat["chat_id"])
+    guid_by_id = {chat["chat_id"]: chat["chat_guid"] for chat in chats}
 
-        cur.execute("""
-            SELECT
-                m.date,
-                CASE WHEN m.is_from_me = 1
-                     THEN 'Me'
-                     ELSE COALESCE(h.id, 'Unknown')
-                END AS sender,
-                COALESCE(m.text, '[attachment/reaction]') AS body
-            FROM message m
-            JOIN chat_message_join cmj ON m.ROWID = cmj.message_id
-            LEFT JOIN handle h         ON m.handle_id = h.ROWID
-            WHERE cmj.chat_id = ? AND m.date > ?
-            ORDER BY m.date ASC
-        """, (chat_id, last_date))
+    total_written = 0
+    rewritten = 0
+    done_full: set[str] = set()
+    failed: list[str] = []
 
-        messages = cur.fetchall()
+    for chat, display, participants_raw, filename in resolved:
+        chat_id   = chat["chat_id"]
+        chat_guid = chat["chat_guid"]
+        out_path  = output_dir / filename
+        # new_state, not state: a rewrite earlier in this run may already
+        # have covered this chat (it shares a file with another one).
+        last_date = new_state.get(chat_guid, 0) if not full else 0
+
+        messages = fetch_messages([chat_id], last_date)
         if not messages:
             continue
 
-        # Build the text first so a retried write is all-or-nothing.
-        lines = []
-        if full:
-            lines.append(f"# Conversation: {display}\n")
-            lines.append(f"# Participants: {participants_raw}\n")
-            lines.append(f"# Exported: {datetime.now():%Y-%m-%d %H:%M:%S}\n\n")
-        for msg in messages:
-            ts_str = apple_ts_to_str(msg["date"])
-            body   = (msg["body"] or "").replace("\n", " ").replace("\r", " ")
-            sender = resolve_handle(msg["sender"], contacts) if msg["sender"] != "Me" else "Me"
-            lines.append(f"[{ts_str}] {sender}: {body}\n")
-        text = "".join(lines)
-
-        write_mode = "w" if full else "a"
-
-        def _write() -> None:
-            with open(out_path, write_mode, encoding="utf-8") as f:
-                f.write(text)
-
         try:
-            drive_write(_write)
+            if full:
+                # One write per file, covering every chat that shares it.
+                if filename in done_full:
+                    continue
+                group = by_filename[filename]
+                if len(group) > 1:
+                    messages = fetch_messages(group, 0)
+                drive_replace(out_path, header(display, participants_raw) + render(messages))
+                done_full.add(filename)
+                for gid in group:
+                    dates = [m["date"] for m in messages if m["chat_id"] == gid]
+                    if dates:
+                        new_state[guid_by_id[gid]] = max(dates)
+                total_written += len(messages)
+                log(f"  {display}: +{len(messages)} → {filename}")
+                continue
+            else:
+                text = render(messages)
+                try:
+                    with open(out_path, "a", encoding="utf-8") as f:
+                        f.write(text)
+                except OSError as e:
+                    if e.errno != errno.EDEADLK:
+                        raise
+                    # Online-only placeholder: appending needs the old contents,
+                    # which Drive won't hand over. Rebuild the whole file from
+                    # chat.db (every chat that shares this filename) and swap it in.
+                    group = by_filename[filename]
+                    everything = fetch_messages(group, 0)
+                    drive_replace(out_path, header(display, participants_raw) + render(everything))
+                    added = sum(1 for m in everything
+                                if m["date"] > new_state.get(guid_by_id[m["chat_id"]], 0))
+                    for gid in group:
+                        dates = [m["date"] for m in everything if m["chat_id"] == gid]
+                        if dates:
+                            new_state[guid_by_id[gid]] = max(dates)
+                    rewritten += 1
+                    total_written += added
+                    log(f"  {display}: +{added} → {filename} "
+                        f"(online-only in Drive; rewrote from chat.db)")
+                    continue
         except OSError as e:
             # Leave this chat's state alone so the next run picks these up.
             log(f"  ERROR: {display}: couldn't write {filename} ({e}); will retry next run.")
@@ -542,6 +628,9 @@ def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
 
     mode_label = "full re-export" if full else "incremental export"
     log(f"Done ({mode_label}). {total_written} messages written across {len(chats)} conversations.")
+    if rewritten:
+        log(f"{rewritten} file(s) were online-only in Google Drive and were rewritten "
+            f"from chat.db. Marking the Messages folder 'Available offline' avoids this.")
     if failed:
         log(f"ERROR: {len(failed)} conversation(s) failed to write: {', '.join(failed)}")
         sys.exit(1)

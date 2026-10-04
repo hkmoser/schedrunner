@@ -69,6 +69,12 @@ python3 gchat_collector.py --full-read    # deep scrape every chat (sends receip
   needed to read Apple's TCC-protected stores (`chat.db`, the AddressBook DB).
   If the process that launches the export (your scheduler, terminal, or IDE)
   already has FDA, child Python processes inherit it and everything just works.
+- **Google Drive online-only files:** if Drive has turned an exported file into
+  an online-only placeholder, appending to it fails with "Resource deadlock
+  avoided". The exporter then rebuilds that file from `chat.db` and swaps it in,
+  so nothing is skipped. Anything that's gone from `chat.db` (e.g. deleted
+  messages) won't be in the rebuilt file. To avoid it, right-click
+  `My Drive/Private/Messages` in Finder → **Available offline**.
 - **Scheduling the Messages export (headless, no Terminal window):** point your
   scheduler at `run_export.sh` — it runs `python3` directly, with no window. If
   your scheduler already has FDA, that's all you need. Only if a run fails on

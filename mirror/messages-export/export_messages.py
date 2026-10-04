@@ -21,6 +21,7 @@ Usage:
 """
 
 import argparse
+import errno
 import json
 import os
 import re
@@ -28,6 +29,7 @@ import shutil
 import sqlite3
 import subprocess
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -93,6 +95,25 @@ def ensure_messages_db_readable() -> None:
     except OSError as e:
         log(f"ERROR: cannot read ~/Library/Messages/chat.db: {e}")
         sys.exit(2)
+
+
+# Google Drive's File Provider returns EDEADLK ("Resource deadlock avoided")
+# when a write lands on a file it's busy with: one that's mid-sync, or an
+# online-only placeholder it's still downloading. It clears on its own, so retry.
+DRIVE_RETRY_DELAYS = (2, 5, 10, 20)
+
+
+def drive_write(fn):
+    """Run fn(), retrying while Google Drive reports the file as busy (EDEADLK)."""
+    for delay in DRIVE_RETRY_DELAYS:
+        try:
+            return fn()
+        except OSError as e:
+            if e.errno != errno.EDEADLK:
+                raise
+            log(f"  Google Drive busy ({e.strerror}) — retrying in {delay}s ...")
+            time.sleep(delay)
+    return fn()
 
 
 def apple_ts_to_str(ns: int) -> str:
@@ -308,12 +329,14 @@ def load_contact_map(force_refresh: bool = False, output_dir: Path | None = None
     If output_dir is provided and contacts are (re)loaded, a human-readable
     _contacts.json is written there for reference alongside message threads.
     """
-    import time
-
     def _persist(contact_map: dict[str, str]) -> None:
         CONTACTS_CACHE.write_text(json.dumps(contact_map, indent=2))
         if output_dir:
-            _write_contacts_reference(contact_map, output_dir)
+            # Reference copy only: a Drive hiccup here shouldn't stop the export.
+            try:
+                _write_contacts_reference(contact_map, output_dir)
+            except OSError as e:
+                log(f"WARNING: couldn't write _contacts.json ({e}); continuing.")
 
     # Default: read AddressBook DB directly (skip when an explicit AppleScript
     # refresh was requested).
@@ -368,7 +391,15 @@ def _write_contacts_reference(contact_map: dict[str, str], output_dir: Path) -> 
 
     ordered = dict(sorted(by_name.items()))
     out_path = output_dir / "_contacts.json"
-    out_path.write_text(json.dumps(ordered, indent=2, ensure_ascii=False))
+    tmp_path = output_dir / "._contacts.json.tmp"
+
+    # Write a fresh file and swap it in, rather than rewriting the synced file
+    # in place (which needs Drive to download it first if it's online-only).
+    def _write() -> None:
+        tmp_path.write_text(json.dumps(ordered, indent=2, ensure_ascii=False))
+        os.replace(tmp_path, out_path)
+
+    drive_write(_write)
     log(f"Contacts reference written → {out_path} ({len(ordered)} people)")
 
 
@@ -435,6 +466,7 @@ def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
     log(f"Found {len(chats)} conversations")
 
     total_written = 0
+    failed: list[str] = []
 
     for chat in chats:
         chat_id   = chat["chat_id"]
@@ -473,17 +505,32 @@ def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
         if not messages:
             continue
 
+        # Build the text first so a retried write is all-or-nothing.
+        lines = []
+        if full:
+            lines.append(f"# Conversation: {display}\n")
+            lines.append(f"# Participants: {participants_raw}\n")
+            lines.append(f"# Exported: {datetime.now():%Y-%m-%d %H:%M:%S}\n\n")
+        for msg in messages:
+            ts_str = apple_ts_to_str(msg["date"])
+            body   = (msg["body"] or "").replace("\n", " ").replace("\r", " ")
+            sender = resolve_handle(msg["sender"], contacts) if msg["sender"] != "Me" else "Me"
+            lines.append(f"[{ts_str}] {sender}: {body}\n")
+        text = "".join(lines)
+
         write_mode = "w" if full else "a"
-        with open(out_path, write_mode, encoding="utf-8") as f:
-            if full:
-                f.write(f"# Conversation: {display}\n")
-                f.write(f"# Participants: {participants_raw}\n")
-                f.write(f"# Exported: {datetime.now():%Y-%m-%d %H:%M:%S}\n\n")
-            for msg in messages:
-                ts_str = apple_ts_to_str(msg["date"])
-                body   = (msg["body"] or "").replace("\n", " ").replace("\r", " ")
-                sender = resolve_handle(msg["sender"], contacts) if msg["sender"] != "Me" else "Me"
-                f.write(f"[{ts_str}] {sender}: {body}\n")
+
+        def _write() -> None:
+            with open(out_path, write_mode, encoding="utf-8") as f:
+                f.write(text)
+
+        try:
+            drive_write(_write)
+        except OSError as e:
+            # Leave this chat's state alone so the next run picks these up.
+            log(f"  ERROR: {display}: couldn't write {filename} ({e}); will retry next run.")
+            failed.append(display)
+            continue
 
         new_state[chat_guid] = max(m["date"] for m in messages)
         total_written += len(messages)
@@ -495,6 +542,9 @@ def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
 
     mode_label = "full re-export" if full else "incremental export"
     log(f"Done ({mode_label}). {total_written} messages written across {len(chats)} conversations.")
+    if failed:
+        log(f"ERROR: {len(failed)} conversation(s) failed to write: {', '.join(failed)}")
+        sys.exit(1)
 
 
 def list_conversations() -> None:
@@ -510,7 +560,7 @@ def list_conversations() -> None:
         SELECT
             c.display_name,
             GROUP_CONCAT(DISTINCT h.id) AS participants,
-            COUNT(m.ROWID)              AS msg_count,
+            COUNT(DISTINCT m.ROWID)     AS msg_count,
             MIN(m.date)                 AS first_date,
             MAX(m.date)                 AS last_date
         FROM chat c

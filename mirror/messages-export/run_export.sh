@@ -37,13 +37,17 @@ echo "[$(ts)] messages-export: starting incremental export (python: $PYTHON)"
 "$PYTHON" "$SCRIPT_DIR/export_messages.py"
 status=$?
 
-if [[ $status -ne 0 ]]; then
+# Exit 2 means chat.db couldn't be read (Full Disk Access). Anything else is a
+# different problem; the Python output above says what.
+if [[ $status -eq 2 ]]; then
     real_py="$("$PYTHON" -c 'import sys; print(sys.executable)' 2>/dev/null || echo "$PYTHON")"
-    echo "[$(ts)] export failed (exit $status)."
-    echo "[$(ts)] If this is a Full Disk Access error, grant FDA to the interpreter:"
+    echo "[$(ts)] export failed (exit $status): chat.db is not readable."
+    echo "[$(ts)] Grant Full Disk Access to the interpreter:"
     echo "         System Settings → Privacy & Security → Full Disk Access → + →"
     echo "         $real_py"
     echo "         (reveal it in Finder: open -R \"$real_py\")"
+elif [[ $status -ne 0 ]]; then
+    echo "[$(ts)] export failed (exit $status) — see the error above."
 fi
 
 echo "[$(ts)] messages-export: done (exit $status)"

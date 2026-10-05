@@ -22,10 +22,10 @@ Usage:
 
 import argparse
 import errno
+import hashlib
 import json
 import os
 import re
-import shutil
 import sqlite3
 import subprocess
 import sys
@@ -38,6 +38,19 @@ MESSAGES_DB    = Path.home() / "Library/Messages/chat.db"
 TMP_DB         = Path("/tmp/messages_export_chat.db")
 STATE_FILE     = Path.home() / ".messages_export_state.json"
 CONTACTS_CACHE = Path.home() / ".messages_export_contacts.json"
+SOURCE_MARKER  = Path.home() / ".messages_export_source.json"
+CONTACTS_REF_HASH = Path.home() / ".messages_export_contacts_ref.sha256"
+FORMAT_FILE    = Path.home() / ".messages_export_format"
+
+# Bump when the text written for a message changes. The next scheduled run
+# then re-exports everything once (--full) so old files get the new format.
+#   2: reply tags ("[replying to Jane: ...]")
+#   3: reactions ("[reacted ❤️ to Jane: ...]")
+FORMAT_VERSION = 3
+
+# Tapbacks: message.associated_message_type 2000-2007 adds one, 3000-3007
+# removes it. 2006 is a custom emoji (in associated_message_emoji).
+TAPBACKS = {0: "❤️", 1: "👍", 2: "👎", 3: "😂", 4: "‼️", 5: "❓", 7: "a sticker"}
 CONTACTS_MAX_AGE_DAYS = 7   # re-query Contacts.app after this many days
 
 # macOS AddressBook databases. Contacts are usually split across per-account
@@ -152,6 +165,105 @@ def drive_replace(path: Path, text: str) -> None:
         os.replace(tmp_path, path)
 
     drive_write(_write)
+
+
+# ── Source snapshot / change detection ──────────────────────────────────────────
+def snapshot_db(src: Path, dst: Path) -> None:
+    """Copy a live SQLite DB to dst, including what's still in its -wal file.
+
+    A plain file copy of the main DB misses the newest messages: SQLite keeps
+    them in the -wal journal until the app folds them in. The backup API reads
+    the DB the way SQLite sees it, journal included.
+    """
+    dst.unlink(missing_ok=True)
+    source = sqlite3.connect(f"file:{src}?mode=ro", uri=True)
+    target = sqlite3.connect(dst)
+    try:
+        source.backup(target)
+    finally:
+        source.close()
+        target.close()
+
+
+def source_signature(db: Path) -> list:
+    """Size and modified time of the DB and its -wal: changes on any new message."""
+    sig = []
+    for path in (db, db.with_name(db.name + "-wal")):
+        try:
+            st = path.stat()
+        except FileNotFoundError:
+            st = None
+        # An empty -wal holds nothing; treat it like a missing one. (Opening the
+        # DB can create an empty one, which would otherwise defeat the skip.)
+        if st is None or st.st_size == 0:
+            sig.append([path.name, None, None])
+        else:
+            sig.append([path.name, st.st_mtime_ns, st.st_size])
+    return sig
+
+
+def source_unchanged(signature: list, marker: Path) -> bool:
+    """True if the DB looks exactly as it did after the last successful run."""
+    try:
+        return json.loads(marker.read_text()) == signature
+    except (OSError, ValueError):
+        return False
+
+
+def record_source(signature: list, marker: Path) -> None:
+    marker.write_text(json.dumps(signature))
+
+
+def table_columns(cur: sqlite3.Cursor, table: str) -> set[str]:
+    return {row[1] for row in cur.execute(f"PRAGMA table_info({table})")}
+
+
+def quote_ref(quoted: tuple[str, str] | None) -> str:
+    """'Jane: "original text"' for another message, shortened to fit on a line.
+
+    quoted is (sender, text) of the original, or None if it isn't in the
+    database any more (deleted, or from before this device's history).
+    """
+    if quoted is None:
+        return "an earlier message"
+    sender, text = quoted
+    text = " ".join((text or "").split())
+    if len(text) > 60:
+        text = text[:57].rstrip() + "..."
+    return f'{sender}: "{text}"'
+
+
+def reply_tag(quoted: tuple[str, str] | None) -> str:
+    """' [replying to Jane: "original text"]' for a message that quotes another."""
+    return f" [replying to {quote_ref(quoted)}]"
+
+
+def reaction_text(kind: int, emoji: str | None, quoted: tuple[str, str] | None) -> str:
+    """'[reacted ❤️ to Jane: "original text"]' for a tapback row.
+
+    kind is associated_message_type: 2000-2007 adds, 3000-3007 removes.
+    """
+    added = kind < 3000
+    symbol = emoji if kind % 1000 == 6 and emoji else TAPBACKS.get(kind % 1000, "a reaction")
+    if added:
+        return f"[reacted {symbol} to {quote_ref(quoted)}]"
+    return f"[removed {symbol} from {quote_ref(quoted)}]"
+
+
+def is_reaction(kind: int | None) -> bool:
+    return kind is not None and (2000 <= kind <= 2999 or 3000 <= kind <= 3999)
+
+
+def format_outdated(marker: Path, version: int = FORMAT_VERSION) -> bool:
+    """True if the files on Drive were written by an older output format."""
+    try:
+        return int(marker.read_text().strip()) < version
+    except (OSError, ValueError):
+        return True
+
+
+def record_format(marker: Path, version: int = FORMAT_VERSION) -> None:
+    marker.write_text(f"{version}\n")
 
 
 def apple_ts_to_str(ns: int) -> str:
@@ -429,7 +541,20 @@ def _write_contacts_reference(contact_map: dict[str, str], output_dir: Path) -> 
 
     ordered = dict(sorted(by_name.items()))
     out_path = output_dir / "_contacts.json"
-    drive_replace(out_path, json.dumps(ordered, indent=2, ensure_ascii=False))
+    text = json.dumps(ordered, indent=2, ensure_ascii=False)
+
+    # Skip the write (and Drive's re-upload) when nothing changed. The hash of
+    # the last write is kept locally so this never has to read the Drive copy.
+    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    try:
+        unchanged = CONTACTS_REF_HASH.read_text().strip() == digest and out_path.exists()
+    except OSError:
+        unchanged = False
+    if unchanged:
+        return
+
+    drive_replace(out_path, text)
+    CONTACTS_REF_HASH.write_text(digest)
     log(f"Contacts reference written → {out_path} ({len(ordered)} people)")
 
 
@@ -463,13 +588,25 @@ def save_state(state: dict[str, int]) -> None:
 # ── Core export ────────────────────────────────────────────────────────────────
 def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
     ensure_messages_db_readable()
+
+    if not full and format_outdated(FORMAT_FILE):
+        log(f"Output format changed (now v{FORMAT_VERSION}) — re-exporting everything once.")
+        full = True
+
+    # Taken before the snapshot: anything that changes mid-run makes the next
+    # run see a different signature and look again.
+    signature = source_signature(MESSAGES_DB)
+    if not (full or refresh_contacts) and source_unchanged(signature, SOURCE_MARKER):
+        log("chat.db unchanged since last run — nothing to do.")
+        return
+
     enable_dataless_materialization()
 
     output_dir = find_output_dir()
     log(f"Output directory: {output_dir}")
 
-    log("Copying chat.db to /tmp for safe read ...")
-    shutil.copy2(MESSAGES_DB, TMP_DB)
+    log("Snapshotting chat.db to /tmp for safe read ...")
+    snapshot_db(MESSAGES_DB, TMP_DB)
 
     contacts = load_contact_map(force_refresh=refresh_contacts, output_dir=output_dir)
 
@@ -496,6 +633,18 @@ def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
     chats = cur.fetchall()
     log(f"Found {len(chats)} conversations")
 
+    msg_cols = table_columns(cur, "message")
+    reply_col = (", m.thread_originator_guid AS reply_to"
+                 if {"guid", "thread_originator_guid"} <= msg_cols
+                 else ", NULL AS reply_to")
+    if {"guid", "associated_message_type", "associated_message_guid"} <= msg_cols:
+        reply_col += (", m.associated_message_type AS react_kind"
+                      ", m.associated_message_guid AS react_target")
+        reply_col += (", m.associated_message_emoji AS react_emoji"
+                      if "associated_message_emoji" in msg_cols else ", NULL AS react_emoji")
+    else:
+        reply_col += ", NULL AS react_kind, NULL AS react_target, NULL AS react_emoji"
+
     MESSAGES_SQL = """
         SELECT
             cmj.chat_id,
@@ -505,6 +654,7 @@ def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
                  ELSE COALESCE(h.id, 'Unknown')
             END AS sender,
             COALESCE(m.text, '[attachment/reaction]') AS body
+            {reply_col}
         FROM message m
         JOIN chat_message_join cmj ON m.ROWID = cmj.message_id
         LEFT JOIN handle h         ON m.handle_id = h.ROWID
@@ -513,17 +663,46 @@ def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
     """
 
     def fetch_messages(chat_ids: list[int], since: int) -> list[sqlite3.Row]:
-        sql = MESSAGES_SQL.format(ids=",".join("?" * len(chat_ids)))
+        sql = MESSAGES_SQL.format(ids=",".join("?" * len(chat_ids)), reply_col=reply_col)
         cur.execute(sql, (*chat_ids, since))
         return cur.fetchall()
+
+    def sender_name(raw: str) -> str:
+        return resolve_handle(raw, contacts) if raw != "Me" else "Me"
+
+    # Inline replies (macOS 11+): thread_originator_guid points at the message
+    # that started the reply thread. Look the original up by guid; it may be in
+    # an earlier export, so this goes to the database, not this batch.
+    quoted_cache: dict[str, tuple[str, str] | None] = {}
+
+    def quoted(guid: str) -> tuple[str, str] | None:
+        if guid not in quoted_cache:
+            q = conn.cursor()
+            q.execute("""
+                SELECT CASE WHEN m.is_from_me = 1 THEN 'Me'
+                            ELSE COALESCE(h.id, 'Unknown') END,
+                       COALESCE(m.text, '[attachment]')
+                FROM message m
+                LEFT JOIN handle h ON m.handle_id = h.ROWID
+                WHERE m.guid = ?
+            """, (guid,))
+            row = q.fetchone()
+            quoted_cache[guid] = None if row is None else (sender_name(row[0]), row[1])
+        return quoted_cache[guid]
 
     def render(messages: list[sqlite3.Row]) -> str:
         lines = []
         for msg in messages:
             ts_str = apple_ts_to_str(msg["date"])
             body   = (msg["body"] or "").replace("\n", " ").replace("\r", " ")
-            sender = resolve_handle(msg["sender"], contacts) if msg["sender"] != "Me" else "Me"
-            lines.append(f"[{ts_str}] {sender}: {body}\n")
+            sender = sender_name(msg["sender"])
+            tag    = reply_tag(quoted(msg["reply_to"])) if msg["reply_to"] else ""
+            if is_reaction(msg["react_kind"]) and msg["react_target"]:
+                # "p:0/GUID" or "bp:GUID": the reacted-to message's guid is last.
+                target = msg["react_target"].rsplit("/", 1)[-1].rsplit(":", 1)[-1]
+                body = reaction_text(msg["react_kind"], msg["react_emoji"], quoted(target))
+                tag = ""
+            lines.append(f"[{ts_str}] {sender}{tag}: {body}\n")
         return "".join(lines)
 
     def header(display: str, participants_raw: str) -> str:
@@ -634,13 +813,16 @@ def export_messages(full: bool = False, refresh_contacts: bool = False) -> None:
     if failed:
         log(f"ERROR: {len(failed)} conversation(s) failed to write: {', '.join(failed)}")
         sys.exit(1)
+    record_source(signature, SOURCE_MARKER)
+    if full:
+        record_format(FORMAT_FILE)
 
 
 def list_conversations() -> None:
     """Print a summary of all conversations, sorted by most recent activity."""
     ensure_messages_db_readable()
 
-    shutil.copy2(MESSAGES_DB, TMP_DB)
+    snapshot_db(MESSAGES_DB, TMP_DB)
     conn = sqlite3.connect(TMP_DB)
     cur  = conn.cursor()
     contacts = load_contact_map()
@@ -692,7 +874,7 @@ def check_contacts() -> None:
 
     ensure_messages_db_readable()
 
-    shutil.copy2(MESSAGES_DB, TMP_DB)
+    snapshot_db(MESSAGES_DB, TMP_DB)
     conn = sqlite3.connect(TMP_DB)
     cur  = conn.cursor()
     cur.execute("SELECT DISTINCT id FROM handle WHERE id IS NOT NULL")

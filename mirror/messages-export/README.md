@@ -8,6 +8,7 @@ schedule. Output lands in the Google Drive Desktop sync folder for
 | Script | Source | Output | Deps |
 |---|---|---|---|
 | `export_messages.py` | iMessage/SMS (`chat.db`) + AddressBook | `Private/Messages/*.txt` | stdlib |
+| `whatsapp_export.py` | WhatsApp for Mac (`ChatStorage.sqlite`) + AddressBook | `Private/WhatsApp/*.txt` | stdlib |
 | `email_collector.py` | Gmail via IMAP | `Private/mail/<account>/…json` | stdlib |
 | `gchat_collector.py` | Google Chat (web, scraped) | `Private/Chat/*.jsonl` | playwright |
 
@@ -21,6 +22,44 @@ python3 export_messages.py --full          # re-export everything
 python3 export_messages.py --list          # list conversations
 python3 export_messages.py --check-contacts  # diagnose name resolution
 ```
+
+Replies show which message they answer:
+
+```
+[2026-10-04 18:40:10] Me [replying to Jane Doe: "Dinner at 7?"]: yes!
+```
+
+For iMessage this is the message that started the reply thread, which is what
+Messages itself shows.
+
+iMessage reactions (tapbacks, including custom emoji) get their own line, and
+so does taking one back:
+
+```
+[2026-10-04 18:41:02] Jane Doe: [reacted ❤️ to Me: "yes!"]
+[2026-10-04 18:41:30] Jane Doe: [removed ❤️ from Me: "yes!"]
+```
+
+## WhatsApp — `whatsapp_export.py`
+Same idea and output format as the Messages export, for WhatsApp. Reads the
+database kept by **WhatsApp for Mac** (the App Store app) at
+`~/Library/Group Containers/group.net.whatsapp.WhatsApp.shared/ChatStorage.sqlite`
+and writes one file per chat to `Private/WhatsApp/`, next to `Private/Messages/`.
+Names come from the AddressBook first, so people match the Messages export, then
+WhatsApp's own names. Needs Full Disk Access, same as the Messages export.
+
+```bash
+python3 whatsapp_export.py           # incremental
+python3 whatsapp_export.py --full    # re-export everything
+python3 whatsapp_export.py --list    # list chats
+```
+
+It only sees what the Mac app has synced. Media shows as `[image]`, `[voice
+message]` and so on, with the caption if there is one; group join/leave notices
+are skipped. Replies and reactions are written the same way as in the Messages
+export. WhatsApp only stores each message's current reactions, so a reaction
+that's taken back is logged when the exporter notices, not when it happened.
+Schedule it with `run_whatsapp_export.sh`.
 
 ## Email — `email_collector.py`
 Collects the last week of mail from each Gmail account over IMAP and writes one

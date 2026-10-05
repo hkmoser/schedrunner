@@ -1,5 +1,8 @@
 #!/bin/bash
-# run_export.sh — headless wrapper for export_messages.py (NO Terminal window).
+# run_export.sh — headless wrapper for the exporters (NO Terminal window).
+#
+#   run_export.sh                     # Messages (export_messages.py)
+#   run_export.sh whatsapp_export.py  # WhatsApp (or use run_whatsapp_export.sh)
 #
 # This just runs python3 directly. FDA is NOT a "Python" requirement — it's only
 # needed to read the TCC-protected stores (~/Library/Messages/chat.db and the
@@ -16,7 +19,9 @@ export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PAT
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PYTHON="${PYTHON:-$(command -v python3)}"
-LOCK="/tmp/messages_export.lock"
+EXPORTER="${1:-export_messages.py}"
+NAME="${EXPORTER%.py}"
+LOCK="/tmp/${NAME}.lock"
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 
 # Single-instance guard
@@ -30,18 +35,18 @@ fi
 echo $$ > "$LOCK"
 trap 'rm -f "$LOCK"' EXIT INT TERM
 
-echo "[$(ts)] messages-export: starting incremental export (python: $PYTHON)"
+echo "[$(ts)] $NAME: starting incremental export (python: $PYTHON)"
 
 # Run directly — no Terminal, no window. Output goes to stdout, which the
 # scheduler (or the LaunchAgent's log file) captures.
-"$PYTHON" "$SCRIPT_DIR/export_messages.py"
+"$PYTHON" "$SCRIPT_DIR/$EXPORTER"
 status=$?
 
-# Exit 2 means chat.db couldn't be read (Full Disk Access). Anything else is a
+# Exit 2 means the source database couldn't be read (Full Disk Access). Anything else is a
 # different problem; the Python output above says what.
 if [[ $status -eq 2 ]]; then
     real_py="$("$PYTHON" -c 'import sys; print(sys.executable)' 2>/dev/null || echo "$PYTHON")"
-    echo "[$(ts)] export failed (exit $status): chat.db is not readable."
+    echo "[$(ts)] export failed (exit $status): the source database is not readable."
     echo "[$(ts)] Grant Full Disk Access to the interpreter:"
     echo "         System Settings → Privacy & Security → Full Disk Access → + →"
     echo "         $real_py"
@@ -50,5 +55,5 @@ elif [[ $status -ne 0 ]]; then
     echo "[$(ts)] export failed (exit $status) — see the error above."
 fi
 
-echo "[$(ts)] messages-export: done (exit $status)"
+echo "[$(ts)] $NAME: done (exit $status)"
 [[ $status -eq 0 ]] || exit 1

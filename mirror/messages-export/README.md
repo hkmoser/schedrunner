@@ -46,7 +46,10 @@ database kept by **WhatsApp for Mac** (the App Store app) at
 `~/Library/Group Containers/group.net.whatsapp.WhatsApp.shared/ChatStorage.sqlite`
 and writes one file per chat to `Private/WhatsApp/`, next to `Private/Messages/`.
 Names come from the AddressBook first, so people match the Messages export, then
-WhatsApp's own names. Needs Full Disk Access, same as the Messages export.
+WhatsApp's own names. Most people are stored under anonymous IDs rather than
+phone numbers; WhatsApp's `LID.sqlite` links those to phone numbers and
+`ContactsV2.sqlite` holds its copy of your address book, so both are read too.
+Anyone with no name anywhere shows as "Unknown contact". Needs Full Disk Access, same as the Messages export.
 
 ```bash
 python3 whatsapp_export.py           # incremental

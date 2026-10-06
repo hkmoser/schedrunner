@@ -23,11 +23,16 @@ Usage:
 """
 
 import argparse
+import base64
+import binascii
 import errno
 import json
+import re
 import sqlite3
+import subprocess
 import sys
 import time
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 
@@ -48,7 +53,11 @@ FORMAT_FILE   = Path.home() / ".whatsapp_export_format"
 # a Messages-only change doesn't rewrite every WhatsApp file.)
 #   2: reply tags
 #   3: reactions
-FORMAT_VERSION = 3
+#   4: names from WhatsApp's contact and ID databases; profile names unwrapped
+#   5: masked numbers, invisible characters and stray encodings no longer
+#      block a real name; deleted messages without their internal ID
+#   6: formatted numbers ('+1<nbsp>(940)<nbsp>302‑7627') aren't names either
+FORMAT_VERSION = 6
 OUTPUT_SUBPATH = "My Drive/Private/WhatsApp"
 
 # Chats that aren't conversations: status updates, and the account's own JID.
@@ -61,6 +70,7 @@ MEDIA_LABELS = {
     14: "[deleted]", 15: "[sticker]",
 }
 SYSTEM_MESSAGE_TYPE = 6   # group events, encryption notices: skipped
+DELETED_MESSAGE_TYPE = 14  # ZTEXT holds an internal ID, not text
 
 
 # ── Setup ──────────────────────────────────────────────────────────────────────
@@ -98,6 +108,21 @@ def ensure_whatsapp_db_readable() -> None:
     except OSError as e:
         log(f"ERROR: cannot read the WhatsApp database: {e}")
         sys.exit(2)
+
+
+def whatsapp_running() -> bool | None:
+    """Whether the WhatsApp app is open (None if it can't be checked).
+
+    WhatsApp for Mac is a linked device: it only receives messages, and so
+    only writes them to ChatStorage.sqlite, while it's running.
+    """
+    if sys.platform != "darwin":
+        return None
+    try:
+        return subprocess.run(["pgrep", "-x", "WhatsApp"],
+                              capture_output=True).returncode == 0
+    except OSError:
+        return None
 
 
 def snapshot_db() -> sqlite3.Connection:
@@ -140,36 +165,245 @@ def wa_ts_to_str(seconds: float) -> str:
     return datetime.fromtimestamp(seconds + em.APPLE_EPOCH).strftime("%Y-%m-%d %H:%M:%S")
 
 
+def id_local(value: str | None) -> str | None:
+    """'+1 (555) 123-4567' / '15551234567@s.whatsapp.net' / '123@lid' → digits only."""
+    if not isinstance(value, str):
+        return None
+    digits = "".join(ch for ch in value.split("@", 1)[0] if ch.isdigit())
+    return digits or None
+
+
+def real_phone(digits: str | None) -> str | None:
+    """digits if they can be a phone number. WhatsApp's own account is '0'."""
+    return digits if digits and len(digits) >= 6 else None
+
+
 def jid_phone(jid: str | None) -> str | None:
-    """'15551234567@s.whatsapp.net' → '+15551234567'. Other JID kinds → None."""
-    if jid and jid.endswith("@s.whatsapp.net"):
-        return "+" + jid.split("@", 1)[0]
+    """'15551234567@s.whatsapp.net' → '15551234567'. Anything else → None."""
+    if isinstance(jid, str) and jid.endswith("@s.whatsapp.net"):
+        local = jid.split("@", 1)[0]
+        if local.isdigit():
+            return real_phone(local)
     return None
 
 
+def jid_lid(jid: str | None) -> str | None:
+    """'123456789@lid' → '123456789'. Anything else → None."""
+    if isinstance(jid, str) and jid.endswith("@lid"):
+        return id_local(jid)
+    return None
+
+
+# Characters WhatsApp uses to mask hidden phone numbers: '+1∙∙∙∙∙∙∙∙14'.
+MASK_CHARS = "∙•·●*"
+
+
+def unwrap_name(value) -> str | None:
+    """A stored name as plain text: decoded, unwrapped, invisible marks removed.
+
+    WhatsApp stores some profile names wrapped: '+' then base64 of a protobuf
+    whose field 1 is the name (field 2 is a timestamp). Direction marks and
+    other invisible formatting characters are dropped (WhatsApp's own account
+    is stored as '<LRM>WhatsApp'); the zero-width joiner and emoji tag
+    characters stay, since emoji like 👨‍👩‍👧 and some flags are built from them.
+    """
+    if isinstance(value, bytes):
+        try:
+            value = value.decode("utf-8")
+        except UnicodeDecodeError:
+            return None
+    if not isinstance(value, str):
+        return None
+    value = "".join(
+        ch for ch in value
+        if unicodedata.category(ch) not in ("Cc", "Cf")
+        or ch == "\u200d" or 0xE0020 <= ord(ch) <= 0xE007F
+    ).strip()
+    if value.startswith("+") and len(value) > 8:
+        local = value[1:]
+        try:
+            raw = base64.b64decode(local + "=" * (-len(local) % 4), validate=True)
+        except (ValueError, binascii.Error):
+            raw = None
+        # Only the wrapped format counts: protobuf starting with field 1 text.
+        if raw and raw[0] == 0x0A and not local.replace(" ", "").isdigit():
+            for field, wire, inner in protobuf_fields(raw):
+                if field == 1 and wire == 2:
+                    return unwrap_name(inner)
+    return value or None
+
+
+def has_letters(value: str) -> bool:
+    return any(unicodedata.category(ch).startswith("L") for ch in value)
+
+
+def looks_like_number(value: str) -> bool:
+    """No letters and at least 3 digits: a phone number however it's spaced.
+
+    WhatsApp formats numbers with non-breaking spaces and hyphens
+    ('+1<nbsp>(940)<nbsp>302‑7627'), so checking for specific separators
+    misses them. Emoji-only names have no digits and still count as names.
+    """
+    return not has_letters(value) and sum(ch.isdigit() for ch in value) >= 3
+
+
+def masked_number(value) -> str | None:
+    """'+1∙∙∙∙∙∙∙∙14' if value is a masked phone number, else None."""
+    value = unwrap_name(value)
+    if (value and any(ch in MASK_CHARS for ch in value)
+            and any(ch.isdigit() for ch in value) and not has_letters(value)):
+        return value
+    return None
+
+
+def clean_name(value, allow_digits: bool = False) -> str | None:
+    """A real display name, or None so the caller tries the next source.
+
+    Rejected: IDs, phone numbers (plain, formatted or masked), and stray
+    encoded values like 'IAA='. allow_digits keeps all-digit values, for group names like
+    "2024".
+    """
+    value = unwrap_name(value)
+    if not value or "@" in value or masked_number(value):
+        return None
+    if len(value) % 4 == 0 and re.fullmatch(r"[A-Za-z0-9+/]{2,}={1,2}", value):
+        return None
+    if not allow_digits and looks_like_number(value):
+        return None
+    return value
+
+
+def open_side_db(name: str) -> sqlite3.Connection | None:
+    """Read-only connection to another WhatsApp database, or None if unusable."""
+    path = WHATSAPP_DB.parent / name
+    if not path.exists():
+        return None
+    try:
+        conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+        conn.execute("SELECT 1 FROM sqlite_master LIMIT 1")
+        return conn
+    except sqlite3.Error:
+        return None
+
+
 class NameResolver:
-    """AddressBook name → WhatsApp contact name → WhatsApp profile name → number."""
+    """Turns a WhatsApp ID into the best name available, never into a raw ID.
+
+    Most people are stored under anonymous IDs (...@lid) rather than phone
+    numbers. WhatsApp keeps the link from those to phone numbers in LID.sqlite,
+    and its copy of your address book in ContactsV2.sqlite. Order tried:
+
+      1. macOS Contacts, via the phone number (same names as the Messages export)
+      2. WhatsApp's copy of your address book (ContactsV2.sqlite)
+      3. names WhatsApp has for this chat or group member (passed in)
+      4. the display name WhatsApp keeps per ID (LID.sqlite)
+      5. the person's own WhatsApp profile name
+      6. the sender name saved on this message, then on their latest message
+      7. the phone number
+      8. the masked number WhatsApp shows ('+1∙∙∙∙∙∙∙∙14')
+      9. "Unknown contact"
+
+    Sources hold raw values and are cleaned at lookup, so a masked number in
+    an early source doesn't hide a real name in a later one.
+    """
 
     def __init__(self, cur: sqlite3.Cursor, contacts: dict[str, str]):
         self.contacts = contacts
-        self.push_names: dict[str, str] = {}
-        if has_table(cur, "ZWAPROFILEPUSHNAME"):
-            for row in cur.execute("SELECT ZJID, ZPUSHNAME FROM ZWAPROFILEPUSHNAME"):
-                if row[0] and isinstance(row[1], str) and row[1].strip():
-                    self.push_names[row[0]] = row[1].strip()
+        self.lid_to_phone: dict[str, str] = {}
+        self.phone_to_lid: dict[str, str] = {}
+        self.book_by_phone: dict[str, str] = {}
+        self.book_by_lid: dict[str, str] = {}
+        self.display_by_lid: dict[str, str] = {}
+        self.profile: dict[str, str] = {}      # id digits → profile name
+        self.last_push: dict[str, str] = {}    # id digits → name on their latest message
 
-    def name(self, jid: str | None, *wa_names: str | None) -> str:
+        if has_table(cur, "ZWAPROFILEPUSHNAME"):
+            for jid, name in cur.execute("SELECT ZJID, ZPUSHNAME FROM ZWAPROFILEPUSHNAME"):
+                key, name = id_local(jid), unwrap_name(name)
+                if key and name:
+                    self.profile[key] = name
+
+        if has_column(cur, "ZWAMESSAGE", "ZPUSHNAME"):
+            for jid, name in cur.execute("""
+                    SELECT COALESCE(gm.ZMEMBERJID, m.ZFROMJID), m.ZPUSHNAME
+                    FROM ZWAMESSAGE m LEFT JOIN ZWAGROUPMEMBER gm ON gm.Z_PK = m.ZGROUPMEMBER
+                    WHERE m.ZISFROMME = 0 AND m.ZPUSHNAME IS NOT NULL ORDER BY m.Z_PK"""):
+                key, name = id_local(jid), unwrap_name(name)
+                if key and name:
+                    self.last_push[key] = name
+
+        lid_db = open_side_db("LID.sqlite")
+        if lid_db is not None:
+            try:
+                cols = {r[1] for r in lid_db.execute("PRAGMA table_info(ZWAZACCOUNT)")}
+                if {"ZIDENTIFIER", "ZPHONENUMBER"} <= cols:
+                    display = "ZDISPLAYNAME" if "ZDISPLAYNAME" in cols else "NULL"
+                    for ident, phone, name in lid_db.execute(
+                            f"SELECT ZIDENTIFIER, ZPHONENUMBER, {display} FROM ZWAZACCOUNT"):
+                        lid, phone = id_local(ident), real_phone(id_local(phone))
+                        if lid and phone:
+                            self.lid_to_phone[lid] = phone
+                            self.phone_to_lid.setdefault(phone, lid)
+                        if lid and unwrap_name(name):
+                            self.display_by_lid[lid] = unwrap_name(name)
+            except sqlite3.Error:
+                pass
+            lid_db.close()
+
+        book = open_side_db("ContactsV2.sqlite")
+        if book is not None:
+            try:
+                cols = {r[1] for r in book.execute("PRAGMA table_info(ZWAADDRESSBOOKCONTACT)")}
+                pick = lambda c: c if c in cols else "NULL"
+                for full, given, last, lid, waid, phone in book.execute(
+                        f"SELECT {pick('ZFULLNAME')}, {pick('ZGIVENNAME')}, {pick('ZLASTNAME')}, "
+                        f"{pick('ZLID')}, {pick('ZWHATSAPPID')}, {pick('ZPHONENUMBER')} "
+                        f"FROM ZWAADDRESSBOOKCONTACT"):
+                    name = clean_name(full) or clean_name(
+                        " ".join(p for p in (given, last) if isinstance(p, str) and p.strip()))
+                    if not name:
+                        continue
+                    lid, waid = id_local(lid), real_phone(id_local(waid))
+                    if lid:
+                        self.book_by_lid.setdefault(lid, name)
+                    for number in (waid, real_phone(id_local(phone))):
+                        if number:
+                            self.book_by_phone.setdefault(number, name)
+                    if lid and waid:
+                        self.lid_to_phone.setdefault(lid, waid)
+                        self.phone_to_lid.setdefault(waid, lid)
+            except sqlite3.Error:
+                pass
+            book.close()
+
+    def name(self, jid: str | None, *wa_names, push_name=None) -> str:
         phone = jid_phone(jid)
+        lid = jid_lid(jid)
+        if lid and not phone:
+            phone = self.lid_to_phone.get(lid)
+        if phone and not lid:
+            lid = self.phone_to_lid.get(phone)
+
         if phone:
-            resolved = em.resolve_handle(phone, self.contacts)
-            if resolved != phone:
+            resolved = em.resolve_handle("+" + phone, self.contacts)
+            if resolved != "+" + phone:
                 return resolved
-        for n in wa_names:
-            if n and n.strip():
-                return n.strip()
-        if jid in self.push_names:
-            return self.push_names[jid]
-        return phone or (jid or "Unknown").split("@", 1)[0]
+        masked = None
+        for raw in ((phone and self.book_by_phone.get(phone)), (lid and self.book_by_lid.get(lid)),
+                    *wa_names,
+                    (lid and self.display_by_lid.get(lid)),
+                    (lid and self.profile.get(lid)), (phone and self.profile.get(phone)),
+                    push_name,
+                    (lid and self.last_push.get(lid)), (phone and self.last_push.get(phone))):
+            if not raw:
+                continue
+            found = clean_name(raw)
+            if found:
+                return found
+            masked = masked or masked_number(raw)
+        if phone:
+            return "+" + phone
+        return masked or "Unknown contact"
 
 
 # ── Replies ────────────────────────────────────────────────────────────────────
@@ -313,7 +547,7 @@ def load_chats(cur: sqlite3.Cursor, names: NameResolver) -> list[dict]:
         if jid in SKIP_JIDS or jid.endswith("@broadcast"):
             continue
         is_group = jid.endswith("@g.us")
-        display = (row["ZPARTNERNAME"] or jid.split("@", 1)[0]) if is_group \
+        display = (clean_name(row["ZPARTNERNAME"], allow_digits=True) or "Unnamed group") if is_group \
             else names.name(jid, row["ZPARTNERNAME"])
         chats.append({"pk": row["Z_PK"], "jid": jid, "group": is_group,
                       "display": display, "filename": safe_filename(display)})
@@ -332,6 +566,10 @@ def load_chats(cur: sqlite3.Cursor, names: NameResolver) -> list[dict]:
 
 def export_whatsapp(full: bool = False) -> None:
     ensure_whatsapp_db_readable()
+
+    if whatsapp_running() is False:
+        log("WARNING: WhatsApp isn't running — new messages won't reach this Mac "
+            "until it's opened.")
 
     if not full and em.format_outdated(FORMAT_FILE, FORMAT_VERSION):
         log(f"Output format changed (now v{FORMAT_VERSION}) — re-exporting everything once.")
@@ -356,6 +594,8 @@ def export_whatsapp(full: bool = False) -> None:
     names = NameResolver(cur, contacts)
 
     media_join = caption_col = metadata_col = ""
+    push_col = (", m.ZPUSHNAME AS pushname" if has_column(cur, "ZWAMESSAGE", "ZPUSHNAME")
+                else ", NULL AS pushname")
     if has_table(cur, "ZWAMEDIAITEM") and has_column(cur, "ZWAMESSAGE", "ZMEDIAITEM"):
         media_join = "LEFT JOIN ZWAMEDIAITEM mi ON mi.Z_PK = m.ZMEDIAITEM"
         if has_column(cur, "ZWAMEDIAITEM", "ZTITLE"):
@@ -368,7 +608,7 @@ def export_whatsapp(full: bool = False) -> None:
         cur.execute(f"""
             SELECT m.Z_PK, m.ZISFROMME, m.ZFROMJID, m.ZTEXT, m.ZMESSAGEDATE,
                    m.ZMESSAGETYPE, gm.ZMEMBERJID, gm.ZCONTACTNAME, gm.ZFIRSTNAME
-                   {caption_col} {metadata_col}
+                   {caption_col} {metadata_col} {push_col}
             FROM ZWAMESSAGE m
             LEFT JOIN ZWAGROUPMEMBER gm ON gm.Z_PK = m.ZGROUPMEMBER
             {media_join}
@@ -382,7 +622,7 @@ def export_whatsapp(full: bool = False) -> None:
         q.execute(f"""
             SELECT m.Z_PK, m.ZISFROMME, m.ZFROMJID, m.ZTEXT, m.ZMESSAGEDATE,
                    m.ZMESSAGETYPE, gm.ZMEMBERJID, gm.ZCONTACTNAME, gm.ZFIRSTNAME
-                   {caption_col}
+                   {caption_col} {push_col}
             FROM ZWAMESSAGE m
             LEFT JOIN ZWAGROUPMEMBER gm ON gm.Z_PK = m.ZGROUPMEMBER
             {media_join}
@@ -392,6 +632,8 @@ def export_whatsapp(full: bool = False) -> None:
 
     def message_text(m: sqlite3.Row) -> str:
         mtype = m["ZMESSAGETYPE"]
+        if mtype == DELETED_MESSAGE_TYPE:
+            return MEDIA_LABELS[DELETED_MESSAGE_TYPE]
         text = m["ZTEXT"]
         if not text or mtype in MEDIA_LABELS:
             label = MEDIA_LABELS.get(mtype, "[attachment]")
@@ -404,7 +646,7 @@ def export_whatsapp(full: bool = False) -> None:
             return "Me"
         if chat["group"]:
             jid = m["ZMEMBERJID"] or m["ZFROMJID"]
-            return names.name(jid, m["ZCONTACTNAME"], m["ZFIRSTNAME"])
+            return names.name(jid, m["ZCONTACTNAME"], m["ZFIRSTNAME"], push_name=m["pushname"])
         return chat["display"]
 
     def quoted(chat: dict, m: sqlite3.Row) -> tuple[str, str] | None | bool:
@@ -417,7 +659,7 @@ def export_whatsapp(full: bool = False) -> None:
                 continue
             q.execute(f"""
                 SELECT m.Z_PK, m.ZISFROMME, m.ZFROMJID, m.ZTEXT, m.ZMESSAGETYPE,
-                       gm.ZMEMBERJID, gm.ZCONTACTNAME, gm.ZFIRSTNAME {caption_col}
+                       gm.ZMEMBERJID, gm.ZCONTACTNAME, gm.ZFIRSTNAME {caption_col} {push_col}
                 FROM ZWAMESSAGE m
                 LEFT JOIN ZWAGROUPMEMBER gm ON gm.Z_PK = m.ZGROUPMEMBER
                 {media_join}
@@ -455,17 +697,13 @@ def export_whatsapp(full: bool = False) -> None:
             return "Me"
         if not chat["group"]:
             return chat["display"]
-        # Reactors are usually anonymous IDs (...@lid), which carry no phone
-        # number; match them against the group's member list instead.
+        # The group's member list can carry a name for the reactor's ID.
         if chat["pk"] not in member_names:
             q = conn.cursor()
             q.execute("SELECT ZMEMBERJID, ZCONTACTNAME, ZFIRSTNAME FROM ZWAGROUPMEMBER "
                       "WHERE ZCHATSESSION = ?", (chat["pk"],))
             member_names[chat["pk"]] = {r[0]: (r[1], r[2]) for r in q.fetchall() if r[0]}
-        name = names.name(reactor, *member_names[chat["pk"]].get(reactor, ()))
-        if reactor.endswith("@lid") and name == reactor.split("@", 1)[0]:
-            return "A group member"
-        return name
+        return names.name(reactor, *member_names[chat["pk"]].get(reactor, ()))
 
     def reaction_events(current: dict, seen: dict) -> list[tuple]:
         """(message pk, reactor, emoji, unix ms, added) for what changed since seen."""

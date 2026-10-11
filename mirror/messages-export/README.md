@@ -62,7 +62,9 @@ message]` and so on, with the caption if there is one; group join/leave notices
 are skipped. Replies and reactions are written the same way as in the Messages
 export. WhatsApp only stores each message's current reactions, so a reaction
 that's taken back is logged when the exporter notices, not when it happened.
-Schedule it with `run_whatsapp_export.sh`.
+Schedule it with `run_whatsapp_export.sh`. WhatsApp for Mac only receives messages
+while it's open, so a run that finds it closed logs a warning and opens it in
+the background (`WHATSAPP_AUTOLAUNCH=0` turns that off).
 
 ## Email — `email_collector.py`
 Collects the last week of mail from each Gmail account over IMAP and writes one

@@ -27,6 +27,7 @@ import base64
 import binascii
 import errno
 import json
+import os
 import re
 import sqlite3
 import subprocess
@@ -123,6 +124,20 @@ def whatsapp_running() -> bool | None:
                               capture_output=True).returncode == 0
     except OSError:
         return None
+
+
+def launch_whatsapp() -> bool:
+    """Open WhatsApp in the background (no window brought forward).
+
+    Set WHATSAPP_AUTOLAUNCH=0 to turn this off.
+    """
+    if os.environ.get("WHATSAPP_AUTOLAUNCH", "1") == "0":
+        return False
+    try:
+        return subprocess.run(["open", "-g", "-j", "-a", "WhatsApp"],
+                              capture_output=True).returncode == 0
+    except OSError:
+        return False
 
 
 def snapshot_db() -> sqlite3.Connection:
@@ -570,6 +585,11 @@ def export_whatsapp(full: bool = False) -> None:
     if whatsapp_running() is False:
         log("WARNING: WhatsApp isn't running — new messages won't reach this Mac "
             "until it's opened.")
+        if launch_whatsapp():
+            log("Opened WhatsApp in the background; it will catch up and the next "
+                "run exports what it receives.")
+        elif os.environ.get("WHATSAPP_AUTOLAUNCH", "1") != "0":
+            log("Couldn't open WhatsApp automatically — please open it.")
 
     if not full and em.format_outdated(FORMAT_FILE, FORMAT_VERSION):
         log(f"Output format changed (now v{FORMAT_VERSION}) — re-exporting everything once.")

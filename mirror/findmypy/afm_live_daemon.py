@@ -21,6 +21,19 @@ OWNERSHIP / SUPERVISION
     ThrottleInterval spaces restarts. On a genuine session death it alerts and
     exits(1); after util/auth.sh it recovers on the next launchd restart.
 
+DEAD-SESSION HOLD (see afm_session_hold.py)
+    KeepAlive + ThrottleInterval=300 means a dead session would otherwise be
+    re-presented to Apple every 5 minutes forever (~288 rejected auth attempts a
+    day). That hammering is what makes Apple rate-limit SRP and withhold trust
+    tokens for 24h — it sabotages the auth.sh run that is the only real fix. So a
+    rejection is recorded to ~/.pyicloud-daemon-session-dead, and while that hold
+    is active startup short-circuits WITHOUT contacting Apple, re-probing on an
+    escalating 15m/30m/60m schedule (~24 attempts/day). The hold is keyed to a
+    fingerprint of ~/.pyicloud, which auth.sh replaces via atomic rename — so
+    recovery is still just "run auth.sh", with no state file to clean up by hand.
+    Transient failures (5xx/429/network) are untouched by this and keep the
+    existing 5-minute cadence.
+
 MUTUAL EXCLUSION WITH THE CRON FALLBACK
     Holds the same /tmp/afm_live.lock that afm_live.py uses, for its whole life.
     While the daemon runs, any stray cron afm_live.py tick sees the lock and exits
@@ -55,6 +68,8 @@ except ImportError:
     PyiCloudAcceptTermsException = None
 
 import afm_pipeline
+import afm_session_hold
+import afm_trust_repair
 
 INTERVAL_SECS = int(os.environ.get("AFM_INTERVAL_SECS", "300"))
 LOCK_PATH = "/tmp/afm_live.lock"
@@ -144,6 +159,53 @@ def check_session_expiry(api):
         pass
 
 
+def _record_session_dead(phase, e):
+    """Arm the dead-session hold so launchd's next restart does NOT re-hit Apple
+    with a token Apple has already rejected. Purely additive: alert semantics and
+    the exit path are unchanged, and any failure here is swallowed."""
+    try:
+        state = afm_session_hold.record_rejection(
+            reason=f"{type(e).__name__}: {e}", phase=phase)
+    except Exception:
+        state = None
+    if state:
+        log(f"[hold] session marked dead (rejection #{state['rejections']} at {phase}) — "
+            f"skipping Apple auth for the next {(state['next_probe_at'] - time.time()) / 60:.0f} min. "
+            f"Fix with: bash util/auth.sh")
+    else:
+        log("[hold] could not persist dead-session state — restart behavior unchanged")
+
+
+def _clear_session_hold(why):
+    """Session is demonstrably working — drop any hold. Never raises."""
+    try:
+        if afm_session_hold.clear_hold():
+            log(f"[hold] cleared ({why})")
+    except Exception:
+        pass
+
+
+def _build_api_repairing():
+    """build_api(), but try a trust replay before accepting that the session is dead.
+
+    A 421 from /accountLogin does not mean the credentials are gone: the trust
+    endpoint will still hand back a fresh set (see afm_trust_repair). Replaying it
+    costs one GET and one POST, is cooldown-limited inside the module, and turns
+    the overwhelmingly common death into something that never reaches the user.
+    Re-raises the original exception if the repair does not take, so the existing
+    alert and hold paths behave exactly as before.
+    """
+    try:
+        return afm_pipeline.build_api()
+    except (PyiCloudFailedLoginException, PyiCloudAuthRequiredException,
+            PyiCloud2FARequiredException) as exc:
+        log(f"[repair] session rejected ({type(exc).__name__}) — attempting trust replay")
+        if afm_trust_repair.attempt_repair(log=log):
+            return afm_pipeline.build_api()
+        log("[repair] trust replay did not recover the session")
+        raise
+
+
 def _is_transient(e):
     """Network blip / Apple 5xx / rate-limit — retry soon, session is fine."""
     return isinstance(e, PyiCloudAPIResponseException) and (
@@ -183,20 +245,41 @@ def main():
     log(f"afm_live_daemon starting  interval={INTERVAL_SECS}s  pid={os.getpid()}")
     log("=" * 70)
 
+    # ── dead-session hold ─────────────────────────────────────────────────────
+    # If Apple has already rejected this session, do not contact Apple at all.
+    # launchd restarts us every ThrottleInterval (300s); without this we would
+    # burn ~288 rejected auth attempts a day, which is precisely what causes
+    # Apple to rate-limit SRP and withhold trust tokens — i.e. it would sabotage
+    # the util/auth.sh run that is the only actual fix. Checked BEFORE the lock:
+    # a held restart is a no-op and must not hold afm_live.lock either.
+    try:
+        hold = afm_session_hold.check_hold()
+    except Exception as e:  # fail open — never let this keep a good session down
+        log(f"[hold] check failed ({type(e).__name__}: {e}) — proceeding normally")
+        hold = None
+    if hold is not None and hold.active:
+        log(f"[hold] {hold.describe()}")
+        sys.exit(0)
+    if hold is not None and hold.detail in ("session-replaced", "probe-window"):
+        log(f"[hold] {hold.describe()}")
+
     lock = _acquire_lock()  # noqa: F841 — keep handle alive for the process lifetime
 
     # ── construct the ONE long-lived session ──────────────────────────────────
     try:
-        api = afm_pipeline.build_api()
+        api = _build_api_repairing()
         log("[auth] session constructed (token-only, no SRP)")
+        _clear_session_hold("session constructed")
     except PyiCloud2FARequiredException as e:
         send_alert_deduped("Session untrusted (is_trusted_session=False) — "
                            "run util/auth.sh and complete the full 2FA + trust flow.")
         log(f"[auth] FATAL: untrusted session — {e}")
+        _record_session_dead("startup", e)
         sys.exit(1)
     except (PyiCloudFailedLoginException, PyiCloudAuthRequiredException) as e:
         send_alert_deduped("iCloud session needs re-auth (run util/auth.sh).")
         log(f"[auth] FATAL: session dead — {e}")
+        _record_session_dead("startup", e)
         sys.exit(1)
     except Exception as e:
         if _is_transient(e):
@@ -228,6 +311,7 @@ def main():
                 f"{afm_pipeline.accountlogin_total()} since start]")
             consecutive_transient = 0
             clear_dead_alert_cooldown()  # healthy again: allow future dead-alerts
+            _clear_session_hold("healthy cycle")
             check_session_expiry(api)
             if time.time() - last_cleanup >= CLEANUP_EVERY_SECS:
                 afm_pipeline.cleanup_old_csvs(log=log)
@@ -235,11 +319,21 @@ def main():
             sleep_for = INTERVAL_SECS
 
         except (PyiCloud2FARequiredException, PyiCloudFailedLoginException) as e:
-            # Session genuinely dead — only auth.sh fixes it. Alert + exit so
-            # launchd restarts (throttled); recovers after auth.sh.
-            send_alert_deduped("iCloud session needs re-auth (run util/auth.sh).")
-            log(f"[cycle] FATAL: session dead — {type(e).__name__}: {e}")
-            sys.exit(1)
+            # Apple rejected the session mid-loop. Before accepting that only
+            # auth.sh can fix it, replay the trust endpoint: it answers 204 with a
+            # fresh credential set even while /accountLogin is returning 421.
+            log(f"[cycle] session rejected — {type(e).__name__}: {e}")
+            if afm_trust_repair.attempt_repair(api, log=log):
+                log("[cycle] session repaired in place — continuing")
+                clear_dead_alert_cooldown()
+                _clear_session_hold("trust replay repaired the session")
+                consecutive_transient = 0
+                sleep_for = TRANSIENT_RETRY_SECS
+            else:
+                send_alert_deduped("iCloud session needs re-auth (run util/auth.sh).")
+                log(f"[cycle] FATAL: session dead — {type(e).__name__}: {e}")
+                _record_session_dead("cycle", e)
+                sys.exit(1)
 
         except PyiCloudAuthRequiredException as e:
             # Raw 450 that pyicloud's internal reauth could not self-heal. In a warm
@@ -250,9 +344,15 @@ def main():
                 api.authenticate(force_refresh=True)
                 log("[cycle] force_refresh OK — will retry shortly")
             except (PyiCloud2FARequiredException, PyiCloudFailedLoginException) as e2:
-                send_alert_deduped("iCloud session needs re-auth (run util/auth.sh).")
-                log(f"[cycle] FATAL after force_refresh — {type(e2).__name__}: {e2}")
-                sys.exit(1)
+                if afm_trust_repair.attempt_repair(api, log=log):
+                    log("[cycle] session repaired after force_refresh — continuing")
+                    clear_dead_alert_cooldown()
+                    _clear_session_hold("trust replay repaired the session")
+                else:
+                    send_alert_deduped("iCloud session needs re-auth (run util/auth.sh).")
+                    log(f"[cycle] FATAL after force_refresh — {type(e2).__name__}: {e2}")
+                    _record_session_dead("force_refresh", e2)
+                    sys.exit(1)
             except Exception as e2:
                 log(f"[cycle] force_refresh failed transiently: {e2}")
             consecutive_transient += 1

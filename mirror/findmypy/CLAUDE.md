@@ -32,9 +32,14 @@ findmypy/
 ├── icloud.py              # PyiCloudService integration example
 ├── icloud-test.py         # Ad-hoc PyiCloud testing
 │
-├── afm_live.py            # Production tracking pipeline (runs on a schedule)
+├── afm_live.py            # Cron tracking pipeline (rollback target — untouched)
 ├── afm_live_test.py       # Test variant of afm_live.py
 ├── afm_live_bak.py        # Backup copy of afm_live.py
+│
+├── afm_live_daemon.py     # Persistent daemon (production) — see util/DAEMON.md
+├── afm_pipeline.py        # Shared collection body used by the daemon
+├── afm_session_hold.py    # Dead-session hold: stops the launchd restart loop
+├── test_session_hold.py   # unittest suite for the hold (stdlib stubs, no creds)
 │
 ├── lib_bq.py              # BigQuery helpers: append_to_bigquery(), materialize_view()
 ├── lib_bq_changealerts.py # Change-detection and Pushcut alert logic
@@ -157,6 +162,65 @@ because those mean Apple rejected the credential itself, not just the FindMy cal
 Discarding a freshly trusted session over a 450 is strictly worse than installing it: the
 only way back is another SRP round, which is exactly what triggers the 24 h rate limit.
 
+**Never re-send the 2FA code.** pyicloud's `_srp_authentication()` already calls
+`_request_2fa_code()`, which sends both the push notification and the SMS. A second
+`PUT /verify/phone` from `auth.py` would invalidate the first code and leave the user
+waiting for a replacement they have no way to predict is coming.
+
+**`validate_2fa_code()` has two distinct failure shapes.** Returning `False` means the
+code was ACCEPTED and `trust_session()` itself failed (propagation lag, or Apple
+suppressing trust) — the trust token is on disk and the session is worth keeping, but the
+in-memory session is untrusted so `api.devices` cannot work and the smoke test is skipped.
+Raising means the code was wrong or the network failed.
+
+**A 421 does not mean the credentials are gone — replay trust first.** Measured
+2026-11-03, on a session Apple had been rejecting for hours: `POST /accountLogin`
+returned `421 Authentication required for Account`, while `GET
+/appleauth/auth/2sv/trust` answered **204 with a complete fresh credential set** —
+trust token, session token, session id, scnt, account country. Persisting those
+five headers and re-calling `/accountLogin` brought the session back with no SRP
+and no 2FA code.
+
+This is also the step `trust_session()` performs and discards: it catches the
+exception from the `/accountLogin` that follows the trust GET, logs it, returns
+`False`, and leaves the trust token it just received unsaved. That is why
+`auth.py` reported `trust_token: False` twice in a row while a replay succeeded
+instantly.
+
+`afm_trust_repair.attempt_repair()` is that replay. It is wired into three places,
+and always runs **before** the dead-session hold and before any "run auth.sh"
+alert:
+
+- `auth.py`, when `validate_2fa_code()` returns `False` — so a re-auth recovers
+  itself instead of offering a partial session.
+- `afm_live_daemon` startup, via `_build_api_repairing()`, which retries
+  `build_api()` once after a successful repair and otherwise re-raises the original
+  exception so the existing alert and hold paths are unchanged.
+- `afm_live_daemon`'s cycle handlers for `PyiCloudFailedLoginException` /
+  `PyiCloud2FARequiredException`, and the post-`force_refresh` failure.
+
+**The repair is rate-limited on purpose.** It costs one GET plus one
+`/accountLogin`, so a repair that cannot succeed must not become the hammering
+`afm_session_hold` exists to stop: one attempt per 30 min, tracked in
+`~/.pyicloud-trust-repair-last`, cleared on success. `auth.py` passes `force=True`
+because a human is present and waiting.
+
+**Diagnosing a trust failure:** `util/trust_probe.py` replays the same call and
+prints the raw status, header names and body — no SRP, no password, no 2FA code,
+so it is safe to run repeatedly. `--repair` persists and re-mints. Token values
+are never printed.
+
+```bash
+.venv/bin/python util/trust_probe.py
+.venv/bin/python util/trust_probe.py --repair
+```
+
+**Two session dicts.** Some pyicloud builds store response headers on
+`api.session_data`, others on `api.session.data`. A writer that saves only one
+silently loses tokens. `afm_trust_repair.session_dicts()` returns every dict the
+build exposes, richest first; `auth.py` and the repair both write the **merge** of
+all of them. Never write just one, and never hardcode a session filename.
+
 **Session file naming.** This pyicloud build names the session pair after the sanitized
 Apple ID — `joejoemosercom.session` / `joejoemosercom.cookiejar` — not `md5(apple_id).session`.
 `auth.py`'s post-trust flush asks pyicloud for the path, then falls back to whichever
@@ -203,9 +267,33 @@ takes 229–380 seconds is a **healthy** 450→/accountLogin recovery, not a fai
 errors appearing after "Script started at:" are mid-pipeline FindMy failures, not startup auth
 failures. After 6–10 `/accountLogin` renewals over ~2–3 hours, Apple's backend refuses further
 renewals and returns "Invalid authentication token" — at that point only `auth.sh` can fix it.
-Getting `trust_token saved: True` from `auth.sh` allows Apple to issue longer-lived tokens and
-tolerate more renewals per session. Do NOT run `auth.sh` proactively — unnecessary SRP calls
-trigger rate limiting and can result in Apple refusing trust tokens for 24 h.
+A session whose trust step actually completed gets longer-lived tokens from Apple and tolerates
+more renewals. Do NOT run `auth.sh` proactively — unnecessary SRP calls trigger rate limiting
+and can result in Apple refusing trust tokens for 24 h.
+
+**Reading `auth.sh` output — what success actually looks like.** Do *not* watch for
+`trust_token saved: True`: in `util/auth.py` that line only prints inside the
+`*** Code ACCEPTED, but trust_session() failed. ***` branch (`auth.py:174`), i.e. it appears
+only on the **degraded** path where Apple took the 2FA code but `/accountLogin` still came back
+`hsaTrustedBrowser: False`. A fully healthy run never prints it. The success markers are:
+
+```
+  SRP succeeded.
+  validate_2fa_code → True  (trust_session called internally)
+  Session data flushed to tmp_dir after trust_session ✓
+  Cookie jar flushed to tmp_dir after trust_session ✓
+Smoke test — FindMy device access...
+  N device(s): ...
+Installing session → /Users/joemoser/.pyicloud ...
+  Files: [...]
+AUTH COMPLETE
+```
+
+`validate_2fa_code → True` plus a non-empty smoke-test device list is the pass condition —
+the smoke test is only reachable when the in-memory session is trusted. If you instead get
+`*** Code ACCEPTED, but trust_session() failed. ***`, the code was right but trust did not
+hold; answer `N` to the install prompt and retry after 24 h rather than installing a partial
+session.
 
 **Alert timing:** The Pushcut alert fires on the **second** consecutive mid-pipeline failure
 (not the first), because the first failure's next-attempt wait is 0 min and it sometimes
@@ -222,6 +310,48 @@ is required. `PyiCloudAuthRequiredException` mid-pipeline is never counted towar
 its entire run. If a previous instance is still running when the next cron fires, the new
 instance exits immediately (`Skipped (still running)`). This prevents two concurrent instances
 from both calling Apple auth simultaneously, which reliably invalidates the session.
+
+### Dead-session hold (`afm_session_hold.py`)
+
+Production runs `afm_live_daemon.py` under a `KeepAlive` LaunchAgent with
+`ThrottleInterval=300`. On session death the daemon alerts and `exit(1)`, and launchd restarts
+it 5 minutes later — so without a brake, a dead session is re-presented to Apple **~288 times a
+day**. Per the rate-limiting notes above, that hammering is exactly what makes Apple withhold
+trust tokens for 24 h, i.e. the restart loop actively sabotages the `auth.sh` run that is the
+only real fix.
+
+`afm_session_hold.py` (stdlib only — no pyicloud/pandas/BigQuery, so it is importable and
+testable anywhere) records rejections in `~/.pyicloud-daemon-session-dead`:
+
+- **Armed** when Apple rejects the session — `PyiCloudFailedLoginException`,
+  `PyiCloudAuthRequiredException` or `PyiCloud2FARequiredException`, at startup, mid-cycle, or
+  after a failed `force_refresh`. Recorded just before the existing exit path.
+- **While held**, daemon startup short-circuits and exits `0` *without contacting Apple*, and
+  without taking `/tmp/afm_live.lock`.
+- **Re-probes** on an escalating schedule — 15 min → 30 min → hourly (capped) — so a refusal
+  that turns out to be temporary still recovers within the hour. ~24 auth attempts/day
+  instead of ~288.
+- **Self-clearing.** The hold is keyed to a fingerprint of `~/.pyicloud` (file names, sizes,
+  mtimes). `util/auth.py` installs the new session with an atomic `os.rename`, so every file is
+  new and the fingerprint necessarily changes; the next launchd restart drops the hold and
+  reconnects. **The recovery procedure is still exactly "run `auth.sh`"** — there is no state
+  file to delete by hand. The hold is also cleared whenever `build_api()` succeeds and after
+  every healthy cycle.
+- **Fails open, always.** Missing, corrupt, truncated, unreadable or inconsistent state — or an
+  unexpected exception anywhere in the module — resolves to "no hold". A bug here can only fail
+  to suppress a restart; it can never keep a working session offline.
+- **Transient failures are untouched.** 5xx, 429 and network errors keep the existing 60 s /
+  5-minute cadence. The hold is only for sessions Apple has actually rejected.
+- Exception classification, Pushcut alert semantics and the `afm_live.lock` mutual exclusion are
+  all unchanged.
+
+It does **not** fix a dead session — nothing in the repo does except `bash util/auth.sh`. It
+only stops the daemon from making that recovery harder.
+
+Tests: `python3 -m unittest test_session_hold -v` (stubs pyicloud and `afm_pipeline`, so it runs
+without credentials or network). The key regression test simulates an hour of
+`ThrottleInterval=300` restarts against a dead session and asserts Apple is contacted 3 times
+(initial rejection + probes at +15 m and +45 m) rather than 13.
 
 ### Switching to the timlaing fork (deploy process)
 

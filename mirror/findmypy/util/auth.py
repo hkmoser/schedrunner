@@ -2,13 +2,12 @@
 """
 Interactive re-auth — pyicloud 2.x (PyPI) edition.
 
-Safe-write: all session files go to a temp dir first.
-~/.pyicloud is only replaced on full success (SRP + SMS code + trust).
-
 Run via:  bash util/auth.sh
+See CLAUDE.md ("Re-authentication (2FA)") for the policy this implements.
 """
 import getpass
 import glob
+import logging
 import os
 import shutil
 import signal
@@ -16,25 +15,27 @@ import sys
 import tempfile
 import time
 
+DEBUG = "--debug" in sys.argv
+
+logging.basicConfig(
+    level=logging.DEBUG if DEBUG else logging.WARNING,
+    format="  [pyicloud] %(levelname)s %(name)s: %(message)s",
+    stream=sys.stdout,
+)
+
 APPLE_ID = "joe@joemoser.com"
 PROD_COOKIE_DIR = os.path.expanduser("~/.pyicloud")
 
-# Pipeline state files that describe the OLD session. A freshly installed session
-# must not inherit them, or afm_live.py starts out already in backoff/hold-off.
 STATE_FILES = [
-    os.path.expanduser("~/.pyicloud-auth-backoff"),           # progressive auth backoff
-    os.path.expanduser("~/.pyicloud-transient-ctr"),          # consecutive 450-exit counter
-    os.path.expanduser("~/.pyicloud-transient-last"),         # transient alert cooldown
-    os.path.expanduser("~/.pyicloud-accountlogin-holdoff"),   # /accountLogin holdoff
-    os.path.expanduser("~/.pyicloud-expiry-warned"),          # cookie-expiry warning marker
+    os.path.expanduser("~/.pyicloud-auth-backoff"),
+    os.path.expanduser("~/.pyicloud-transient-ctr"),
+    os.path.expanduser("~/.pyicloud-transient-last"),
+    os.path.expanduser("~/.pyicloud-accountlogin-holdoff"),
+    os.path.expanduser("~/.pyicloud-expiry-warned"),
 ]
 
-# Smoke-test retry policy. Apple's FindMy endpoint returns 450 on the first call
-# of a fresh session (no _server_ctx yet); pyicloud re-auths and retries once, and
-# if that retry also 450s it raises PyiCloudAuthRequiredException. afm_live.py
-# already treats that exception as transient and self-healing — so must this.
 SMOKE_ATTEMPTS = 3
-SMOKE_BACKOFF = [20, 45]  # seconds before attempts 2 and 3
+SMOKE_BACKOFF = [20, 45]
 
 print("=" * 60)
 print("findmypy re-auth  (pyicloud 2.x)")
@@ -53,20 +54,33 @@ except ImportError as exc:
     print("Run:  pip install 'pyicloud>=2.0'")
     sys.exit(1)
 
-# Optional exception types — names differ across pyicloud versions, so every
-# lookup is defensive and the classifier below tolerates any of them missing.
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from afm_trust_repair import attempt_repair, session_dicts
+except Exception as _repair_import_err:
+    print(f"NOTE: afm_trust_repair unavailable ({_repair_import_err}) — "
+          f"no in-place trust repair this run")
+    attempt_repair = None
+
+    def session_dicts(api):
+        found = []
+        for obj, attr in ((api, "session_data"), (getattr(api, "session", None), "data")):
+            candidate = getattr(obj, attr, None)
+            if isinstance(candidate, dict) and not any(candidate is d for d in found):
+                found.append(candidate)
+        return sorted(found, key=len, reverse=True)
+
+
 def _exc_type(name):
     return getattr(sys.modules["pyicloud.exceptions"], name, None)
+
 
 _AuthRequired = _exc_type("PyiCloudAuthRequiredException")
 _2FARequired = _exc_type("PyiCloud2FARequiredException")
 _2SARequired = _exc_type("PyiCloud2SARequiredException")
 _NotActivated = _exc_type("PyiCloudServiceNotActivatedException")
 
-# A smoke-test failure of one of these means the session itself is bad — installing
-# it would only hand the cron a dead session. Anything else (notably the FindMy 450
-# → PyiCloudAuthRequiredException path) is transient and worth installing, because
-# the alternative is another SRP round that risks a 24 h rate-limit lockout.
 _FATAL_SMOKE_ERRORS = tuple(
     t for t in (PyiCloudFailedLoginException, _2FARequired, _2SARequired, _NotActivated)
     if t is not None
@@ -74,15 +88,7 @@ _FATAL_SMOKE_ERRORS = tuple(
 
 
 def session_file_path(api, cookie_dir: str) -> str:
-    """The file pyicloud actually reads its session JSON back from.
-
-    This build names it after the sanitized Apple ID (joejoemosercom.session),
-    NOT md5(apple_id).session — an earlier guess here wrote the post-trust token
-    to an md5 filename that pyicloud never reads, leaving an orphan file in
-    ~/.pyicloud and the real session file holding the pre-trust token. Ask
-    pyicloud for the path, fall back to whatever .session file it already wrote,
-    and only then guess.
-    """
+    """The file pyicloud reads its session JSON back from. Never hardcode this."""
     for obj in (api, getattr(api, "session", None)):
         for attr in ("session_path", "_session_path"):
             path = getattr(obj, attr, None)
@@ -95,13 +101,7 @@ def session_file_path(api, cookie_dir: str) -> str:
 
 
 def install_session(src_dir: str) -> bool:
-    """Atomically swap src_dir into PROD_COOKIE_DIR. Returns True on success.
-
-    Strategy: copytree to a staging dir (slow, safe — live session untouched),
-    then atomic os.rename (single syscall) to swap it into place.
-    A cron run during the copy sees the live session unchanged; one during the
-    rename sees either old or new — never a partial state.
-    """
+    """Copy src_dir to a staging dir, then atomically rename it into PROD_COOKIE_DIR."""
     print()
     print(f"Installing session → {PROD_COOKIE_DIR} ...")
     bak = PROD_COOKIE_DIR + ".bak"
@@ -109,13 +109,13 @@ def install_session(src_dir: str) -> bool:
     try:
         if os.path.exists(staging):
             shutil.rmtree(staging)
-        shutil.copytree(src_dir, staging)           # slow copy — live session untouched
+        shutil.copytree(src_dir, staging)
         if os.path.exists(bak):
             shutil.rmtree(bak)
         if os.path.exists(PROD_COOKIE_DIR):
-            shutil.move(PROD_COOKIE_DIR, bak)       # atomic rename out
+            shutil.move(PROD_COOKIE_DIR, bak)
             print(f"  Old session backed up → {bak}")
-        os.rename(staging, PROD_COOKIE_DIR)         # atomic rename in — single syscall
+        os.rename(staging, PROD_COOKIE_DIR)
         files = [os.path.basename(f) for f in glob.glob(os.path.join(PROD_COOKIE_DIR, "*"))]
         print(f"  Files: {files}")
         if os.path.exists(bak):
@@ -132,7 +132,7 @@ def install_session(src_dir: str) -> bool:
 
 
 def clear_pipeline_state() -> None:
-    """Drop the old session's backoff/hold-off markers so the cron resumes clean."""
+    """Drop the old session's backoff/hold-off markers so the pipeline resumes clean."""
     cleared = []
     for path in STATE_FILES:
         try:
@@ -144,11 +144,6 @@ def clear_pipeline_state() -> None:
     if cleared:
         print(f"Cleared pipeline state: {', '.join(cleared)}")
 
-
-# ── --install-from: recover a preserved temp session without another SRP ───────
-# When a run gets a valid session but the smoke test dies on something fatal, the
-# temp dir is kept. This installs it directly — no password, no SRP, no rate-limit
-# risk. Only worth using when the failure looked recoverable (e.g. Apple was down).
 
 if "--install-from" in sys.argv:
     _idx = sys.argv.index("--install-from")
@@ -193,13 +188,12 @@ def _keep_tmp(reason: str):
     print(f"  Otherwise just delete it:  rm -rf {tmp_dir}")
 
 
-# ── Step 1: SRP auth (30-second hard timeout) ─────────────────────────────────
-
 def _on_timeout(sig, frame):
     raise TimeoutError(
         "SRP timed out after 30 s — Apple is still rate-limiting.\n"
         "Wait 24 h with zero auth attempts, then retry."
     )
+
 
 signal.signal(signal.SIGALRM, _on_timeout)
 signal.alarm(30)
@@ -238,18 +232,12 @@ if not api.requires_2fa and not api.requires_2sa:
     print("Session already trusted — no 2FA needed.")
     api.trust_session()
 else:
-    # ── Step 2: Delivery status ────────────────────────────────────────────────
     print("Step 2/3 — 2FA code delivery")
-    # pyicloud's _srp_authentication() already called _request_2fa_code()
-    # internally, which sent both a push notification and an SMS. Do NOT send
-    # another SMS here — a second PUT /verify/phone invalidates the first code,
-    # forcing the user to wait for a replacement they can't predict is coming.
     print(f"  Delivery method: {api.two_factor_delivery_method}")
     print("  A push notification and SMS were sent during SRP (above).")
     print("  Use the most recent code — ignore any earlier one.")
     print()
 
-    # ── Step 3: Enter code + validate ────────────────────────────────────────
     print("Step 3/3 — Enter 2FA code")
     print("  Check SMS on your phone (or approve the push notification).")
     print()
@@ -265,19 +253,8 @@ else:
     print("  Validating...")
     try:
         ok = api.validate_2fa_code(code)
-        # Two distinct outcomes when it returns False vs raises:
-        #   RETURNS False  → code was ACCEPTED; trust_session() itself failed.
-        #   RAISES exception → code was wrong (PyiCloudAPIResponseException) or
-        #                       a network error; caught by the except block below.
         print(f"  validate_2fa_code → {ok}  (trust_session called internally)")
 
-        # Flush updated session data (new dsWebAuthToken + trust_token) to tmp_dir.
-        # validate_2fa_code → trust_session() may leave these in memory only. If the
-        # installed .session file still holds the pre-trust SRP token, Apple has
-        # already rotated it and every later /accountLogin fails with 421
-        # "Invalid authentication token".
-        # The write MUST land on the filename pyicloud reads back (see
-        # session_file_path) — writing to any other name silently does nothing.
         try:
             if hasattr(api, '_save_session_data'):
                 api._save_session_data()
@@ -289,14 +266,23 @@ else:
                 import json as _json
                 _session_dir = getattr(api, '_cookie_directory', tmp_dir)
                 _session_file = session_file_path(api, _session_dir)
-                if hasattr(api, 'session') and hasattr(api.session, 'data'):
+                _dicts = session_dicts(api)
+                if len(_dicts) > 1 and set(_dicts[0]) != set(_dicts[1]):
+                    print(f"  NOTE: two session dicts with different keys — merging both")
+                    print(f"    richest: {sorted(_dicts[0])}")
+                    print(f"    other  : {sorted(_dicts[1])}")
+                if _dicts:
+                    _merged = {}
+                    for _d in reversed(_dicts):
+                        _merged.update(_d)
                     with open(_session_file, 'w') as _sf:
-                        _json.dump(api.session.data, _sf)
+                        _json.dump(_merged, _sf)
                     print(f"  Session data manually written to {_session_file} ✓")
-                    print(f"  trust_token present: {bool(api.session.data.get('trust_token'))}")
-                    print(f"  session_token present: {bool(api.session.data.get('session_token'))}")
+                    print(f"  keys written: {sorted(_merged)}")
+                    print(f"  trust_token present: {bool(_merged.get('trust_token'))}")
+                    print(f"  session_token present: {bool(_merged.get('session_token'))}")
                 else:
-                    print("  WARNING: cannot flush session data — api.session.data not accessible")
+                    print("  WARNING: cannot flush session data — no session dict accessible")
             if hasattr(api, 'session') and hasattr(api.session, 'cookies') and hasattr(api.session.cookies, 'save'):
                 api.session.cookies.save(ignore_discard=True)
                 print("  Cookie jar flushed to tmp_dir after trust_session ✓")
@@ -305,22 +291,36 @@ else:
             print("  Continuing — installed session may have stale dsWebAuthToken")
 
         if not ok:
-            # The 2FA code was correct — Apple accepted it. trust_session() ran and
-            # committed the trust_token to disk (GET /2sv/trust saves the
-            # X-Apple-TwoSV-Trust-Token header), but the subsequent /accountLogin
-            # still returned hsaTrustedBrowser: False — either a propagation lag or
-            # Apple suppressing trust due to repeated auth attempts.
-            # Note: the in-memory session is untrusted, so api.devices will always
-            # fail from here — the smoke test must be skipped if we continue.
+            if attempt_repair is not None:
+                print()
+                print("  trust_session() returned False — replaying the trust endpoint")
+                print("  directly, since it answers 204 with a fresh credential set even")
+                print("  when the /accountLogin inside trust_session() fails.")
+                _repaired = False
+                try:
+                    _repaired = attempt_repair(api, cookie_dir=tmp_dir, force=True,
+                                               log=lambda m: print(f"  {m}"))
+                except Exception as _repair_err:
+                    print(f"  repair raised: {type(_repair_err).__name__}: {_repair_err}")
+                if _repaired:
+                    print("  Session repaired — continuing to the smoke test.")
+                    ok = True
+
+        if not ok:
             print()
             print("  *** Code ACCEPTED, but trust_session() failed. ***")
             print(f"  trust_token saved  : {bool(api.session.data.get('trust_token'))}")
             print("  This is NOT a wrong code — Apple accepted it.")
+            print("  pyicloud logs the real reason at ERROR level; it is printed above")
+            print("  this block. If nothing appeared, rerun with --debug for the full")
+            print("  request/response trace (which prints tokens — do not paste publicly).")
             print("  Possible causes:")
             print("    1. Propagation lag — Apple committed trust but /accountLogin")
             print("       hasn't seen it yet. The cron may succeed on its next run.")
-            print("    2. Suspicious-account state from repeated auth hammering.")
-            print("       In this case, wait 24h before retrying.")
+            print("    2. Apple wants something interactive (new iCloud terms, a security")
+            print("       prompt). Sign in at icloud.com and clear anything pending.")
+            print("    3. pyicloud changed under you — check the install date against")
+            print("       the date the session died.")
             print()
             ans = input("  Install partial session and let cron verify? (y/N): ").strip().lower()
             if ans != "y":
@@ -332,13 +332,8 @@ else:
         print(f"  Validation error: {type(exc).__name__}: {exc}")
         _cleanup(); sys.exit(1)
 
-# ── Smoke test ─────────────────────────────────────────────────────────────────
-
 print()
 if trust_failed:
-    # api.devices requires a trusted in-memory session (api._webservices is None
-    # when /accountLogin returned hsaTrustedBrowser: False). Skip the smoke test;
-    # the cron's first run serves as the live test.
     print("Skipping smoke test (in-memory session untrusted; trust_token is on disk).")
     print("  The cron pipeline will verify on its next run.")
 else:
@@ -377,18 +372,10 @@ else:
                 model = d.data.get("deviceModel") or d.data.get("rawDeviceModel") or "?"
                 print(f"    {d}  [{model}]")
     elif isinstance(smoke_err, _FATAL_SMOKE_ERRORS):
-        # The session itself is bad — Apple rejected the credential, not just the
-        # FindMy call. Installing it would hand the cron a dead session.
         print(f"  FAILED (session-level): {type(smoke_err).__name__}: {smoke_err}")
         _keep_tmp("Apple rejected the session itself, not just FindMy")
         sys.exit(1)
     else:
-        # Everything else — overwhelmingly PyiCloudAuthRequiredException from a
-        # repeated FindMy 450 — is transient. afm_live.py already classifies this
-        # exact exception as "self-heals next run, no action needed". Discarding a
-        # freshly trusted session over it is strictly worse than installing it: the
-        # only way back is another SRP round, which is what triggers Apple's 24 h
-        # rate limiting in the first place.
         print()
         print(f"  Smoke test did not pass: {type(smoke_err).__name__}: {smoke_err}")
         print("  This is the FindMy cold-start 450, not a bad session:")
@@ -408,15 +395,11 @@ else:
             sys.exit(1)
         print("  Installing — the cron's next run is the live test.")
 
-# ── Atomic install to ~/.pyicloud ──────────────────────────────────────────────
-
 if not install_session(tmp_dir):
     _keep_tmp("install failed — old session restored")
     sys.exit(1)
 
 _cleanup()
-
-# Drop the old session's backoff/hold-off markers so the pipeline resumes immediately.
 clear_pipeline_state()
 
 print()

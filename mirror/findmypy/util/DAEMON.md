@@ -12,6 +12,8 @@ rationale, and `util/probe_session.py` for the diagnostic that proved it.
 |---|---|
 | `afm_live_daemon.py` | The daemon: builds one session, loops `run_pipeline` every `AFM_INTERVAL_SECS`. |
 | `afm_pipeline.py` | Shared collection body (device loop → CSV → BigQuery → alerts). |
+| `afm_session_hold.py` | Dead-session hold — stops the KeepAlive restart loop from re-hitting Apple with a rejected token. Stdlib only. |
+| `test_session_hold.py` | `python3 -m unittest test_session_hold -v` — runs anywhere (pyicloud/pipeline stubbed). |
 | `afm_live.py` | **Untouched.** The cron fallback — instant rollback target. |
 | `util/com.joemoser.afm-daemon.plist` | KeepAlive LaunchAgent (no StartInterval). launchd keeps the daemon alive. |
 | `util/install_daemon.sh` | Idempotent (re)install of the LaunchAgent. Called by auto-deploy. |
@@ -32,7 +34,10 @@ not run on the schedule" model — schedrunner installs it, launchd supervises i
 The pipeline can't run in CI — it needs the real session, BigQuery creds, and
 Pushcut. Validate on the Mac first:
 
-1. **Session healthy?** Confirm `util/auth.sh` last reported `trust_token saved: True`.
+1. **Session healthy?** Confirm `util/auth.sh` last completed cleanly: `validate_2fa_code → True`,
+   a non-empty smoke-test device list, and `AUTH COMPLETE`. (Do **not** look for
+   `trust_token saved: True` — `auth.py` only prints that line on the degraded
+   "code accepted but trust_session() failed" path. See CLAUDE.md → *Reading `auth.sh` output*.)
 2. **One-cycle smoke test**, with the cron still owning the schedule (the daemon
    grabs `/tmp/afm_live.lock`, so a cron tick during the test just no-ops):
 
@@ -89,9 +94,10 @@ survive future deploys, also revert the `bash util/install_daemon.sh` line in
 ## Behavior notes
 
 - **Session death** (needs `auth.sh`): the daemon sends one Pushcut alert
-  (deduped 30 min) and exits; launchd restarts it every `ThrottleInterval` (300s).
-  After you run `auth.sh`, the next restart picks up the fresh session — no manual
-  daemon restart needed.
+  (deduped 30 min), records a **dead-session hold**, and exits; launchd restarts it every
+  `ThrottleInterval` (300s), but held restarts exit immediately without contacting Apple
+  (see below). After you run `auth.sh`, the next restart picks up the fresh session — no manual
+  daemon restart needed, and nothing to clean up.
 - **Transient errors** (Apple 5xx/429, network, an un-self-healed 450): logged,
   retried after 60s, session kept in memory. No exit.
 - **Data-plane errors** (BigQuery/pandas/alerts): logged + alerted, but the daemon
@@ -105,3 +111,50 @@ survive future deploys, also revert the `bash util/install_daemon.sh` line in
   worst Dropbox churn) and ages out of the folder within the retention window.
   Rollback note: the untouched `afm_live.py` fallback still writes `afm_all.csv` if
   you ever revert to it.
+
+## Dead-session hold
+
+`KeepAlive` + `ThrottleInterval=300` is right for crashes and wrong for a rejected session:
+launchd would re-present the same dead token to Apple every 5 minutes forever — **~288 rejected
+auth attempts a day**. That is precisely the hammering that makes Apple rate-limit SRP and
+withhold trust tokens for 24 h, so the restart loop was actively sabotaging the `auth.sh` run
+that is the only thing that can fix the outage.
+
+`afm_session_hold.py` records the rejection in `~/.pyicloud-daemon-session-dead`. While the hold
+is active the daemon short-circuits at startup — before taking `/tmp/afm_live.lock` — and exits
+`0` without contacting Apple, re-probing at **15 min → 30 min → hourly (capped)**: ~24 attempts
+a day instead of ~288, while still recovering within the hour if Apple's refusal was temporary.
+
+**This does not fix a dead session.** Only `bash util/auth.sh` does. The hold just stops the
+daemon from making that recovery harder.
+
+**Recovery is unchanged: run `auth.sh`.** The hold is keyed to a fingerprint of `~/.pyicloud`
+(file names/sizes/mtimes), and `util/auth.py` installs the new session with an atomic
+`os.rename` — so every file is new, the fingerprint changes, and the next launchd restart drops
+the hold and reconnects. There is deliberately no state file to delete by hand. It also clears
+whenever the session is constructed successfully and after every healthy cycle.
+
+It **fails open** everywhere: missing, corrupt, unreadable or inconsistent state — or any
+unexpected exception in the module — means "no hold". The worst a bug here can do is fail to
+suppress a restart; it can never keep a working session offline.
+
+Transient errors (5xx / 429 / network) never arm the hold — those keep the existing cadence.
+
+What you'll see in the log while held:
+
+```
+[hold] session marked dead (rejection #1 at startup) — skipping Apple auth for the next 15 min. Fix with: bash util/auth.sh
+...
+[hold] session marked dead (2 consecutive rejection(s), last at startup: PyiCloudFailedLoginException: ...) — not contacting Apple; next probe in 12 min. Run `bash util/auth.sh` to fix.
+```
+
+and after `auth.sh`:
+
+```
+[hold] ~/.pyicloud changed since the rejection (auth.sh ran) — hold dropped
+[auth] session constructed (token-only, no SRP)
+[hold] cleared (session constructed)
+```
+
+Tests: `python3 -m unittest test_session_hold -v` — pyicloud and `afm_pipeline` are stubbed, so
+it runs on any machine with no credentials, network or BigQuery access.
